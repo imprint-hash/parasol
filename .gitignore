@@ -1,0 +1,7 @@
+.env
+scratch/
+node_modules/
+.vercel
+*.local.json
+data/store.json
+data/store.json.tmp

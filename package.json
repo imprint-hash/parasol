@@ -1,0 +1,16 @@
+{
+  "name": "parasol",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Your skin, on the road. A travel skin forecast built on YouCam Skin AI.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node bin/serve.mjs",
+    "test": "node --test test/*.test.js",
+    "budget": "node bin/budget.mjs"
+  }
+}

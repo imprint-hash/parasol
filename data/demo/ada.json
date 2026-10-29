@@ -1,0 +1,88 @@
+{
+  "persona": "ada",
+  "about": "Real YouCam results for the ada demo persona, captured once by bin/capture-demo.mjs. The face is AI-generated (YouCam AI Image Generator); it is not a real person.",
+  "capturedAt": "2026-10-29T20:47:05.706Z",
+  "face": {
+    "kind": "ai-generated",
+    "image": "/demo/ada/face.jpg",
+    "credit": "AI-generated demo face (YouCam AI Image Generator). Not a real person."
+  },
+  "baseline": {
+    "skin": {
+      "type": "dry",
+      "tZone": "dry",
+      "uZone": "dry",
+      "scores": {
+        "pore": 64,
+        "redness": 98,
+        "radiance": 75,
+        "age_spot": 78,
+        "texture": 63,
+        "oiliness": 89,
+        "acne": 89,
+        "moisture": 61
+      },
+      "overall": 77,
+      "skinAge": 38
+    },
+    "fitz": {
+      "scale": "VI",
+      "source": "youcam"
+    },
+    "tone": null,
+    "masks": {
+      "oiliness": "/demo/ada/oiliness.png",
+      "moisture": "/demo/ada/moisture.png",
+      "acne": "/demo/ada/acne.png",
+      "redness": "/demo/ada/redness.png",
+      "pore": "/demo/ada/pore.png",
+      "age_spot": "/demo/ada/age_spot.png",
+      "texture": "/demo/ada/texture.png",
+      "radiance": "/demo/ada/radiance.png"
+    }
+  },
+  "rescan": {
+    "skin": {
+      "type": "dry",
+      "tZone": "dry",
+      "uZone": "dry",
+      "scores": {
+        "pore": 65,
+        "oiliness": 99,
+        "texture": 62,
+        "radiance": 76,
+        "redness": 97,
+        "age_spot": 78,
+        "acne": 83,
+        "moisture": 62
+      },
+      "overall": 78,
+      "skinAge": 38
+    },
+    "fitz": {
+      "scale": "VI",
+      "source": "youcam"
+    },
+    "tone": null,
+    "masks": {
+      "oiliness": "/demo/ada/day3-oiliness.png",
+      "moisture": "/demo/ada/day3-moisture.png",
+      "acne": "/demo/ada/day3-acne.png",
+      "redness": "/demo/ada/day3-redness.png",
+      "pore": "/demo/ada/day3-pore.png",
+      "age_spot": "/demo/ada/day3-age_spot.png",
+      "texture": "/demo/ada/day3-texture.png",
+      "radiance": "/demo/ada/day3-radiance.png"
+    },
+    "face": {
+      "image": "/demo/ada/day3.jpg"
+    },
+    "simulated": {
+      "feature": "YouCam Skin Simulation",
+      "params": {
+        "oiliness": 0.6
+      },
+      "note": "Demo: the Day 3 photo is simulated with YouCam Skin Simulation."
+    }
+  }
+}

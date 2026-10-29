@@ -1,0 +1,45 @@
+{
+  "persona": "sam",
+  "about": "Real YouCam results for the sam demo persona, captured once by bin/capture-demo.mjs. The face is AI-generated (YouCam AI Image Generator); it is not a real person.",
+  "capturedAt": "2026-10-29T20:44:53.246Z",
+  "face": {
+    "kind": "ai-generated",
+    "image": "/demo/sam/face.jpg",
+    "credit": "AI-generated demo face (YouCam AI Image Generator). Not a real person."
+  },
+  "baseline": {
+    "skin": {
+      "type": "dry",
+      "tZone": "dry",
+      "uZone": "dry",
+      "scores": {
+        "pore": 65,
+        "redness": 99,
+        "oiliness": 95,
+        "texture": 74,
+        "radiance": 79,
+        "age_spot": 83,
+        "acne": 83,
+        "moisture": 65
+      },
+      "overall": 80,
+      "skinAge": 28
+    },
+    "fitz": {
+      "scale": "V",
+      "source": "youcam"
+    },
+    "tone": null,
+    "masks": {
+      "oiliness": "/demo/sam/oiliness.png",
+      "moisture": "/demo/sam/moisture.png",
+      "acne": "/demo/sam/acne.png",
+      "redness": "/demo/sam/redness.png",
+      "pore": "/demo/sam/pore.png",
+      "age_spot": "/demo/sam/age_spot.png",
+      "texture": "/demo/sam/texture.png",
+      "radiance": "/demo/sam/radiance.png"
+    }
+  },
+  "rescan": null
+}

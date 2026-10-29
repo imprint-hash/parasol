@@ -1,0 +1,45 @@
+{
+  "persona": "sample",
+  "about": "Real YouCam results for YouCam's own documentation sample face (not a Parasol user). Placeholder until the ada/sam faces are captured.",
+  "capturedAt": "2026-10-29T20:37:58.733Z",
+  "face": {
+    "kind": "youcam-docs-sample",
+    "image": "https://plugins-media.makeupar.com/smb/blog/post/2025-01-15/10a4b980-f571-4d08-8f5d-e3ed48db77aa.jpg",
+    "credit": "Sample image from YouCam (Perfect Corp.) API documentation. Not a Parasol user."
+  },
+  "baseline": {
+    "skin": {
+      "type": "oily",
+      "tZone": "normal",
+      "uZone": "oily",
+      "scores": {
+        "radiance": 85,
+        "redness": 95,
+        "pore": 66,
+        "age_spot": 96,
+        "texture": 75,
+        "oiliness": 70,
+        "acne": 94,
+        "moisture": 72
+      },
+      "overall": 82,
+      "skinAge": 24
+    },
+    "fitz": {
+      "scale": "II",
+      "source": "youcam"
+    },
+    "tone": null,
+    "masks": {
+      "oiliness": "/demo/sample/oiliness.png",
+      "moisture": "/demo/sample/moisture.png",
+      "acne": "/demo/sample/acne.png",
+      "redness": "/demo/sample/redness.png",
+      "pore": "/demo/sample/pore.png",
+      "age_spot": "/demo/sample/age_spot.png",
+      "texture": "/demo/sample/texture.png",
+      "radiance": "/demo/sample/radiance.png"
+    }
+  },
+  "rescan": null
+}

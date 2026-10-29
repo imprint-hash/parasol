@@ -5,15 +5,15 @@
  * the API can change what the demo shows.
  *
  * Slots:
- *   data/demo/ada.json     Ada (deep skin): NOT CAPTURED YET, needs a consented face
- *   data/demo/sam.json     Sam (very fair): NOT CAPTURED YET, needs a consented face
- *   data/demo/sample.json  YouCam's own docs sample face. Used as a clearly
+ *   data/demo/ada.json     Ada (very deep skin): AI-generated face, baseline + simulated Day 3
+ *   data/demo/sam.json     Sam (albinism): AI-generated face, baseline only
+ *   data/demo/sample.json  YouCam's own docs sample face. Fallback, clearly
  *                          labelled placeholder for any persona whose file is
  *                          missing (`demo.placeholder: true`).
  *
  * File shape (written by capture-demo):
  *   { persona, about, capturedAt,
- *     face: { kind: "youcam-docs-sample"|"consented-selfie"|"synthetic", image, credit },
+ *     face: { kind: "youcam-docs-sample"|"consented-selfie"|"ai-generated", image, credit },
  *     baseline: { skin, fitz, tone, masks: {metric: "/demo/<persona>/<metric>.png"} },
  *     rescan: null | { skin, fitz, tone, masks, face?: {image}, simulated?: {feature, params, note} } }
  */
@@ -24,6 +24,12 @@ import { toView } from "./scan.js";
 
 export const PERSONAS = ["ada", "sam"];
 const file = (name) => new URL(`../data/demo/${name}.json`, import.meta.url);
+
+export const FACE_LABELS = {
+  "ai-generated": "AI-generated demo face (YouCam AI Image Generator)",
+  "youcam-docs-sample": "YouCam documentation sample face",
+  "consented-selfie": "Demo face, shown with consent",
+};
 
 const cache = new Map();
 function load(name) {
@@ -62,7 +68,7 @@ export function demoScan(body) {
         demo: {
           persona,
           placeholder: !own,
-          face: { kind: fx.face?.kind || null, image: rec.face?.image || fx.face?.image || null, credit: fx.face?.credit || null },
+          face: { kind: fx.face?.kind || null, label: FACE_LABELS[fx.face?.kind] || null, image: rec.face?.image || fx.face?.image || null, credit: fx.face?.credit || null },
           simulated: rec.simulated || null,
         },
       },

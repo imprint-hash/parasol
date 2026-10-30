@@ -15,7 +15,10 @@ export const TEST_CARD = "Bogus Gateway: card number 1, any future date, any CVV
 export const DISCLAIMER = "Not medical advice. Burn times are estimates. Demo shop: not affiliated with these brands.";
 
 const DAY = 86400_000;
-const storePassword = () => process.env.SHOPIFY_STORE_PASSWORD || null;
+// The dev store's storefront password. Not a secret: Shopify forces a password
+// on development stores, so it's shown to judges next to Checkout.
+export const DEMO_STORE_PASSWORD = "ahltea";
+const storePassword = () => process.env.SHOPIFY_STORE_PASSWORD || DEMO_STORE_PASSWORD;
 
 /** Constant-time check of `Authorization: Bearer <secret>`. */
 function bearerOk(req, secret) {

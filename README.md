@@ -32,7 +32,7 @@ Built on the Perfect Corp YouCam **AI Skin Analysis** and **Fitzpatrick Scale An
 | Demo shop (Shopify, test payments) | parasol-demo.myshopify.com |
 | Code | https://github.com/imprint-hash/parasol |
 
-Checkout uses Shopify's test gateway: card number `1`, any future date, any CVV. No real money moves.
+Shopify keeps development stores behind a password, so the app shows it next to Checkout: **store password `ahltea`**. Checkout uses Shopify's test gateway: card number `1`, any future date, any CVV. No real money moves.
 
 ## How it works (the brief's three moments)
 

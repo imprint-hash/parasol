@@ -567,7 +567,6 @@ test("input: size limits: 2 MB + 1 byte is 413; 4096/4097 and 480/479 px boundar
 
 test(
   "input: after a 413 for an oversized body, the next requests on the same keep-alive connection still get answers",
-  { todo: "BUG-6: src/router.js:44 throws too_large while the client is still sending and never drains or closes the socket, so the next request on that keep-alive connection hangs ~6 s then ECONNRESET (local server and any non-Vercel host)" },
   async () => {
     const own = await startApp(); // its own origin, so a poisoned socket can't leak into other tests
     try {

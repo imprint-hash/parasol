@@ -87,6 +87,17 @@ export async function handle(req, res) {
     for (const [k, v] of Object.entries(headers)) res.setHeader(k, v);
     res.end(JSON.stringify(body));
   };
+  // An oversized body is refused while the client may still be sending it.
+  // Don't leave the rest unread on a keep-alive socket: close the connection
+  // and drop the request once the answer is out.
+  const sendAndClose = (status, body, headers) => {
+    res.setHeader("connection", "close");
+    send(status, body, headers);
+    if (typeof req.destroy === "function" && !req.complete) {
+      if (res.writableFinished || typeof res.once !== "function") req.destroy();
+      else res.once("finish", () => req.destroy());
+    }
+  };
   try {
     let url;
     try {
@@ -109,6 +120,7 @@ export async function handle(req, res) {
       : { error: "Something went wrong on our side. Please try again.", code: "server_error" };
     if (err instanceof StoreError) body.code = "store_down";
     const headers = body.retryAfter ? { "retry-after": String(body.retryAfter) } : {};
+    if (status === 413) return sendAndClose(status, body, headers);
     return send(status, body, headers);
   }
 }

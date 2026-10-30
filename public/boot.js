@@ -5,7 +5,8 @@
   try { p = (JSON.parse(localStorage.getItem("parasol.v1")) || {}).prefs || {}; } catch (e) {}
   var d = document.documentElement;
   var mq = function (q) { return window.matchMedia && window.matchMedia(q).matches; };
-  var dark = p.theme === "dark-gentle" || (p.theme === "auto" && mq("(prefers-color-scheme: dark)"));
+  var theme = p.themeChosen ? p.theme : "light";
+  var dark = theme === "dark-gentle" || (theme === "auto" && mq("(prefers-color-scheme: dark)"));
   d.setAttribute("data-theme", dark ? "dark" : "light");
   var lv = p.lowVision === true || (p.lowVision == null && mq("(prefers-contrast: more)"));
   if (lv) d.setAttribute("data-lv", "1");

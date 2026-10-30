@@ -13,7 +13,9 @@ export const lowVisionOn = () => (prefs().lowVision == null ? moreQ.matches : pr
 
 export function applyPrefs() {
   const p = prefs();
-  const dark = p.theme === "dark-gentle" || (p.theme === "auto" && darkQ.matches);
+  // Beige light unless the person picked a theme themselves (old saved "auto" is ignored).
+  const theme = p.themeChosen ? p.theme : "light";
+  const dark = theme === "dark-gentle" || (theme === "auto" && darkQ.matches);
   root.dataset.theme = dark ? "dark" : "light";
   if (lowVisionOn()) root.dataset.lv = "1";
   else delete root.dataset.lv;

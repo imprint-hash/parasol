@@ -261,7 +261,7 @@ function syncPanel(panel) {
   const sc = Math.round((Number(p.textScale) || 1) * 100);
   panel.querySelector("#dp-scale").value = sc;
   panel.querySelector("#dp-scale-out").textContent = `${sc}%`;
-  panel.querySelectorAll('[name="dp-theme"]').forEach((r) => (r.checked = r.value === (p.theme || "auto")));
+  panel.querySelectorAll('[name="dp-theme"]').forEach((r) => (r.checked = r.value === (p.themeChosen ? p.theme || "light" : "light")));
   const rate = panel.querySelector("#dp-rate");
   if (rate) {
     rate.value = p.speechRate || 1;
@@ -295,7 +295,7 @@ function wireDisplay(header, panel) {
   panel.querySelector("#dp-scale").addEventListener("input", (e) => setPref("textScale", Number(e.target.value) / 100));
   panel.querySelectorAll('[name="dp-theme"]').forEach((r) =>
     r.addEventListener("change", () => {
-      setPref("theme", r.value);
+      setPref("theme", r.value); setPref("themeChosen", true);
       announce(`Theme: ${r.parentElement.textContent.trim()}.`);
     })
   );

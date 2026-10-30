@@ -6,8 +6,10 @@
  *   1. the kill switch (LIVE_SCANS=off) and a configured API key,
  *   2. the per-IP limit (LIVE_PER_IP_HOUR in any rolling hour, LIVE_PER_IP_DAY a day),
  *   3. the global daily cap (LIVE_SCANS_PER_DAY, default 15),
- *   4. the unit floor: YouCam's balance minus this scan's cost must stay at or
- *      above UNITS_FLOOR (default 150). If the balance can't be read, we stop.
+ *   4. the unit floor: YouCam's balance, minus the units this instance has
+ *      reserved since that balance was read (the balance is cached 60 s),
+ *      minus this scan's cost must stay at or above UNITS_FLOOR (default 150).
+ *      If the balance can't be read, we stop.
  * Failing 1, 3 or 4 is 503 `live_off` (the client offers the demo); failing 2
  * is 429 `rate_limited` with retryAfter.
  *
@@ -22,7 +24,7 @@ import "./env.js";
 import { createHmac } from "node:crypto";
 import { get, put } from "./store.js";
 import { HttpError } from "./http.js";
-import { credit } from "./youcam.js";
+import { credit, creditReadId } from "./youcam.js";
 
 export const LIVE_PER_IP_HOUR = 3;
 export const LIVE_PER_IP_DAY = 6;
@@ -81,6 +83,9 @@ const serial = (fn) => {
   return p;
 };
 
+// Units reserved on this instance since the balance we hold was read from YouCam.
+let reserved = { read: null, units: 0 };
+
 const liveOff = (why) => new HttpError(`Live scans are paused right now (${why}). Try the demo instead.`, 503, "live_off");
 
 /** Whether live scans are possible at all right now (for /api/health and /api/config). */
@@ -129,7 +134,10 @@ export function reserveLiveScan(ip, units, now = Date.now()) {
     } catch {
       throw liveOff("YouCam balance unavailable");
     }
-    if (balance - units < s.floor) throw liveOff("unit floor reached");
+    const read = creditReadId();
+    if (reserved.read !== read) reserved = { read, units: 0 };
+    if (balance - reserved.units - units < s.floor) throw liveOff("unit floor reached");
+    reserved.units += units;
 
     await put("pz_budget", { ...total, liveScans: total.liveScans + 1, units: total.units + units, at: new Date(now).toISOString() });
     await put("pz_budget", { ...mine, liveScans: mine.liveScans + 1, units: mine.units + units, hits: [...lastHour, now], at: new Date(now).toISOString() });

@@ -221,15 +221,18 @@ export async function simulate(src, params) {
 }
 
 let creditCache = null;
+let creditReads = 0;
 /** Unit balance (sum of all unit grants), cached 60 s. Free. */
 export async function credit({ fresh = false } = {}) {
   if (!fresh && creditCache && Date.now() - creditCache.at < CREDIT_CACHE_MS) return creditCache.units;
   const r = await api("GET", "/s2s/v1.0/client/credit");
   const units = (r?.results || []).reduce((n, c) => n + (Number(c.amount) || 0), 0);
-  creditCache = { at: Date.now(), units };
+  creditCache = { at: Date.now(), units, read: ++creditReads };
   return units;
 }
 export const forgetCredit = () => (creditCache = null);
+/** Changes every time the balance is really read from YouCam (not served from cache). */
+export const creditReadId = () => creditCache?.read ?? 0;
 
 /**
  * One full scan of a face photo: one upload, then skin analysis and the

@@ -275,7 +275,6 @@ test("unit burn: YouCam balance unreadable means stop (503), not go", async () =
 
 test(
   "unit burn: the floor check must not trust a stale cached balance during a burst",
-  { todo: "BUG-1: reserveLiveScan() uses credit() cached for 60 s and never subtracts units it just reserved, so 3 scans in a minute can take the real balance below UNITS_FLOOR (src/budget.js:128, src/youcam.js:226)" },
   async () => {
     stub.state.units = 200; // floor 150, cost 24
     assert.equal((await scan(dataUrl(fakeJpeg()))).status, 200);

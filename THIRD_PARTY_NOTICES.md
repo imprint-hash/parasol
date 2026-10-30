@@ -1,8 +1,8 @@
 # Third-party notices
 
-## YouCam API (Perfect Corp.)
+## YouCam APIs (Perfect Corp.)
 
-Skin analysis, Fitzpatrick sun type, Skin Simulation and AI Image Generator results come from the YouCam API under its terms of service.
+Parasol uses the YouCam APIs by [Perfect Corp.](https://www.perfectcorp.com/). Skin analysis, Fitzpatrick sun type, Skin Simulation and AI Image Generator results come from the YouCam API under its terms of service.
 
 - `public/demo/ada/` and `public/demo/sam/`: the faces are AI-generated with YouCam's AI Image Generator and are not real people. The mask PNGs and the Day 3 image (Skin Simulation) are YouCam outputs for those faces.
 - `public/demo/sample/` and `data/demo/sample.json`: YouCam analysis masks and scores for the sample image published in YouCam's own API documentation. The image itself is not copied here; the app links to it on YouCam's media host.
@@ -13,7 +13,11 @@ Weather, UV and air-quality data from [Open-Meteo](https://open-meteo.com/), lic
 
 ## Open Beauty Facts
 
-Product images, where used, from [Open Beauty Facts](https://world.openbeautyfacts.org/), licensed under [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/). Per-product sources are in `products/SOURCES.md`.
+Product images, where used, from [Open Beauty Facts](https://world.openbeautyfacts.org/), licensed under [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/), including the image for product code [0070501110478](https://world.openbeautyfacts.org/product/0070501110478). Per-product sources are in `products/SOURCES.md`.
+
+## Google Fonts
+
+[Literata](https://fonts.google.com/specimen/Literata) and [Atkinson Hyperlegible Next](https://fonts.google.com/specimen/Atkinson+Hyperlegible+Next), served by Google Fonts, licensed under the [SIL Open Font License 1.1](https://openfontlicense.org/).
 
 ## Brands
 

@@ -3,7 +3,7 @@
   "rewrites": [{ "source": "/api/:path*", "destination": "/api" }],
   "crons": [{ "path": "/api/cron/cleanup", "schedule": "30 3 * * *" }],
   "headers": [{ "source": "/(.*)", "headers": [
-    { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://cdn.shopify.com https://images.openfoodfacts.org https://yce-us.s3-accelerate.amazonaws.com https://plugins-media.makeupar.com; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" },
+    { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://cdn.shopify.com https://images.openfoodfacts.org https://images.openbeautyfacts.org https://yce-us.s3-accelerate.amazonaws.com https://plugins-media.makeupar.com; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" },
     { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
     { "key": "X-Content-Type-Options", "value": "nosniff" },
     { "key": "Permissions-Policy", "value": "camera=(self), microphone=(), geolocation=()" }

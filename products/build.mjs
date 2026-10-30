@@ -274,7 +274,7 @@ const html = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g,
 export const products = P.map((p, i) => ({ ...p, tags: [...new Set([...p.tags, "parasol"])], sku: `PZ-${String(i + 1).padStart(3, "0")}` }));
 
 function row(p) {
-  const description = `<p>${p.desc.map(html).join(" ")}</p><p>${NOT_AFFILIATED}</p>`;
+  const description = `<p>${p.desc.map(html).join(" ")}</p> <p>${NOT_AFFILIATED}</p>`;
   // Value spellings copied from the store's export (true/false, deny, manual, active).
   // Inventory is NOT tracked (tracker left blank): the classic template has no
   // quantity column, and a tracked product with 0 stock and policy "deny" would

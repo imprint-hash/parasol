@@ -10,6 +10,10 @@
  * - If Shopify can't be reached, catalog() falls back to
  *   products/parasol-products.csv (owned by Coder B) with `live:false`, and
  *   carts are refused with "Shop is offline. Here's the list."
+ * - If Shopify answers but the parasol collection has 0 parasol products
+ *   (missing, empty, or not published to the token's sales channel), it also
+ *   falls back to the CSV list with `live:false`, so the kit still shows
+ *   products and checkout is honestly off.
  *
  * catalog() → { products: Product[], live: boolean, source: "shopify"|"csv"|"none", message? }
  *   Product = {variantId, handle, title, vendor, price, currency, image,
@@ -23,6 +27,7 @@ import "./env.js";
 import { readFileSync } from "node:fs";
 import { get, put } from "./store.js";
 import { HttpError } from "./http.js";
+import { productsFromCsvText } from "./catalog-csv.js";
 
 export const API_VERSION = "2025-07";
 const TIMEOUT_MS = 10_000;
@@ -148,10 +153,13 @@ export function productsFromCsv(text) {
     }));
 }
 
-function csvCatalog() {
+const OFFLINE_MSG = "Shop is offline. Here's the list.";
+const EMPTY_MSG = "The shop has no Parasol products listed yet. Here's the list; checkout is off for now.";
+
+function csvCatalog(message = OFFLINE_MSG) {
   try {
-    const products = productsFromCsv(readFileSync(CSV_PATH, "utf8"));
-    return { products, live: false, source: products.length ? "csv" : "none", message: "Shop is offline. Here's the list." };
+    const products = productsFromCsvText(readFileSync(CSV_PATH, "utf8"));
+    return { products, live: false, source: products.length ? "csv" : "none", message };
   } catch {
     return { products: [], live: false, source: "none", message: "Shop is offline." };
   }
@@ -171,6 +179,13 @@ export async function catalog({ fresh = false } = {}) {
   }
   try {
     const products = productsFromStorefront(await gql(CATALOG_QUERY));
+    if (!products.length) {
+      // Reachable but nothing to sell: show the CSV list, keep checkout off,
+      // and re-check soon so publishing the collection shows up quickly.
+      const value = csvCatalog(EMPTY_MSG);
+      memo = { at: Date.now() - MEMORY_MS + 60_000, value };
+      return value;
+    }
     const value = { products, live: true, source: "shopify" };
     memo = { at: Date.now(), value };
     if (persist) put("pz_wx", { id: "shop:catalog", at: new Date().toISOString(), ttl: STORE_TTL_S, body: value }).catch(() => {});

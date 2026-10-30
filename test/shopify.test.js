@@ -4,7 +4,7 @@ import { test, after, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
 
-const state = { down: false, userErrors: [], checkoutUrl: "https://test-shop.myshopify.com/cart/c/abc?key=1" };
+const state = { down: false, empty: false, userErrors: [], checkoutUrl: "https://test-shop.myshopify.com/cart/c/abc?key=1" };
 const calls = [];
 const PRODUCTS = [
   { handle: "lrp-anthelios", title: "Anthelios UVMune 400 SPF50+", vendor: "La Roche-Posay", tags: ["parasol", "type-sunscreen", "spf-50-plus"], onlineStoreUrl: null, featuredImage: null, variants: { nodes: [{ id: "gid://shopify/ProductVariant/111", availableForSale: true, price: { amount: "38.0", currencyCode: "USD" } }] } },
@@ -20,6 +20,7 @@ const server = createServer(async (req, res) => {
   const send = (s, b) => res.writeHead(s, { "content-type": "application/json" }).end(JSON.stringify(b));
   if (state.down) return send(503, { errors: [{ message: "down" }] });
   if (query.includes("cartCreate")) return send(200, { data: { cartCreate: { cart: state.userErrors.length ? null : { checkoutUrl: state.checkoutUrl }, userErrors: state.userErrors } } });
+  if (query.includes("collection(") && state.empty) return send(200, { data: { collection: null } });
   if (query.includes("collection(")) return send(200, { data: { collection: { products: { nodes: PRODUCTS } } } });
   if (query.includes("shop")) return send(200, { data: { shop: { name: "test" } } });
   return send(400, { errors: [{ message: "?" }] });
@@ -35,7 +36,7 @@ after(async () => {
   await new Promise((r) => server.close(r));
 });
 beforeEach(() => {
-  Object.assign(state, { down: false, userErrors: [], checkoutUrl: "https://test-shop.myshopify.com/cart/c/abc?key=1" });
+  Object.assign(state, { down: false, empty: false, userErrors: [], checkoutUrl: "https://test-shop.myshopify.com/cart/c/abc?key=1" });
   calls.length = 0;
   shop.forgetCatalog();
   shop.forgetShopHealth();
@@ -100,6 +101,19 @@ test("Shopify down: catalog falls back to the CSV list and the cart is 503 shop_
   assert.equal(r.status, 503);
   assert.equal(r.body.code, "shop_offline");
   assert.equal(await shop.shopHealth(), "down");
+});
+
+test("Shopify reachable but 0 parasol products: CSV list, live:false, honest message, cart 503", async () => {
+  state.empty = true;
+  const c = await shop.catalog();
+  assert.equal(c.live, false);
+  assert.equal(c.source, "csv");
+  assert.ok(c.products.length > 0);
+  assert.ok(c.products.every((p) => p.variantId === null && p.tags.includes("parasol")));
+  assert.match(c.message, /no Parasol products/);
+  const r = await app.call("POST", "/api/cart", { lines: [{ variantId: "gid://shopify/ProductVariant/111", quantity: 1 }] });
+  assert.equal(r.status, 503);
+  assert.equal(r.body.code, "shop_offline");
 });
 
 test("Shopify userErrors or an off-site checkout URL are 502", async () => {

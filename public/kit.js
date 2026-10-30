@@ -175,7 +175,7 @@ async function render() {
   }
   ${
     wear.length
-      ? `<section class="stack-sm" id="extras" aria-labelledby="extras-h" ${extrasHidden() ? "hidden" : ""}><h2 id="extras-h" style="font-size:1.375rem">Sun protection extras</h2><p class="muted small">For very fair skin and albinism, dermatologists advise covering up too: a wide-brim hat, UV400 sunglasses for light-sensitive eyes, and sleeves on strong-sun days. Tap the heart to add one.</p><div class="kit-grid" id="cards-extras">${wear.map(([s, i]) => card(s, i)).join("")}</div></section>`
+      ? `<section class="stack-sm" id="extras" aria-labelledby="extras-h" ${extrasHidden() ? "hidden" : ""}><h2 id="extras-h" style="font-size:1.375rem">Sun protection extras</h2><p class="muted small">For very fair skin and albinism, sun-safety advice is to cover up too: a wide-brim hat, UV400 sunglasses for light-sensitive eyes, and sleeves on strong-sun days. Tap the heart to add one.</p><div class="kit-grid" id="cards-extras">${wear.map(([s, i]) => card(s, i)).join("")}</div></section>`
       : ""
   }
   <p class="credit">Product images © their brands or credited photographers. Demo shop, not affiliated with these brands.</p>

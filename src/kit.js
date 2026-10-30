@@ -71,7 +71,7 @@ export function passes(p, slot, carryOn) {
   return true;
 }
 
-const why = (matched) => matched.map((t) => TAG_LABELS[t]).filter(Boolean);
+const why = (matched) => matched.map((t) => (Object.hasOwn(TAG_LABELS, t) ? TAG_LABELS[t] : null)).filter(Boolean);
 
 const publicProduct = (p) => ({
   variantId: p.variantId ?? null, handle: p.handle, title: p.title, vendor: p.vendor || "", price: Number(p.price) || 0,

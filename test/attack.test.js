@@ -1092,7 +1092,6 @@ test("rules: UVI 0, below 1, negative, NaN or unknown sun type gives no burn clo
 
 test(
   "rules: burnRange ignores inherited keys like __proto__ / constructor",
-  { todo: "BUG-7 (low, not reachable through the API because validateProfile checks fitz first): src/burn.js:55 reads MED[fitz] without an own-key check, so burnRange('__proto__', 8) returns NaN minutes instead of null" },
   () => {
     for (const fitz of ["__proto__", "constructor", "toString"]) assert.equal(burnRange(fitz, 8), null, fitz);
   }

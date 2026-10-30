@@ -52,7 +52,7 @@ export const minutesFor = (med, uvi) => floorTo(med / (uvi * UVI_WATTS) / 60);
  */
 export function burnRange(fitz, uvi, { albinism = false } = {}) {
   if (!Number.isFinite(uvi) || uvi < MIN_UVI_FOR_CLOCK) return null;
-  const range = albinism ? [ALBINISM_MED, ALBINISM_MED] : MED[fitz];
+  const range = albinism ? [ALBINISM_MED, ALBINISM_MED] : typeof fitz === "string" && Object.hasOwn(MED, fitz) ? MED[fitz] : null;
   if (!range) return null;
   return {
     fitz: albinism ? "I" : fitz,

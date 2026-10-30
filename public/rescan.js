@@ -1,6 +1,6 @@
 // /rescan: compare a new scan with a baseline and the weather since arrival.
 import { shell, esc, icon, $, $$, errorBox, loading, fmtDate, productThumb, money } from "./ui.js";
-import { load, update, addScan, todayIn, PERSONAS, profileForApi } from "./state.js";
+import { load, update, addScan, todayIn, PERSONAS, profileForApi, DEMO_RESCAN_CITY } from "./state.js";
 import { demoScan, liveScan, compare, kit as getKit } from "./api.js";
 import { preparePhoto } from "./camera.js";
 import { announce, focusHeading } from "./a11y.js";
@@ -33,8 +33,8 @@ function daysSinceArrival(demo) {
   const days = st.forecast?.days || [];
   const slim = (d) => ({ date: d.date, city: d.city, kind: d.kind, wx: d.wx });
   if (demo) {
-    // Demo: "Day 3 in Lagos" = the first three Lagos days, flight day included.
-    return days.filter((d) => d.city === "Lagos").slice(0, 3).map(slim);
+    // Demo: "Day 3 in Dubai" = the first three Dubai days, flight day included.
+    return days.filter((d) => d.city === DEMO_RESCAN_CITY).slice(0, 3).map(slim);
   }
   const legs = st.trip?.legs || [];
   const leg = legs.find((l) => {
@@ -57,6 +57,7 @@ function start() {
   }
   const defBase = (demoBase || bases[0]).id;
   view.innerHTML = `
+  <div id="result"></div>
   <div class="cols">
     <div class="stack">
       <fieldset class="card" aria-describedby="base-hint">
@@ -78,7 +79,7 @@ function start() {
     <div class="stack">
       ${
         persona
-          ? `<section class="card-warm stack-sm" aria-labelledby="demo-h"><h2 id="demo-h">${icon("sparkle")} Demo: Day 3 in Lagos</h2><p>${esc(persona.name)}'s Day 3 photo was made with YouCam Skin Simulation from the first photo, then analysed by YouCam.</p><button type="button" class="btn btn-primary btn-block" id="run-demo">Compare ${esc(persona.name)}'s Day 3 scan ${icon("arrow")}</button></section>`
+          ? `<section class="dk stack-sm" aria-labelledby="demo-h"><h2 id="demo-h">Demo: Day 3 in ${DEMO_RESCAN_CITY}</h2><p>${esc(persona.name)}'s Day 3 photo was made with YouCam Skin Simulation from the first photo, then analysed by YouCam.</p><button type="button" class="btn btn-primary btn-block" id="run-demo">Compare ${esc(persona.name)}'s Day 3 scan ${icon("arrow")}</button></section>`
           : ""
       }
       <section class="card" aria-labelledby="new-h">
@@ -92,8 +93,7 @@ function start() {
       </section>
       <div id="msg"></div>
     </div>
-  </div>
-  <div id="result"></div>`;
+  </div>`;
 
   $("#cam").addEventListener("change", async (e) => {
     const f = e.target.files?.[0];
@@ -159,19 +159,19 @@ async function showResult(saved, focus = false) {
     ` ${r.safety || ""}`;
   const box = $("#result");
   box.innerHTML = `
-  <section class="card" aria-labelledby="res-h" style="margin-top:var(--gap)">
-    <div class="card-head"><h2 id="res-h" tabindex="-1">Your skin, then and now</h2>${saved.persona ? `<span class="badge badge-warm">Demo</span>` : ""}</div>
+  <section class="dk" aria-labelledby="res-h">
+    <div class="card-head"><h2 id="res-h" tabindex="-1">Your skin, then and now</h2>${saved.persona ? `<span class="badge badge-glass">Demo</span>` : ""}</div>
     <div class="ba">
-      <figure><div class="ba-img">${base.face ? `<img src="${esc(base.face)}" alt="First scan photo">` : icon("face")}<span class="ba-tag">Before</span></div><figcaption><strong>First scan</strong>${new Date(base.takenAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</figcaption></figure>
-      <figure class="now"><div class="ba-img">${current.face ? `<img src="${esc(current.face)}" alt="Day 3 photo">` : icon("face")}<span class="ba-tag">Now</span></div><figcaption><strong>${saved.persona ? "Day 3 in Lagos" : "New scan"}</strong>${city ? esc(city) : ""}</figcaption></figure>
+      <figure><div class="ba-img">${base.face ? `<img src="${esc(base.face)}" alt="First scan photo">` : icon("face")}<span class="ba-tag glass">Before</span></div><figcaption><strong>First scan</strong>${new Date(base.takenAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</figcaption></figure>
+      <figure class="now"><div class="ba-img">${current.face ? `<img src="${esc(current.face)}" alt="Day 3 photo">` : icon("face")}<span class="ba-tag glass">Now</span></div><figcaption><strong>${esc(current.simulated?.label || (saved.persona ? `Day 3 in ${DEMO_RESCAN_CITY}` : "New scan"))}</strong>${city ? esc(city) : ""}</figcaption></figure>
     </div>
     ${current.simulated?.note ? `<p class="credit">${esc(current.simulated.note)}</p>` : ""}
     ${base.credit ? `<p class="credit">${esc(base.credit)}</p>` : ""}
   </section>
   <div class="cols" style="margin-top:var(--gap)">
     <div class="stack">
-      <section class="card" aria-labelledby="ch-h">
-        <div class="card-head"><h2 id="ch-h">What changed</h2><span class="small subtle">Higher score = healthier</span></div>
+      <section class="dk" aria-labelledby="ch-h">
+        <div class="card-head"><h2 id="ch-h">What changed</h2><span class="small muted">Higher score = healthier</span></div>
         ${
           worse.length
             ? worse.map(changeRow).join("")

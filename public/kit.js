@@ -5,6 +5,7 @@ import { load, update, profileForApi } from "./state.js";
 import { kit as getKit, cart, config } from "./api.js";
 import { announce, focusHeading } from "./a11y.js";
 import { SLOT_NAMES } from "./kit-names.js";
+import { productArt } from "./parts.js";
 
 const view = $("#view");
 let res = null; // /api/kit answer
@@ -64,34 +65,45 @@ function persist() {
   update((s) => (s.kit = { res, chosen, extra }));
 }
 
+const GROUPS = {
+  sun: ["sunscreen", "lip", "aftersun"],
+  moisture: ["moisturiser-day", "moisturiser-rich", "mist"],
+  cleanse: ["cleanser", "blotting"],
+  wear: ["hat", "sleeves", "sunglasses"],
+};
+const GROUP_NAMES = { all: "All", sun: "Sun care", moisture: "Moisture", cleanse: "Cleanse", wear: "Hat and glasses" };
+let filter = "all";
+const groupOf = (slot) => Object.keys(GROUPS).find((g) => GROUPS[g].includes(slot)) || "all";
+const HEART = `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21.2l8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></svg>`;
+
 function card(s, i) {
   const p = pickOf(s);
+  const hidden = filter !== "all" && groupOf(s.slot) !== filter ? "hidden" : "";
   if (!p)
-    return `<article class="card kit-card" aria-labelledby="k-${i}"><p class="k-slot">Slot ${i + 1}</p><h2 class="k-title" id="k-${i}">${esc(slotName(s.slot))}</h2><p class="muted">Nothing in the demo shop fits this yet. See "Or buy it there" for what to look for.</p></article>`;
+    return `<article class="pcard" data-slot="${esc(s.slot)}" aria-labelledby="k-${i}" ${hidden}><div class="pc-img">${productArt(null)}<span class="badge badge-neutral pc-slot">${esc(slotName(s.slot))}</span></div><div class="pc-body"><h2 class="k-title" id="k-${i}">${esc(slotName(s.slot))}</h2><p class="k-meta">Nothing in the demo shop fits this yet. See "Or buy it there".</p></div></article>`;
   const on = !!chosen[s.slot];
   const alts = [s.pick, ...(s.alternatives || [])].filter((x) => x && pid(x) !== pid(p));
-  return `<article class="card kit-card" aria-labelledby="k-${i}">
-    <div class="k-top">
-      ${productThumb(p)}
-      <div><p class="k-slot">Slot ${i + 1} · ${esc(slotName(s.slot))}</p><h2 class="k-title" id="k-${i}">${esc(p.title)}</h2>
-      <p class="k-meta">${esc(p.vendor || "")}${(p.tags || []).includes("under-100ml") ? ` <span aria-hidden="true">·</span> <span class="ok">Under 100 ml</span>` : ""}${p.available === false ? ` <span aria-hidden="true">·</span> Out of stock` : ""}</p></div>
-      <p class="k-price">${money(p.price, p.currency)}</p>
+  const img = p.image ? `<span class="thumb-wrap"><img class="thumb" src="${esc(p.image)}" alt="${esc(p.imageAlt || "")}" loading="lazy"><template>${productArt(p)}</template></span>` : productArt(p);
+  return `<article class="pcard" data-slot="${esc(s.slot)}" aria-labelledby="k-${i}" ${hidden}>
+    <div class="pc-img">${img}<span class="badge badge-neutral pc-slot">${esc(slotName(s.slot))}</span>
+      <button type="button" class="heart" data-toggle="${esc(s.slot)}" aria-pressed="${on}" ${p.available === false ? "disabled" : ""}>${HEART}<span class="sr-only">${on ? "In my kit" : "Add to my kit"}: ${esc(p.title)}</span></button>
     </div>
-    ${s.why?.length ? `<ul class="chips" aria-label="Why this pick">${s.why.map((w) => `<li class="chip">${esc(w)}</li>`).join("")}</ul>` : ""}
-    <div class="k-actions">
-      ${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener" class="small">Product page${icon("external")}<span class="sr-only"> (opens in a new tab)</span></a>` : "<span></span>"}
-      <button type="button" class="included" data-toggle="${esc(s.slot)}" aria-pressed="${on}" ${p.available === false ? "disabled" : ""}>${icon(on ? "checkCircle" : "plusCircle")} ${on ? "In my kit" : "Add to kit"}<span class="sr-only">: ${esc(p.title)}</span></button>
+    <div class="pc-body">
+      <div class="pc-top"><h2 class="k-title" id="k-${i}">${esc(p.title)}</h2><p class="k-price">${money(p.price, p.currency)}</p></div>
+      <p class="k-meta">${esc(p.vendor || "")}${(p.tags || []).includes("under-100ml") ? " · Under 100 ml" : ""}${p.available === false ? " · Out of stock" : ""}${on ? " · <strong>In my kit</strong>" : ""}</p>
+      ${s.why?.length ? `<ul class="chips" aria-label="Why this pick">${s.why.map((w) => `<li class="chip">${esc(w)}</li>`).join("")}</ul>` : ""}
+      ${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener" class="small">Product page ${icon("external")}<span class="sr-only"> (opens in a new tab)</span></a>` : ""}
+      ${
+        alts.length
+          ? `<details class="more"><summary>${alts.length} other option${alts.length > 1 ? "s" : ""}</summary><div><ul class="alts">${alts
+              .map(
+                (a) =>
+                  `<li>${productThumb(a)}<div><strong class="block small">${esc(a.title)}</strong><span class="small muted">${money(a.price, a.currency)}</span></div><button type="button" class="btn btn-soft" style="min-height:44px;padding:.375rem .875rem" data-swap="${esc(s.slot)}" data-variant="${esc(pid(a))}" ${a.available === false ? "disabled" : ""}>Choose<span class="sr-only"> ${esc(a.title)}</span></button></li>`
+              )
+              .join("")}</ul></div></details>`
+          : ""
+      }
     </div>
-    ${
-      alts.length
-        ? `<details class="more"><summary>${alts.length} other option${alts.length > 1 ? "s" : ""}</summary><div><ul class="alts">${alts
-            .map(
-              (a) =>
-                `<li>${productThumb(a)}<div><strong class="block">${esc(a.title)}</strong><span class="small muted">${esc(a.vendor || "")} · ${money(a.price, a.currency)}</span></div><button type="button" class="btn btn-soft" style="min-height:48px;padding:.5rem 1rem" data-swap="${esc(s.slot)}" data-variant="${esc(pid(a))}" ${a.available === false ? "disabled" : ""}>Choose<span class="sr-only"> ${esc(a.title)}</span></button></li>`
-            )
-            .join("")}</ul></div></details>`
-        : ""
-    }
   </article>`;
 }
 
@@ -100,47 +112,44 @@ async function render() {
   const cfg = await config();
   const offline = isOffline();
   const cities = (st.trip?.legs || []).map((l) => l.name).filter(Boolean);
-  $("#sub").textContent = `Picked from the Parasol demo shop for ${skinWord(st.profile)} and your trip${cities.length ? ` to ${cities.join(", ")}` : ""}.`;
+  $("#sub").textContent = `Picked from the Parasol demo shop for ${skinWord(st.profile)} and your trip${cities.length ? ` to ${cities.join(", ")}` : ""}. Tap the heart to keep or drop an item.`;
+  const groups = ["all", ...Object.keys(GROUPS).filter((g) => res.slots.some((x) => groupOf(x.slot) === g))];
   view.innerHTML = `
-  <div class="cols">
-    <div class="stack">
-      ${
-        st.trip?.carryOn !== false
-          ? `<div class="card-tint carry"><span class="c-ic" aria-hidden="true">${icon("luggage")}</span><div><p class="k-slot" style="color:var(--blue)">Carry-on friendly</p><p>Liquids under 100 ml each (carry-on liquids rule).</p></div></div>`
-          : ""
-      }
-      ${offline ? `<div class="alert alert-info">${icon("info")}<div><p><strong>${esc(res.shop?.message || res.message || "Shop is offline. Here's the list.")}</strong></p></div></div>` : ""}
-      <div class="stack" id="cards">${res.slots.map(card).join("")}</div>
-      ${
-        extra.length
-          ? `<section class="card" aria-labelledby="extra-h"><h2 id="extra-h">Added after your rescan</h2><ul class="alts">${extra
-              .map((x, k) => `<li>${productThumb(x.product)}<div><strong class="block">${esc(x.product.title)}</strong><span class="small muted">${esc(slotName(x.slot))} · ${money(x.product.price, x.product.currency)}</span></div><button type="button" class="icon-del" data-rmextra="${k}">${icon("trash")}<span class="sr-only">Remove ${esc(x.product.title)}</span></button></li>`)
-              .join("")}</ul></section>`
-          : ""
-      }
-    </div>
-    <div class="stack sticky-col">
-      <section class="card" aria-labelledby="buy-h">
-        <h2 id="buy-h">Or buy it there</h2>
-        <p class="muted small">What to look for at a local pharmacy, if you'd rather pack light.</p>
-        <ul class="buy-there">${(res.buyThere || []).map((b) => `<li><strong class="block">${esc(slotName(b.slot))}</strong><span class="muted">${esc(b.lookFor)}</span></li>`).join("")}</ul>
-      </section>
-      <section class="shop-help" aria-labelledby="shop-h">
-        <h2 id="shop-h" style="font-size:1.125rem;color:inherit">${icon("info")} How the demo checkout works</h2>
-        <p>Checkout opens the Parasol demo shop (Shopify) in a new tab. No real money is taken.</p>
-        ${cfg.storePassword ? `<p>Shop password: <code>${esc(cfg.storePassword)}</code></p>` : `<p>If the shop asks for a password, it is listed in the project README.</p>`}
-        <p>Test card: ${esc(cfg.testCard || "Bogus Gateway: card number 1, any future date, any CVV")}</p>
-      </section>
-      <div id="cart-msg"></div>
-      <p class="credit">${esc(res.disclaimer || "Demo shop. Not affiliated with these brands.")}</p>
-    </div>
+  <div class="row spread gap">
+    <h2 id="find-h" style="font-size:1.5rem">Find products for your trip</h2>
+    ${st.trip?.carryOn !== false ? `<span class="badge badge-neutral">${icon("luggage")} Carry-on: liquids under 100 ml</span>` : ""}
   </div>
+  <div class="filters" role="group" aria-labelledby="find-h">${groups.map((g) => `<button type="button" class="filter" data-filter="${g}" aria-pressed="${g === filter}">${GROUP_NAMES[g]}</button>`).join("")}</div>
+  ${offline ? `<div class="alert alert-info">${icon("info")}<div><p><strong>${esc(res.shop?.message || res.message || "Shop is offline. Here's the list.")}</strong></p></div></div>` : ""}
+  <div class="kit-grid" id="cards">${res.slots.map(card).join("")}</div>
+  ${
+    extra.length
+      ? `<section class="card" aria-labelledby="extra-h"><h2 id="extra-h">Added after your rescan</h2><ul class="alts">${extra
+          .map((x, k) => `<li>${productThumb(x.product)}<div><strong class="block">${esc(x.product.title)}</strong><span class="small muted">${esc(slotName(x.slot))} · ${money(x.product.price, x.product.currency)}</span></div><button type="button" class="icon-del" data-rmextra="${k}">${icon("trash")}<span class="sr-only">Remove ${esc(x.product.title)}</span></button></li>`)
+          .join("")}</ul></section>`
+      : ""
+  }
   <div class="checkout-bar" role="region" aria-label="Checkout">
-    <div><p class="small muted" id="cb-count"></p><p class="cb-total" id="cb-total"></p></div>
+    <div><p class="small" id="cb-count"></p><p class="cb-total" id="cb-total"></p></div>
     <button type="button" class="btn btn-primary" id="checkout" ${offline ? "disabled" : ""}>Checkout ${icon("external")}<span class="sr-only"> (opens the demo shop in a new tab)</span></button>
+  </div>
+  <div id="cart-msg"></div>
+  <div class="cols">
+    <section class="shop-help" aria-labelledby="shop-h">
+      <h2 id="shop-h" style="font-size:1.375rem">How the demo checkout works</h2>
+      <p>Checkout opens the Parasol demo shop (Shopify) in a new tab. No real money is taken.</p>
+      ${cfg.storePassword ? `<p>Shop password: <code>${esc(cfg.storePassword)}</code></p>` : `<p>If the shop asks for a password, it is listed in the project README.</p>`}
+      <p>Test card: ${esc(cfg.testCard || "Bogus Gateway: card number 1, any future date, any CVV")}</p>
+      <p class="credit">${esc(res.disclaimer || "Demo shop. Not affiliated with these brands.")}</p>
+    </section>
+    <section class="card" aria-labelledby="buy-h">
+      <h2 id="buy-h" style="font-size:1.375rem">Or buy it there</h2>
+      <p class="muted small">What to look for at a local pharmacy, if you'd rather pack light.</p>
+      <ul class="buy-there">${(res.buyThere || []).map((b) => `<li><strong class="block">${esc(slotName(b.slot))}</strong><span class="muted">${esc(b.lookFor)}</span></li>`).join("")}</ul>
+    </section>
   </div>`;
   updateBar();
-  setRibbonNext("/rescan?demo=1", "Day 3 in Lagos: rescan");
+  setRibbonNext("/rescan?demo=1", "Day 3 in Dubai: rescan");
 }
 
 const skinWord = (p) => (p ? `${{ oily: "oily", dry: "dry", combination: "combination", normal: "normal" }[p.skinType] || ""} skin, sun type ${p.fitz}${p.albinism ? " with albinism" : ""}` : "your skin");
@@ -163,7 +172,7 @@ view.addEventListener("click", async (e) => {
     persist();
     const i = res.slots.indexOf(s);
     b.closest("article").outerHTML = card(s, i);
-    $(`[data-toggle="${CSS.escape(s.slot)}"]`).focus();
+    $(`[data-toggle="${CSS.escape(s.slot)}"]`)?.focus();
     updateBar();
     announce(chosen[s.slot] ? `${slotName(s.slot)} added.` : `${slotName(s.slot)} removed.`);
   } else if (b.dataset.swap) {
@@ -176,6 +185,11 @@ view.addEventListener("click", async (e) => {
     $(`#k-${i}`).focus();
     updateBar();
     announce(`Swapped to ${pickOf(s).title}.`);
+  } else if (b.dataset.filter) {
+    filter = b.dataset.filter;
+    view.querySelectorAll(".filter").forEach((f) => f.setAttribute("aria-pressed", String(f.dataset.filter === filter)));
+    view.querySelectorAll(".pcard").forEach((c) => (c.hidden = filter !== "all" && groupOf(c.dataset.slot) !== filter));
+    announce(`Showing ${GROUP_NAMES[filter]}.`);
   } else if (b.dataset.rmextra != null) {
     extra.splice(Number(b.dataset.rmextra), 1);
     persist();

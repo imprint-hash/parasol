@@ -786,3 +786,8 @@ table.data .link-btn { white-space: nowrap; min-height: 0; padding: 0; }
 :root[data-lv="1"] .dk .credit, :root[data-lv="1"] .city-hero .credit { color: var(--dk-ink-2); }
 :root[data-lv="1"] .stat-row, :root[data-lv="1"] .stat-row.four { grid-template-columns: 1fr 1fr; }
 :root[data-lv="1"] .big-xl { font-size: 4.5rem; }
+
+:root[data-lv="1"] .tabs-bar .toggle { flex-wrap: wrap; border-radius: var(--r); }
+:root[data-lv="1"] .tabs-bar .toggle [role="tab"] { flex: 1 1 8rem; }
+:root[data-lv="1"] .fitz-row { grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+:root[data-lv="1"] .fitz-sw { max-width: 5rem; }

@@ -214,7 +214,9 @@ function ribbon(page) {
   const r = document.createElement("nav");
   r.className = "ribbon";
   r.setAttribute("aria-label", "Demo guide");
-  if (i < 0) {
+  if (page === "data") {
+    r.innerHTML = `<span class="rb-step"><span class="rb-count">Demo finished</span></span><a class="rb-next" href="/#demo">Try the other traveller ${icon("arrow")}</a>`;
+  } else if (i < 0) {
     r.innerHTML = `<span class="rb-step">Demo with ${esc(cap(demo))}</span><a class="rb-next" href="/scan?demo=${esc(demo)}">Back to the demo ${icon("arrow")}</a>`;
   } else {
     const s = DEMO_STEPS[i];

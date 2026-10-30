@@ -20,7 +20,7 @@ function render() {
   const s = load();
   const tokens = s.scans.map((x) => x.deleteToken).filter(Boolean);
   view.innerHTML = `
-  ${s.demo ? `<div class="card-warm stack-sm"><h2>That's the demo</h2><p>You've seen ${esc(PERSONAS[s.demo]?.name || "the")} trip from skin read to checkout, rescan and the sun timer. Delete it below, or <a href="/#demo">try the other traveller</a>.</p></div>` : ""}
+  ${s.demo ? `<div class="card-warm stack-sm"><h2>That's the demo</h2><p>You've seen ${PERSONAS[s.demo] ? `${esc(PERSONAS[s.demo].name)}'s` : "the"} trip from skin read to checkout, rescan and the sun timer. Delete it below, or <a href="/#demo">try the other traveller</a>.</p></div>` : ""}
   <div class="cols">
     <div class="stack">
       <section class="card" aria-labelledby="scans-h">

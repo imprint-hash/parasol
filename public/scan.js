@@ -230,7 +230,7 @@ function showResult(scan, fresh = false) {
       </div>
       ${
         faceImg && masks.length
-          ? `<fieldset class="seg scroll"><legend class="small muted" style="font-weight:700">Show what YouCam saw</legend>
+          ? `<p class="small muted" style="font-weight:700" id="mask-lab">Show what YouCam saw</p><fieldset class="seg scroll" aria-labelledby="mask-lab" style="margin-top:.375rem"><legend class="sr-only">Show what YouCam saw</legend>
           <label><input type="radio" name="mask" value="" checked><span>Photo</span></label>
           ${masks.map(([k]) => `<label><input type="radio" name="mask" value="${esc(k)}"><span>${esc(METRICS[k].name)}</span></label>`).join("")}
         </fieldset>

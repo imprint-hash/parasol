@@ -84,7 +84,7 @@ const GROUPS = {
   cleanse: ["cleanser", "blotting"],
   wear: ["hat", "sleeves", "sunglasses"],
 };
-const GROUP_NAMES = { all: "All", sun: "Sun care", moisture: "Moisture", cleanse: "Cleanse", wear: "Hat and glasses" };
+const GROUP_NAMES = { all: "All", sun: "Sun care", moisture: "Moisture", cleanse: "Cleanse", wear: "Sun protection extras" };
 let filter = "all";
 const groupOf = (slot) => Object.keys(GROUPS).find((g) => GROUPS[g].includes(slot)) || "all";
 const HEART = `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21.2l8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></svg>`;
@@ -151,8 +151,11 @@ async function render() {
   $("#sub").textContent = `Picked from the Parasol demo shop for ${skinWord(st.profile)} and your trip${cities.length ? ` to ${cities.join(", ")}` : ""}. Tap the heart to keep or drop an item.`;
   const groups = ["all", ...Object.keys(GROUPS).filter((g) => res.slots.some((x) => groupOf(x.slot) === g))];
   const indexed = res.slots.map((s, i) => [s, i]);
-  const essential = indexed.filter(([s]) => isEssential(s.slot, st.profile));
-  const optional = indexed.filter(([s]) => !isEssential(s.slot, st.profile));
+  // Skincare first; hats, sleeves and sunglasses sit apart as "Sun protection extras".
+  const skin = indexed.filter(([s]) => groupOf(s.slot) !== "wear");
+  const wear = indexed.filter(([s]) => groupOf(s.slot) === "wear");
+  const essential = skin.filter(([s]) => isEssential(s.slot, st.profile));
+  const optional = skin.filter(([s]) => !isEssential(s.slot, st.profile));
   view.innerHTML = `
   <figure class="kit-banner">
     <img src="/scenes/campaign-products-800.webp" srcset="/scenes/campaign-products-800.webp 800w, /scenes/campaign-products.webp 1664w" sizes="(min-width: 1200px) 76rem, 100vw" alt="EltaMD UV Clear SPF 46, CeraVe Moisturizing Cream and Supergoop! PLAY Lip Shield SPF 30 on pink stone over rippling water." width="1664" height="928">
@@ -168,6 +171,11 @@ async function render() {
   ${
     optional.length
       ? `<section class="stack-sm" id="more" aria-labelledby="more-h" ${moreHidden() ? "hidden" : ""}><h2 id="more-h" style="font-size:1.375rem">Add if you like</h2><p class="muted small">Not in your kit yet. Tap the heart to add one.</p><div class="kit-grid" id="cards-more">${optional.map(([s, i]) => card(s, i)).join("")}</div></section>`
+      : ""
+  }
+  ${
+    wear.length
+      ? `<section class="stack-sm" id="extras" aria-labelledby="extras-h" ${extrasHidden() ? "hidden" : ""}><h2 id="extras-h" style="font-size:1.375rem">Sun protection extras</h2><p class="muted small">For very fair skin and albinism, dermatologists advise covering up too: a wide-brim hat, UV400 sunglasses for light-sensitive eyes, and sleeves on strong-sun days. Tap the heart to add one.</p><div class="kit-grid" id="cards-extras">${wear.map(([s, i]) => card(s, i)).join("")}</div></section>`
       : ""
   }
   <p class="credit">Product images © their brands or credited photographers. Demo shop, not affiliated with these brands.</p>
@@ -206,7 +214,8 @@ async function render() {
 }
 
 // The "Add if you like" section hides when the filter leaves none of its cards.
-const moreHidden = () => filter !== "all" && !res.slots.some((s) => !isEssential(s.slot) && groupOf(s.slot) === filter);
+const moreHidden = () => filter !== "all" && !res.slots.some((s) => !isEssential(s.slot) && groupOf(s.slot) !== "wear" && groupOf(s.slot) === filter);
+const extrasHidden = () => filter !== "all" && filter !== "wear";
 
 const skinWord = (p) => (p ? `${{ oily: "oily", dry: "dry", combination: "combination", normal: "normal" }[p.skinType] || ""} skin, sun type ${p.fitz}${p.albinism ? " with albinism" : ""}` : "your skin");
 
@@ -246,6 +255,7 @@ view.addEventListener("click", async (e) => {
     view.querySelectorAll(".filter").forEach((f) => f.setAttribute("aria-pressed", String(f.dataset.filter === filter)));
     view.querySelectorAll(".pcard").forEach((c) => (c.hidden = filter !== "all" && groupOf(c.dataset.slot) !== filter));
     if ($("#more")) $("#more").hidden = moreHidden();
+    if ($("#extras")) $("#extras").hidden = extrasHidden();
     announce(`Showing ${GROUP_NAMES[filter]}.`);
   } else if (b.dataset.rmextra != null) {
     extra.splice(Number(b.dataset.rmextra), 1);

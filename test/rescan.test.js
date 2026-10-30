@@ -116,3 +116,17 @@ test("Ada's demo: oilier on Day 3 in humid Lagos → humid heat, likely", () => 
 test("bad sleep adds a gentle line", () => {
   assert.match(compare(BASE, with_({ acne: 60 }), HUMID, { ...NO, sleep: true }).tonight.at(-1), /slept badly/);
 });
+
+test("Ada's demo in Dubai: muggy heat by dew point names humid_heat as the likely cause of her breakouts", () => {
+  const dubai = [
+    day("2026-11-03", { rhMean: 60, dewMean: 21.5, tMax: 33.2, flightHours: 3.5 }, "Dubai"),
+    day("2026-11-04", { rhMean: 60, dewMean: 22.1, tMax: 33.6 }, "Dubai"),
+    day("2026-11-05", { rhMean: 59, dewMean: 21.2, tMax: 33.4 }, "Dubai"),
+  ];
+  const r = compare(with_({ acne: 89 }), with_({ acne: 77 }), dubai, NO);
+  assert.deepEqual(r.causes.map((c) => [c.id, c.confidence]), [["humid_heat", "likely"]]);
+  assert.equal(r.causes[0].evidence, "Dubai: muggy heat (dew point up to 22 °C) and 34 °C on 3 of 3 days since you landed");
+  // The same humidity % without the muggy dew point is not humid heat.
+  const dry = dubai.map((d) => ({ ...d, wx: { ...d.wx, dewMean: 15 } }));
+  assert.equal(compare(with_({ acne: 89 }), with_({ acne: 77 }), dry, NO).causes.length, 0);
+});

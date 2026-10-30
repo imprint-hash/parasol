@@ -24,6 +24,16 @@ export const UV_HIGH = 6; // WHO "high" starts at 6
 export const UV_VERY_HIGH = 8; // WHO "very high" starts at 8
 export const PM25_POOR = 35; // µg/m³ hourly max, at or above
 export const HOT_TMAX = 30; // °C, at or above
+// Humid heat also counts when the air is muggy by dew point even if the daytime
+// humidity % looks moderate (hot desert coasts like Dubai: 35 °C at 46% RH is
+// a dew point near 21 °C). Most people find a dew point of 20 °C or more muggy
+// (US National Weather Service dew point comfort guidance).
+export const HUMID_DEWPOINT = 20; // °C daytime mean, at or above
+export const EXTREME_TMAX = 38; // °C, at or above
+export const DUST_UGM3 = 50; // µg/m³ hourly max of desert dust (CAMS), at or above: our threshold for a "dusty" day
+export const SWING_C = 12; // °C between the night low and the daytime high, at or above
+export const FEELS_FREEZING = 0; // °C "feels like" (wind chill included), at or below
+export const HEATING_TMAX = 10; // °C daytime high, at or below: indoor heating is likely on
 // An age_spot concern on sun types IV–VI triggers the dark-marks advice from
 // this UV upwards (below it there is little sun to warn about).
 export const DARK_MARKS_CONCERN_UV = 3;
@@ -32,6 +42,10 @@ export const has = (profile, metric) => (profile?.concerns || []).includes(metri
 const veryFair = (p) => p.albinism === true || p.fitz === "I" || p.fitz === "II";
 const deep = (p) => !p.albinism && (p.fitz === "V" || p.fitz === "VI");
 const uvKnown = (wx) => Number.isFinite(wx.uvMax);
+const n = (v) => typeof v === "number" && Number.isFinite(v);
+/** Hot and humid: tMax ≥ 26 and either humidity ≥ 70% or a muggy dew point ≥ 20 °C. */
+export const isHumidHeat = (wx) => n(wx.tMax) && wx.tMax >= HUMID_TMAX && ((n(wx.rhMean) && wx.rhMean >= HUMID_RH) || (n(wx.dewMean) && wx.dewMean >= HUMID_DEWPOINT));
+const humidWords = (wx) => (n(wx.rhMean) && wx.rhMean >= HUMID_RH ? `${wx.rhMean}% humidity` : `Muggy heat (dew point ${Math.round(wx.dewMean)} °C)`);
 
 export function hourLabel(h) {
   if (!Number.isInteger(h)) return "midday";
@@ -52,9 +66,9 @@ export const RULES = [
   },
   {
     id: "humid-oily",
-    when: (p, wx) => wx.rhMean >= HUMID_RH && wx.tMax >= HUMID_TMAX && (p.skinType === "oily" || p.skinType === "combination" || has(p, "oiliness") || has(p, "acne")),
-    text: (p, wx) => `${wx.rhMean}% humidity. ${p.skinType === "combination" ? "Your T-zone" : "Your skin"} will likely get shiny: gel moisturiser, matte SPF.`,
-    why: (wx) => `Daytime humidity ${wx.rhMean}%, up to ${deg(wx.tMax)}`,
+    when: (p, wx) => isHumidHeat(wx) && (p.skinType === "oily" || p.skinType === "combination" || has(p, "oiliness") || has(p, "acne")),
+    text: (p, wx) => `${humidWords(wx)}. ${p.skinType === "combination" ? "Your T-zone" : "Your skin"} will likely get shiny: gel moisturiser, matte SPF.`,
+    why: (wx) => `Daytime humidity ${wx.rhMean}%${n(wx.dewMean) ? `, dew point ${Math.round(wx.dewMean)} °C` : ""}, up to ${deg(wx.tMax)}`,
     tags: () => ["humid", "gel", "matte"],
   },
   {
@@ -143,6 +157,41 @@ export const RULES = [
     tags: () => ["water-resistant"],
   },
   {
+    id: "extreme-heat",
+    when: (p, wx) => n(wx.tMax) && wx.tMax >= EXTREME_TMAX,
+    text: (p, wx) => `Extreme heat (up to ${deg(wx.tMax)}): stay in the shade at midday, drink water, keep skin layers light, and use a water-resistant SPF.`,
+    why: (wx) => `Up to ${deg(wx.tMax)}`,
+    tags: () => ["water-resistant", "gel", "mist"],
+  },
+  {
+    id: "dust",
+    when: (p, wx) => n(wx.dustMax) && wx.dustMax >= DUST_UGM3,
+    text: () => "Dusty air in the forecast: cleanse gently tonight (no scrubbing), and keep a face mist handy.",
+    why: (wx) => `Desert dust up to ${Math.round(wx.dustMax)} µg/m³`,
+    tags: () => ["cleanser", "mist"],
+  },
+  {
+    id: "big-swing",
+    when: (p, wx) => n(wx.tMax) && n(wx.tMin) && wx.tMax - wx.tMin >= SWING_C,
+    text: (p, wx) => `Warm days, cool nights (${deg(wx.tMin)} to ${deg(wx.tMax)}): a light layer by day, a richer cream at night.`,
+    why: (wx) => `${Math.round(wx.tMax - wx.tMin)} °C between night and day`,
+    tags: () => ["cream"],
+  },
+  {
+    id: "wind-chill",
+    when: (p, wx) => n(wx.feelsMin) && wx.feelsMin <= FEELS_FREEZING,
+    text: (p, wx) => `Feels like ${deg(wx.feelsMin)} with the wind: cover your cheeks outdoors, and balm on lips and any exposed skin.`,
+    why: (wx) => `"Feels like" as low as ${deg(wx.feelsMin)}${n(wx.windMax) ? `, wind up to ${Math.round(wx.windMax)} km/h` : ""}`,
+    tags: () => ["cold", "barrier", "cream", "lip"],
+  },
+  {
+    id: "indoor-heating",
+    when: (p, wx) => n(wx.tMax) && wx.tMax <= HEATING_TMAX,
+    text: () => "Cold out means heated rooms, and heated air is dry: moisturise at night and keep a mist in your bag.",
+    why: (wx) => `Daytime high of ${deg(wx.tMax)}`,
+    tags: () => ["dry", "cream", "mist"],
+  },
+  {
     id: "uv-unknown",
     when: (p, wx) => !uvKnown(wx),
     text: () => "UV not known yet: check again within 16 days of travel.",
@@ -152,7 +201,7 @@ export const RULES = [
 ];
 
 // uv-unknown sits high so a "typical" day never headlines something milder than "we don't know the UV yet".
-export const PRIORITY = ["uv-very-fair", "uv-dark-marks", "flight-dry", "humid-oily", "cold", "dry-air", "uv-unknown", "uv-high", "uv-moderate", "wind", "sweat-water", "air-pollution", "humid-dry-skin"];
+export const PRIORITY = ["uv-very-fair", "uv-dark-marks", "flight-dry", "extreme-heat", "humid-oily", "wind-chill", "cold", "dust", "dry-air", "uv-unknown", "uv-high", "big-swing", "indoor-heating", "uv-moderate", "wind", "sweat-water", "air-pollution", "humid-dry-skin"];
 
 export const CALM_HEADLINE = "A gentle day for your skin. Your usual routine is enough; SPF 30 if you're outside for hours.";
 

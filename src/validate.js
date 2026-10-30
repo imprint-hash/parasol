@@ -148,6 +148,9 @@ export function validateDays(days) {
         tMax: wxNum(w.tMax, -90, 60),
         windMax: wxNum(w.windMax, 0, 400),
         pm25Max: wxNum(w.pm25Max, 0, 2000),
+        dustMax: wxNum(w.dustMax, 0, 20000),
+        dewMean: wxNum(w.dewMean, -90, 40),
+        feelsMin: wxNum(w.feelsMin, -90, 70),
         flightHours: wxNum(w.flightHours, FLIGHT_HOURS[0], FLIGHT_HOURS[1]),
       },
     };

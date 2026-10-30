@@ -5,7 +5,7 @@
  * - Forecast: api.open-meteo.com, `forecast_days=16` (+ `past_days` for a
  *   trip already under way). Asking by forecast_days rather than dates means
  *   we never trip the "out of allowed range" error at the horizon edge.
- * - Air quality: air-quality-api.open-meteo.com, pm2_5 for 7 days.
+ * - Air quality: air-quality-api.open-meteo.com, pm2_5 and dust for 7 days.
  * - Typical (beyond the forecast): historical-forecast-api.open-meteo.com for
  *   the same dates last year. Spike S6 (29 Oct 2026): it DOES return
  *   uv_index (e.g. Lagos 2025-11-20 peak 7.8). The ERA5 archive API does not
@@ -34,7 +34,8 @@ export const HISTORICAL_URL = "https://historical-forecast-api.open-meteo.com/v1
 export const FORECAST_DAYS = 16;
 export const AIR_DAYS = 7;
 export const MAX_PAST_DAYS = 92;
-export const HOURLY = "uv_index,temperature_2m,relative_humidity_2m,wind_speed_10m";
+export const HOURLY = "uv_index,temperature_2m,relative_humidity_2m,wind_speed_10m,apparent_temperature";
+export const AIR_HOURLY = "pm2_5,dust";
 const TIMEOUT_MS = 10_000;
 export const TTL = { forecast: 3600, air: 3600, typical: 30 * 86400, geocode: 7 * 86400 };
 
@@ -128,10 +129,10 @@ export function forecast({ lat, lon, timezone }, pastDays = 0) {
   return cached(url, TTL.forecast);
 }
 
-/** pm2_5 for the next 7 days. → Open-Meteo body */
+/** pm2_5 and desert dust (µg/m³) for the next 7 days. → Open-Meteo body */
 export function airQuality({ lat, lon, timezone }, pastDays = 0) {
   const url = buildUrl(AIR_URL, {
-    latitude: round(lat), longitude: round(lon), timezone, hourly: "pm2_5",
+    latitude: round(lat), longitude: round(lon), timezone, hourly: AIR_HOURLY,
     forecast_days: AIR_DAYS, past_days: pastDays > 0 ? Math.min(MAX_PAST_DAYS, pastDays) : undefined,
   });
   return cached(url, TTL.air);
@@ -164,10 +165,12 @@ export function loadSnapshots() {
 }
 
 /**
- * The snapshot for a place, with its days re-dated to start at `from`
- * (cycling if the trip is longer than the snapshot). → {hourly, air, capturedAt} | null
+ * The snapshot for a place, re-dated onto the trip's dates. A date the
+ * snapshot has is used as is; any other date takes the snapshot day the same
+ * number of days from "today" (so "day 4 of a trip starting tomorrow" always
+ * gets snapshot day 4), cycling past the end. → {hourly, air, capturedAt} | null
  */
-export function snapshotFor({ lat, lon }, from, to) {
+export function snapshotFor({ lat, lon }, from, to, today = new Date().toISOString().slice(0, 10)) {
   const s = loadSnapshots().find((x) => Math.abs(x.lat - lat) <= SNAPSHOT_RADIUS_DEG && Math.abs(x.lon - lon) <= SNAPSHOT_RADIUS_DEG);
   if (!s) return null;
   const srcDates = [...new Set(s.hourly.time.map((t) => t.slice(0, 10)))];
@@ -177,7 +180,9 @@ export function snapshotFor({ lat, lon }, from, to) {
     const out = { time: [] };
     for (const k of keys) out[k] = [];
     for (let i = 0; i < n; i++) {
-      const src = srcDates[i % srcDates.length], dst = addDays(from, i);
+      const dst = addDays(from, i);
+      const len = srcDates.length;
+      const src = srcDates.includes(dst) ? dst : srcDates[((daysBetween(today, dst) % len) + len) % len];
       block.time.forEach((t, j) => {
         if (t.slice(0, 10) !== src) return;
         out.time.push(dst + t.slice(10));
@@ -188,7 +193,7 @@ export function snapshotFor({ lat, lon }, from, to) {
   };
   return {
     hourly: remap(s.hourly, HOURLY.split(",")),
-    air: s.air?.time ? remap(s.air, ["pm2_5"]) : null,
+    air: s.air?.time ? remap(s.air, AIR_HOURLY.split(",")) : null,
     capturedAt: s.capturedAt || null,
     city: s.city,
   };

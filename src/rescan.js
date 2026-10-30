@@ -12,7 +12,7 @@
  * always returned.
  */
 
-import { HUMID_RH, HUMID_TMAX, DRY_RH, COLD_TMIN, WIND_KMH, UV_HIGH } from "./rules.js";
+import { HUMID_RH, DRY_RH, COLD_TMIN, WIND_KMH, UV_HIGH, isHumidHeat } from "./rules.js";
 import { METRICS } from "./tags.js";
 import { addDays } from "./days.js";
 
@@ -94,7 +94,12 @@ export function compare(baseline, current, days = [], selfReport = {}, profile =
 
   if (anyWorse) {
     if (worse(changes, ["oiliness", "acne", "pore"])) {
-      const ev = evidence(days, (w) => w.rhMean >= HUMID_RH && w.tMax >= HUMID_TMAX, (h) => `up to ${maxOf(h, "rhMean")}% humidity and ${fmt(maxOf(h, "tMax"))} °C`);
+      const ev = evidence(days, isHumidHeat, (h) => {
+        const wet = h.filter((d) => d.wx.rhMean >= HUMID_RH);
+        return wet.length
+          ? `up to ${maxOf(wet, "rhMean")}% humidity and ${fmt(maxOf(h, "tMax"))} °C`
+          : `muggy heat (dew point up to ${fmt(maxOf(h, "dewMean"))} °C) and ${fmt(maxOf(h, "tMax"))} °C`;
+      });
       if (ev) causes.push({ id: "humid_heat", evidence: ev, confidence: "likely" });
     }
     if (worse(changes, ["moisture", "texture"])) {

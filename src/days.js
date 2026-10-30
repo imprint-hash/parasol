@@ -11,6 +11,10 @@
  *   tMin                 the whole day
  *   windMax              wind_speed_10m in km/h, whole day
  *   pm25Max              from the air-quality API, null beyond its 7-day range
+ *   dustMax              desert dust (µg/m³, CAMS via the same API), same range
+ *   dewMean              daytime mean dew point (°C), from temperature and humidity
+ *   feelsMin             lowest "feels like" temperature (°C, apparent_temperature,
+ *                        which includes wind chill), whole day; null if not given
  *   flightHours          hours in the air if this is a flight day, else null
  *
  * Flight days keep the city's weather and add the cabin: relative humidity is
@@ -90,17 +94,21 @@ export function splitHourly(hourly) {
       t: num(hourly.temperature_2m?.[i]),
       rh: num(hourly.relative_humidity_2m?.[i]),
       wind: num(hourly.wind_speed_10m?.[i]),
+      feels: num(hourly.apparent_temperature?.[i]),
     });
   });
   return by;
 }
 
 /** Air-quality `hourly` block → Map(date → max pm2_5) (dates with no values are left out). */
-export function pm25ByDate(hourly) {
+export const pm25ByDate = (hourly) => maxByDate(hourly, "pm2_5");
+
+/** Map(date → max of one hourly series), leaving out dates with no values. */
+export function maxByDate(hourly, key) {
   const by = new Map();
   const time = Array.isArray(hourly?.time) ? hourly.time : [];
   time.forEach((ts, i) => {
-    const v = num(hourly.pm2_5?.[i]);
+    const v = num(hourly[key]?.[i]);
     if (v === null || typeof ts !== "string") return;
     const d = ts.slice(0, 10);
     by.set(d, Math.max(by.get(d) ?? -Infinity, v));
@@ -116,7 +124,14 @@ const minOf = (xs) => (xs.length ? Math.min(...xs) : null);
 /**
  * One day's hours → {wx, hourly}. `hourly` (for the chart) keeps 06:00–21:00.
  */
-export function summarise(hours, { pm25 = null, flightHours = null } = {}) {
+/** Dew point (°C) from temperature (°C) and relative humidity (%), Magnus formula (Alduchov & Eskridge 1996 constants). */
+export function dewPoint(t, rh) {
+  if (t === null || rh === null || rh <= 0) return null;
+  const g = Math.log(rh / 100) + (17.625 * t) / (243.04 + t);
+  return (243.04 * g) / (17.625 - g);
+}
+
+export function summarise(hours, { pm25 = null, dust = null, flightHours = null } = {}) {
   const hs = (hours || []).slice().sort((a, b) => a.h - b.h);
   const daytime = hs.filter((x) => x.h >= DAY_START_HOUR && x.h <= DAY_END_HOUR);
   const uvs = hs.filter((x) => x.uvi !== null);
@@ -130,6 +145,9 @@ export function summarise(hours, { pm25 = null, flightHours = null } = {}) {
     tMax: round1(maxOf(daytime.map((x) => x.t).filter((v) => v !== null))),
     windMax: round1(maxOf(hs.map((x) => x.wind).filter((v) => v !== null))),
     pm25Max: round1(num(pm25)),
+    dustMax: round1(num(dust)),
+    dewMean: round1(mean(daytime.map((x) => dewPoint(x.t, x.rh)).filter((v) => v !== null))),
+    feelsMin: round1(minOf(hs.map((x) => x.feels ?? null).filter((v) => v !== null))),
     flightHours: num(flightHours),
   };
   if (wx.flightHours !== null) wx.cabinRh = CABIN_RH;

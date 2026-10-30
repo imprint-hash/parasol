@@ -7,6 +7,7 @@ import "./helpers/env.js";
 import { stubMeteo, defaultHandler, hourly } from "./helpers/meteo-stub.js";
 import { test, before, after, beforeEach } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { startApp } from "./helpers/env.js";
 import { forgetWeather, geocode, snapshotFor, stats as wxStats } from "../src/weather.js";
 import { tripDays, splitHourly, summarise, lastYear, isDate, addDays } from "../src/days.js";
@@ -141,9 +142,24 @@ test("Open-Meteo down and no snapshot: 502 weather_down from the route", async (
   stub = stubMeteo(() => {
     throw { network: true };
   });
-  const r = await app.call("POST", "/api/forecast", { profile: ADA, trip: { legs: [{ name: "Reykjavik", lat: 64.1, lon: -21.9, timezone: "Atlantic/Reykjavik", from: d(1), to: d(2) }] } });
+  const r = await app.call("POST", "/api/forecast", { profile: ADA, trip: { legs: [{ name: "Ulaanbaatar", lat: 47.9, lon: 106.9, timezone: "Asia/Ulaanbaatar", from: d(1), to: d(2) }] } });
   assert.equal(r.status, 502);
   assert.equal(r.body.code, "weather_down");
+});
+
+test("snapshotFor: same day-offset from today, exact dates kept", () => {
+  const s = snapshotFor(LAGOS, "2030-01-01", "2030-01-10");
+  const src = JSON.parse(readFileSync(new URL("../data/demo/weather-lagos.json", import.meta.url), "utf8"));
+  const dates = [...new Set(src.hourly.time.map((t) => t.slice(0, 10)))];
+  // From an arbitrary "today", day k of the trip takes snapshot day k (mod length).
+  const s2 = snapshotFor(LAGOS, "2030-01-05", "2030-01-06", "2030-01-01");
+  const i = 4 % dates.length;
+  assert.equal(s2.hourly.time[0], "2030-01-05T00:00");
+  assert.equal(s2.hourly.temperature_2m[13], src.hourly.temperature_2m[i * 24 + 13]);
+  // A date inside the snapshot is used as is.
+  const s3 = snapshotFor(LAGOS, dates[2], dates[2]);
+  assert.equal(s3.hourly.temperature_2m[13], src.hourly.temperature_2m[2 * 24 + 13]);
+  assert.equal(s.hourly.time.length, 240);
 });
 
 test("snapshotFor re-dates the saved days and cycles them", () => {
@@ -329,4 +345,36 @@ test("POST /api/rescan/compare: shape and validation", async () => {
 test("geocode() drops results without coordinates or time zone", async () => {
   stub = stubMeteo(defaultHandler({ geocode: () => ({ results: [{ name: "X", latitude: 1, longitude: 2 }, { name: "Y", latitude: 1, longitude: 2, timezone: "UTC" }] }) }));
   assert.deepEqual((await geocode("xy")).map((r) => r.name), ["Y"]);
+});
+
+test("demo trip offline: Cairo → Dubai → Reykjavik from saved snapshots; Ada's real Day-3 scores → humid heat in Dubai", async () => {
+  stub = stubMeteo(() => {
+    throw { network: true };
+  });
+  const trip = {
+    legs: [
+      { name: "Cairo", lat: 30.0626, lon: 31.2497, timezone: "Africa/Cairo", from: d(1), to: d(4) },
+      { name: "Dubai", lat: 25.0772, lon: 55.3093, timezone: "Asia/Dubai", from: d(4), to: d(7) },
+      { name: "Reykjavik", lat: 64.1355, lon: -21.8954, timezone: "Atlantic/Reykjavik", from: d(7), to: d(9) },
+    ],
+    flights: [{ date: d(4), hours: 3.5 }, { date: d(7), hours: 7 }],
+  };
+  const f = await app.call("POST", "/api/forecast", { profile: { skinType: "dry", fitz: "VI", concerns: [] }, trip });
+  assert.equal(f.status, 200, f.text);
+  assert.ok(f.body.days.every((x) => x.basis === "snapshot" && x.label.includes("Saved snapshot")));
+  const ids = (city) => new Set(f.body.days.filter((x) => x.city === city).flatMap((x) => x.advice.map((a) => a.id)));
+  const cairo = ids("Cairo"), dubai = ids("Dubai"), rvk = ids("Reykjavik");
+  // Which snapshot day lands on which date moves with the calendar, so check the character of each city, not every rule.
+  assert.ok(cairo.has("dry-air") || cairo.has("big-swing"), [...cairo].join());
+  assert.ok(dubai.has("uv-high") && dubai.has("uv-dark-marks") && dubai.has("sweat-water"), [...dubai].join());
+  assert.ok((rvk.has("cold") || rvk.has("wind-chill")) && rvk.has("indoor-heating"), [...rvk].join());
+  assert.ok(!rvk.has("uv-high") && !rvk.has("uv-moderate"), "low UV in Reykjavik");
+
+  const ada = JSON.parse(readFileSync(new URL("../data/demo/ada.json", import.meta.url), "utf8"));
+  const days = f.body.days.filter((x) => x.city === "Dubai").slice(0, 3);
+  const r = await app.call("POST", "/api/rescan/compare", { baseline: ada.baseline.skin.scores, current: ada.rescan.skin.scores, profile: { skinType: "dry", fitz: "VI" }, days, selfReport: {} });
+  assert.equal(r.status, 200, r.text);
+  assert.ok(r.body.changes.some((c) => c.metric === "acne" && c.worse));
+  assert.deepEqual([r.body.causes[0].id, r.body.causes[0].confidence], ["humid_heat", "likely"]);
+  assert.match(r.body.causes[0].evidence, /^Dubai: /);
 });

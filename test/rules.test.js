@@ -1,7 +1,7 @@
 import "./helpers/env.js";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { evaluate, RULES, PRIORITY, CALM_HEADLINE, hourLabel, HUMID_RH, HUMID_TMAX, DRY_RH, COLD_TMIN, WIND_KMH, UV_MODERATE, UV_HIGH, UV_VERY_HIGH, PM25_POOR, HOT_TMAX, DARK_MARKS_CONCERN_UV } from "../src/rules.js";
+import { evaluate, RULES, PRIORITY, CALM_HEADLINE, hourLabel, HUMID_RH, HUMID_TMAX, DRY_RH, COLD_TMIN, WIND_KMH, UV_MODERATE, UV_HIGH, UV_VERY_HIGH, PM25_POOR, HOT_TMAX, DARK_MARKS_CONCERN_UV, HUMID_DEWPOINT, EXTREME_TMAX, DUST_UGM3, SWING_C, FEELS_FREEZING, HEATING_TMAX, isHumidHeat } from "../src/rules.js";
 import { NEED_TAGS } from "../src/tags.js";
 
 // A mild day that fires nothing.
@@ -178,4 +178,58 @@ test("hour labels", () => {
   assert.equal(hourLabel(12), "noon");
   assert.equal(hourLabel(13), "1 pm");
   assert.equal(hourLabel(null), "midday");
+});
+
+/* ---------- harsh-weather rules (Cairo, Dubai, Reykjavik) ---------- */
+
+test("humid heat by dew point: tMax ≥ 26 and dew point ≥ 20 °C counts even at moderate humidity %", () => {
+  assert.ok(isHumidHeat({ tMax: 26, rhMean: 46, dewMean: HUMID_DEWPOINT }));
+  assert.ok(!isHumidHeat({ tMax: 26, rhMean: 46, dewMean: HUMID_DEWPOINT - 0.1 }));
+  assert.ok(!isHumidHeat({ tMax: 25.9, rhMean: 46, dewMean: 25 }));
+  assert.ok(!isHumidHeat({ tMax: 35, rhMean: 46, dewMean: null }));
+  const a = evaluate({ ...P, skinType: "oily" }, { ...WX, tMax: 34, rhMean: 46, dewMean: 21.4 }).advice.find((x) => x.id === "humid-oily");
+  assert.match(a.text, /^Muggy heat \(dew point 21 °C\)\. Your skin/);
+  assert.match(a.why, /dew point 21 °C/);
+});
+
+test("extreme-heat: tMax ≥ 38", () => {
+  assert.ok(fires("extreme-heat", {}, { tMax: EXTREME_TMAX }));
+  assert.ok(!fires("extreme-heat", {}, { tMax: EXTREME_TMAX - 0.1 }));
+  assert.ok(!fires("extreme-heat", {}, { tMax: null }));
+  assert.match(evaluate(P, { ...WX, tMax: 41 }).headline, /^Extreme heat \(up to 41 °C\)/);
+});
+
+test("dust: desert dust ≥ 50 µg/m³", () => {
+  assert.ok(fires("dust", {}, { dustMax: DUST_UGM3 }));
+  assert.ok(!fires("dust", {}, { dustMax: DUST_UGM3 - 0.1 }));
+  assert.ok(!fires("dust", {}, { dustMax: null }));
+  assert.ok(!fires("dust", {}, {}), "older snapshots have no dust field");
+  const a = evaluate(P, { ...WX, dustMax: 104.8 }).advice[0];
+  assert.deepEqual(a.tags, ["cleanser", "mist"]);
+  assert.match(a.why, /105 µg\/m³/);
+});
+
+test("big-swing: night low to day high ≥ 12 °C", () => {
+  assert.ok(fires("big-swing", {}, { tMin: 18, tMax: 18 + SWING_C }));
+  assert.ok(!fires("big-swing", {}, { tMin: 18, tMax: 18 + SWING_C - 0.1 }));
+  assert.match(evaluate(P, { ...WX, tMin: 17, tMax: 32 }).advice.find((x) => x.id === "big-swing").text, /17 °C to 32 °C/);
+});
+
+test("wind-chill: 'feels like' ≤ 0 °C", () => {
+  assert.ok(fires("wind-chill", {}, { feelsMin: FEELS_FREEZING }));
+  assert.ok(!fires("wind-chill", {}, { feelsMin: FEELS_FREEZING + 0.1 }));
+  assert.ok(!fires("wind-chill", {}, { feelsMin: null }));
+  assert.match(evaluate(P, { ...WX, feelsMin: -3.4, windMax: 29 }).headline, /^Feels like -3 °C with the wind/);
+});
+
+test("indoor-heating: daytime high ≤ 10 °C", () => {
+  assert.ok(fires("indoor-heating", {}, { tMax: HEATING_TMAX }));
+  assert.ok(!fires("indoor-heating", {}, { tMax: HEATING_TMAX + 0.1 }));
+  assert.ok(evaluate(P, { ...WX, tMax: 7 }).needs.includes("mist"));
+});
+
+test("harsh priorities: extreme heat beats humid; wind chill beats cold; dust beats dry air", () => {
+  assert.equal(ids({ skinType: "oily" }, { tMax: 39, rhMean: 80 })[0], "extreme-heat");
+  assert.equal(ids({}, { tMin: 2, feelsMin: -4, tMax: 6 })[0], "wind-chill");
+  assert.equal(ids({}, { dustMax: 80, rhMean: 30 })[0], "dust");
 });

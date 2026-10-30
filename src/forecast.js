@@ -15,7 +15,7 @@
  * back short for some date falls back to typical for that date too.
  */
 
-import { tripDays, splitHourly, pm25ByDate, summarise, addDays, daysBetween, lastYear, todayIn } from "./days.js";
+import { tripDays, splitHourly, pm25ByDate, maxByDate, summarise, addDays, daysBetween, lastYear, todayIn } from "./days.js";
 import { forecast, airQuality, historical, snapshotFor, CREDIT, WeatherError, FORECAST_DAYS, AIR_DAYS } from "./weather.js";
 import { evaluate } from "./rules.js";
 import { burnRange, protectHours, ESTIMATE_NOTE } from "./burn.js";
@@ -29,7 +29,7 @@ async function legWeather(leg, dates, now) {
   const today = todayIn(leg.timezone, now);
   const horizon = horizonFrom(now);
   const first = dates[0], last = dates[dates.length - 1];
-  const out = { forecast: new Map(), pm25: new Map(), typical: new Map(), snapshot: null, failed: false };
+  const out = { forecast: new Map(), pm25: new Map(), dust: new Map(), typical: new Map(), snapshot: null, failed: false };
   const wantsForecast = first <= horizon;
   const pastDays = Math.max(0, daysBetween(first, today));
 
@@ -41,7 +41,10 @@ async function legWeather(leg, dates, now) {
         wantsAir ? airQuality(leg, pastDays).catch(() => null) : null, // air is a bonus: never fail the day for it
       ]);
       out.forecast = splitHourly(fc.hourly);
-      if (air) out.pm25 = pm25ByDate(air.hourly);
+      if (air) {
+        out.pm25 = pm25ByDate(air.hourly);
+        out.dust = maxByDate(air.hourly, "dust");
+      }
     }
     const missing = dates.filter((d) => !(out.forecast.get(d)?.length >= 20));
     if (missing.length) {
@@ -54,13 +57,14 @@ async function legWeather(leg, dates, now) {
     if (!out.snapshot) throw err;
     out.forecast = splitHourly(out.snapshot.hourly);
     out.pm25 = out.snapshot.air ? pm25ByDate(out.snapshot.air) : new Map();
+    out.dust = out.snapshot.air ? maxByDate(out.snapshot.air, "dust") : new Map();
     out.typical = new Map();
   }
   return out;
 }
 
-export function makeDay({ date, leg, flight, hours, pm25, basis }, profile) {
-  const { wx, hourly } = summarise(hours, { pm25, flightHours: flight?.hours ?? null });
+export function makeDay({ date, leg, flight, hours, pm25, dust = null, basis }, profile) {
+  const { wx, hourly } = summarise(hours, { pm25, dust, flightHours: flight?.hours ?? null });
   const allHours = (hours || []).map((x) => ({ h: x.h, uvi: x.uvi }));
   const protect = wx.uvMax === null ? null : protectHours(allHours, profile.fitz, profile.albinism);
   const result = evaluate(profile, wx, { protect });
@@ -105,7 +109,7 @@ export async function buildForecast(profile, trip, { now = new Date() } = {}) {
       basis = "typical";
     }
     used.add(basis);
-    return makeDay({ date: d.date, leg, flight: d.flight, hours: hours || [], pm25: basis === "typical" ? null : w.pm25.get(d.date) ?? null, basis }, profile);
+    return makeDay({ date: d.date, leg, flight: d.flight, hours: hours || [], pm25: basis === "typical" ? null : w.pm25.get(d.date) ?? null, dust: basis === "typical" ? null : w.dust.get(d.date) ?? null, basis }, profile);
   });
 
   const sources = [{ ...CREDIT, used: [...used].map((b) => LABELS[b]) }];

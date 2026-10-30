@@ -6,8 +6,8 @@ import { announce } from "./a11y.js";
 shell({
   page: "home",
   speechText: () =>
-    "Parasol. Your skin, on the road. A day by day skin forecast for your trip: humidity, cabin air, cold and UV, matched to your skin. " +
-    "Try the demo with no selfie: Cairo, Dubai, then Reykjavik. Or use your own selfie. Your photo is sent to YouCam for analysis and is not stored by Parasol. " +
+    "Parasol. A daily skin plan for your trip, for every skin tone. Three steps: take a selfie, add your trip, get your skin plan. Press Start to begin, or try the demo with no selfie. " +
+    "Your photo is sent to YouCam for analysis and is not stored by Parasol. " +
     "Not medical advice. Burn times are estimates.",
 });
 

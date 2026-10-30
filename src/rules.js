@@ -45,7 +45,7 @@ const uvKnown = (wx) => Number.isFinite(wx.uvMax);
 const n = (v) => typeof v === "number" && Number.isFinite(v);
 /** Hot and humid: tMax ≥ 26 and either humidity ≥ 70% or a muggy dew point ≥ 20 °C. */
 export const isHumidHeat = (wx) => n(wx.tMax) && wx.tMax >= HUMID_TMAX && ((n(wx.rhMean) && wx.rhMean >= HUMID_RH) || (n(wx.dewMean) && wx.dewMean >= HUMID_DEWPOINT));
-const humidWords = (wx) => (n(wx.rhMean) && wx.rhMean >= HUMID_RH ? `${wx.rhMean}% humidity` : `Muggy heat (dew point ${Math.round(wx.dewMean)} °C)`);
+const humidWords = (wx) => (n(wx.rhMean) && wx.rhMean >= HUMID_RH ? `${wx.rhMean}% humidity` : `Hot, sticky air`);
 
 export function hourLabel(h) {
   if (!Number.isInteger(h)) return "midday";
@@ -68,7 +68,7 @@ export const RULES = [
     id: "humid-oily",
     when: (p, wx) => isHumidHeat(wx) && (p.skinType === "oily" || p.skinType === "combination" || has(p, "oiliness") || has(p, "acne")),
     text: (p, wx) => `${humidWords(wx)}. ${p.skinType === "combination" ? "Your T-zone" : "Your skin"} will likely get shiny: gel moisturiser, matte SPF.`,
-    why: (wx) => `Daytime humidity ${wx.rhMean}%${n(wx.dewMean) ? `, dew point ${Math.round(wx.dewMean)} °C` : ""}, up to ${deg(wx.tMax)}`,
+    why: (wx) => `Daytime humidity ${wx.rhMean}%${n(wx.dewMean) ? ", sticky air" : ""}, up to ${deg(wx.tMax)}`,
     tags: () => ["humid", "gel", "matte"],
   },
   {
@@ -131,7 +131,7 @@ export const RULES = [
       const hours = ctx.protect ? `Protect hours: ${ctx.protect.from}–${ctx.protect.to}. ` : "";
       return `${burn}${hours}Hat, sleeves, sunglasses.`;
     },
-    why: (wx) => `Peak UV index ${wx.uvMax}; burn times are estimates for your sun type`,
+    why: (wx) => `Peak UV index ${wx.uvMax}; burn times are estimates for how fast you burn`,
     tags: () => ["fitz-1-2", "spf-50", "hat", "sleeves", "sunglasses"],
   },
   {

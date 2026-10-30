@@ -188,8 +188,8 @@ test("humid heat by dew point: tMax ≥ 26 and dew point ≥ 20 °C counts even 
   assert.ok(!isHumidHeat({ tMax: 25.9, rhMean: 46, dewMean: 25 }));
   assert.ok(!isHumidHeat({ tMax: 35, rhMean: 46, dewMean: null }));
   const a = evaluate({ ...P, skinType: "oily" }, { ...WX, tMax: 34, rhMean: 46, dewMean: 21.4 }).advice.find((x) => x.id === "humid-oily");
-  assert.match(a.text, /^Muggy heat \(dew point 21 °C\)\. Your skin/);
-  assert.match(a.why, /dew point 21 °C/);
+  assert.match(a.text, /^Hot, sticky air\. Your skin/);
+  assert.match(a.why, /sticky air/);
 });
 
 test("extreme-heat: tMax ≥ 38", () => {

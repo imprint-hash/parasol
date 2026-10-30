@@ -5,7 +5,7 @@ import { load, update, profileForApi } from "./state.js";
 import { kit as getKit, cart, config } from "./api.js";
 import { announce, focusHeading } from "./a11y.js";
 import { SLOT_NAMES, SLOT_JOBS, skinPhrase } from "./kit-names.js";
-import { productArt } from "./parts.js";
+import { productArt, FITZ } from "./parts.js";
 
 const view = $("#view");
 let res = null; // /api/kit answer
@@ -50,7 +50,7 @@ function total() {
 async function start() {
   const st = load();
   if (!st.forecast?.needs) {
-    view.innerHTML = `<div class="card stack-sm"><h2>Build your forecast first</h2><p class="muted">Your kit is chosen from what each day of your trip needs.</p><p><a class="btn btn-primary" href="${st.trip ? "/forecast" : "/trip"}">${st.trip ? "See my forecast" : "Plan my trip"}</a></p></div>`;
+    view.innerHTML = `<div class="card stack-sm"><h2>Build your forecast first</h2><p class="muted">Your kit comes from your trip forecast.</p><p><a class="btn btn-primary" href="${st.trip ? "/forecast" : "/trip"}">${st.trip ? "See my forecast" : "Plan my trip"}</a></p></div>`;
     return;
   }
   if (st.kit?.res) {
@@ -148,7 +148,7 @@ async function render() {
   const cfg = await config();
   const offline = isOffline();
   const cities = (st.trip?.legs || []).map((l) => l.name).filter(Boolean);
-  $("#sub").textContent = `Picked from the Parasol demo shop for ${skinWord(st.profile)} and your trip${cities.length ? ` to ${cities.join(", ")}` : ""}. Tap the heart to keep or drop an item.`;
+  $("#sub").textContent = `Picked for ${skinWord(st.profile)}. Tap the heart to keep or drop one.`;
   const groups = ["all", ...Object.keys(GROUPS).filter((g) => res.slots.some((x) => groupOf(x.slot) === g))];
   const indexed = res.slots.map((s, i) => [s, i]);
   // Skincare first; hats, sleeves and sunglasses sit apart as "Sun protection extras".
@@ -170,18 +170,18 @@ async function render() {
   <div class="kit-grid" id="cards">${essential.map(([s, i]) => card(s, i)).join("")}</div>
   ${
     optional.length
-      ? `<section class="stack-sm" id="more" aria-labelledby="more-h" ${moreHidden() ? "hidden" : ""}><h2 id="more-h" style="font-size:1.375rem">Add if you like</h2><p class="muted small">Not in your kit yet. Tap the heart to add one.</p><div class="kit-grid" id="cards-more">${optional.map(([s, i]) => card(s, i)).join("")}</div></section>`
+      ? `<section class="stack-sm" id="more" aria-labelledby="more-h" ${moreHidden() ? "hidden" : ""}><h2 id="more-h" style="font-size:1.375rem">Add if you like</h2><p class="muted small">Tap the heart to add one.</p><div class="kit-grid" id="cards-more">${optional.map(([s, i]) => card(s, i)).join("")}</div></section>`
       : ""
   }
   ${
     wear.length
-      ? `<section class="stack-sm" id="extras" aria-labelledby="extras-h" ${extrasHidden() ? "hidden" : ""}><h2 id="extras-h" style="font-size:1.375rem">Sun protection extras</h2><p class="muted small">For very fair skin and albinism, sun-safety advice is to cover up too: a wide-brim hat, UV400 sunglasses for light-sensitive eyes, and sleeves on strong-sun days. Tap the heart to add one.</p><div class="kit-grid" id="cards-extras">${wear.map(([s, i]) => card(s, i)).join("")}</div></section>`
+      ? `<section class="stack-sm" id="extras" aria-labelledby="extras-h" ${extrasHidden() ? "hidden" : ""}><h2 id="extras-h" style="font-size:1.375rem">Sun protection extras</h2><p class="muted small">For very fair skin and albinism: cover up with a hat, sunglasses and sleeves too.</p><div class="kit-grid" id="cards-extras">${wear.map(([s, i]) => card(s, i)).join("")}</div></section>`
       : ""
   }
   <p class="credit">Product images © their brands or credited photographers. Demo shop, not affiliated with these brands.</p>
   ${
     extra.length
-      ? `<section class="card" aria-labelledby="extra-h"><h2 id="extra-h">Added after your rescan</h2><ul class="alts">${extra
+      ? `<section class="card" aria-labelledby="extra-h"><h2 id="extra-h">Added after your skin changed</h2><ul class="alts">${extra
           .map((x, k) => {
             const n = productName(x.product);
             const full = [n.brand, n.name].filter(Boolean).join(" ");
@@ -198,26 +198,26 @@ async function render() {
   <div class="cols">
     <section class="shop-help" aria-labelledby="shop-h">
       <h2 id="shop-h" style="font-size:1.375rem">How the demo checkout works</h2>
-      <p>Checkout opens the Parasol demo shop (Shopify) in a new tab. No real money is taken.</p>
+      <p>Checkout opens a demo shop in a new tab. No real money is taken.</p>
       ${cfg.storePassword ? `<p>Shop password: <code>${esc(cfg.storePassword)}</code></p>` : `<p>If the shop asks for a password, it is listed in the project README.</p>`}
       <p>Test card: ${esc(cfg.testCard || "Bogus Gateway: card number 1, any future date, any CVV")}</p>
       <p class="credit">${esc(res.disclaimer || "Demo shop. Not affiliated with these brands.")}</p>
     </section>
     <section class="card" aria-labelledby="buy-h">
       <h2 id="buy-h" style="font-size:1.375rem">Or buy it there</h2>
-      <p class="muted small">What to look for at a local pharmacy, if you'd rather pack light.</p>
+      <p class="muted small">What to look for at a local pharmacy.</p>
       <ul class="buy-there">${(res.buyThere || []).map((b) => `<li><strong class="block">${esc(slotName(b.slot))}</strong><span class="muted">${esc(b.lookFor)}</span></li>`).join("")}</ul>
     </section>
   </div>`;
   updateBar();
-  setRibbonNext("/rescan?demo=1", "Day 3 in Dubai: rescan");
+  setRibbonNext("/rescan?demo=1", "Day 3 in Dubai: my skin changed");
 }
 
 // The "Add if you like" section hides when the filter leaves none of its cards.
 const moreHidden = () => filter !== "all" && !res.slots.some((s) => !isEssential(s.slot) && groupOf(s.slot) !== "wear" && groupOf(s.slot) === filter);
 const extrasHidden = () => filter !== "all" && filter !== "wear";
 
-const skinWord = (p) => (p ? `${{ oily: "oily", dry: "dry", combination: "combination", normal: "normal" }[p.skinType] || ""} skin, sun type ${p.fitz}${p.albinism ? " with albinism" : ""}` : "your skin");
+const skinWord = (p) => (p ? `${{ oily: "oily", dry: "dry", combination: "combination", normal: "normal" }[p.skinType] || ""} skin that ${(FITZ[p.albinism ? "I" : p.fitz]?.cap || "").toLowerCase()}${p.albinism ? " (albinism)" : ""}` : "your skin");
 
 function updateBar() {
   const n = lines().length;

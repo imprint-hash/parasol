@@ -3,7 +3,7 @@ import { shell, esc, icon, $, fmtDate, fmtLong, fmtWeekday, fmtHour, fmtClock, u
 import { load, update, tripForApi, profileForApi } from "./state.js";
 import { forecast as getForecast } from "./api.js";
 import { announce, focusHeading } from "./a11y.js";
-import { burnDial, minutesText, scenePhoto, SCENE_CREDIT, uvGauge, wxGlyph, ADVICE_ICON } from "./parts.js";
+import { FITZ, burnDial, minutesText, scenePhoto, SCENE_CREDIT, uvGauge, wxGlyph, ADVICE_ICON } from "./parts.js";
 import { uvChart } from "./chart.js";
 
 const view = $("#view");
@@ -22,11 +22,12 @@ function speechText() {
   const p = load().profile;
   const parts = [`${fmtLong(d.date)} in ${d.city}.`, KIND[d.kind] ? `${KIND[d.kind]}.` : ""];
   if (d.wx) {
-    if (Number.isFinite(Number(d.wx.uvMax))) parts.push(`UV ${Math.round(d.wx.uvMax)} at ${fmtHour(d.wx.uvPeakHour)}.`);
+    if (Number.isFinite(Number(d.wx.uvMax))) parts.push(`UV ${Math.round(d.wx.uvMax)}, ${uvLevel(d.wx.uvMax).name}, at ${fmtHour(d.wx.uvPeakHour)}.`);
     parts.push(`Up to ${Math.round(d.wx.tMax)} degrees, ${Math.round(d.wx.rhMean)} percent humidity.`);
   }
-  parts.push(headlineText(d));
-  (d.advice || []).forEach((a) => parts.push(a.text));
+  const head = headlineText(d);
+  parts.splice(2, 0, head);
+  (d.advice || []).filter((a) => a.text !== head).forEach((a) => parts.push(a.text));
   if (d.burn && !isDeep(p, d)) parts.push(`You may start to burn in about ${minutesText(d.burn).replace("–", " to ")} at ${fmtHour(d.burn.atHour)}. This is an estimate, not medical advice.`);
   if (d.protect) parts.push(`Protect hours: ${fmtClock(d.protect.from)} to ${fmtClock(d.protect.to)}.`);
   return parts.filter(Boolean).join(" ");
@@ -39,7 +40,7 @@ async function start() {
     return;
   }
   if (!st.profile) {
-    view.innerHTML = `<div class="card stack-sm"><h2>Read your skin first</h2><p class="muted">Your forecast depends on your skin and sun type.</p><p class="row gap"><a class="btn btn-primary" href="/scan">Use my selfie</a><a class="btn btn-secondary" href="/scan?manual=1">Choose by hand</a><a class="btn btn-secondary" href="/#demo">Try the demo</a></p></div>`;
+    view.innerHTML = `<div class="card stack-sm"><h2>Read your skin first</h2><p class="muted">Your forecast depends on your skin.</p><p class="row gap"><a class="btn btn-primary" href="/scan">Use my selfie</a><a class="btn btn-secondary" href="/scan?manual=1">Choose by hand</a><a class="btn btn-secondary" href="/#demo">Try the demo</a></p></div>`;
     return;
   }
   if (st.forecast?.days?.length) {
@@ -76,7 +77,7 @@ function render() {
   const last = data.days.at(-1)?.date;
   view.innerHTML = `
   <div class="trip-strip">${legs.map((l) => esc(l.name)).join(` ${icon("arrow")} `)}</div>
-  <p class="muted small">${fmtDate(first)} – ${fmtDate(last)} · ${data.days.length} days · Sun type ${esc(p.fitz)}${p.albinism ? " (albinism)" : ""} · ${esc(skinName(p.skinType))}</p>
+  <p class="muted small">${fmtDate(first)} – ${fmtDate(last)} · ${data.days.length} days · ${esc(FITZ[p.albinism ? "I" : p.fitz]?.cap || "")}${p.albinism ? " (albinism)" : ""} · ${esc(skinName(p.skinType))}</p>
   <section aria-labelledby="days-h">
     <div class="row spread"><h2 id="days-h" style="font-size:1.25rem">Trip days</h2><span class="small subtle">Choose a day</span></div>
     <div class="day-chips" role="group" aria-labelledby="days-h">
@@ -97,7 +98,7 @@ function render() {
       <tbody>${data.days
         .map(
           (d) =>
-            `<tr><td><button type="button" class="link-btn" data-day="${d.date}" style="min-height:0;padding:0">${fmtWeekday(d.date)} ${fmtDate(d.date)}</button></td><td>${esc(d.city)}${d.kind === "flight" ? " (flight)" : d.kind === "typical" ? " (typical)" : ""}</td><td class="num"><span class="uv-txt-${uvLevel(d.wx?.uvMax).key}" style="font-weight:600">${Number.isFinite(Number(d.wx?.uvMax)) ? Math.round(d.wx.uvMax) : "–"}</span></td><td class="num">${d.wx ? Math.round(d.wx.tMax) + "°" : "–"}</td><td class="num">${d.wx ? Math.round(d.wx.rhMean) + "%" : "–"}</td></tr>`
+            `<tr><td><button type="button" class="link-btn" data-day="${d.date}" style="min-height:0;padding:0">${fmtWeekday(d.date)} ${fmtDate(d.date)}</button></td><td>${esc(d.city)}${d.kind === "flight" ? " (flight)" : d.kind === "typical" ? " (typical)" : ""}</td><td class="num"><span class="uv-txt-${uvLevel(d.wx?.uvMax).key}" style="font-weight:600">${Number.isFinite(Number(d.wx?.uvMax)) ? `${Math.round(d.wx.uvMax)} ${esc(uvLevel(d.wx.uvMax).short)}` : "–"}</span></td><td class="num">${d.wx ? Math.round(d.wx.tMax) + "°" : "–"}</td><td class="num">${d.wx ? Math.round(d.wx.rhMean) + "%" : "–"}</td></tr>`
         )
         .join("")}</tbody>
     </table></div>
@@ -133,60 +134,61 @@ function renderDay(focus = true) {
   const photo = scenePhoto(d.city, { alt: "" });
   const stat = (ic, lab, val, unit, note = "") => `<div class="stat"><span class="s-lab">${icon(ic)} ${lab}</span><span class="s-val">${val}${unit ? `<small>${unit}</small>` : ""}</span>${note ? `<span class="s-note">${note}</span>` : ""}</div>`;
   const r = (v) => (v == null || !Number.isFinite(Number(v)) ? "–" : Math.round(v));
-  box.innerHTML = `
-  <div class="cols">
-    <div>
-      <article class="city-hero ${photo ? "" : "no-photo"}" aria-labelledby="day-h">
-        ${photo}
-        <div class="ch-top">
-          <div><p class="ch-sub">${icon(d.kind === "flight" ? "plane" : "pin")} ${d.kind === "flight" ? `Flight to ${esc(d.city)}` : esc(d.city)}</p><h2 id="day-h" tabindex="-1">${esc(fmtLong(d.date))}</h2></div>
-          <span class="badge badge-glass">${esc(d.label || KIND[d.kind] || "")}</span>
-        </div>
-        <div>
-          <div class="ch-nums">
-            <div><p class="big big-xl">${d.wx ? r(wx.tMax) : "–"}<span class="u">°C</span></p><p class="ch-cap">High · low ${r(wx.tMin)}°${wx.feelsMin != null && Math.round(wx.feelsMin) < Math.round(wx.tMin) ? ` · feels ${r(wx.feelsMin)}°` : ""}</p></div>
-            <div style="text-align:right"><p class="big big-l">${uvKnown ? r(wx.uvMax) : "?"}<span class="u">UV</span></p><p class="ch-cap">${uvKnown ? `${esc(lv.name)} at ${esc(fmtHour(wx.uvPeakHour))}` : "UV not known yet"}</p></div>
-          </div>
-          ${photo ? `<p class="credit" style="margin-top:.5rem">${SCENE_CREDIT}</p>` : ""}
-        </div>
-      </article>
-      ${
-        d.wx
-          ? `<section class="dk" aria-label="Weather details"><div class="stat-row four">
-        ${stat("drop", d.kind === "flight" ? "Humidity on the ground" : "Humidity", r(wx.rhMean), "%", wx.dewMean != null ? `dew point ${r(wx.dewMean)}°` : "")}
+  const tiles = d.wx
+    ? `<div class="stat-row four">
+        ${stat("thermo", "High", r(wx.tMax), "°C", `low ${r(wx.tMin)}°`)}
+        ${stat("sun", "UV", uvKnown ? r(wx.uvMax) : "?", "", uvKnown ? `${esc(lv.name)} at ${esc(fmtHour(wx.uvPeakHour))}` : "not known yet")}
+        ${stat("drop", d.kind === "flight" ? "Humidity on the ground" : "Humidity", r(wx.rhMean), "%", wx.dewMean != null && wx.dewMean >= 20 ? "sticky air" : "")}
         ${stat("wind", "Wind", r(wx.windMax), "km/h", wx.windMax >= 30 ? "strong" : "")}
-        ${wx.dustMax != null ? stat("haze", "Dust", r(wx.dustMax), "µg/m³", wx.dustMax >= 50 ? "hazy air" : "") : stat("thermo", "Feels like", r(wx.feelsMin), "°", "coldest hour")}
-        ${wx.pm25Max != null ? stat("haze", "Air (PM2.5)", r(wx.pm25Max), "µg/m³", wx.pm25Max >= 35 ? "poor" : "") : stat("sun", "UV peak", uvKnown ? fmtHour(wx.uvPeakHour) : "–", "", "")}
-      </div></section>`
-          : ""
-      }
-      <section class="card" aria-labelledby="todo-h">
-        ${headlineText(d) ? `<div class="headline-box"><span class="h-ic" aria-hidden="true">${icon(ADVICE_ICON[top?.id] || (d.kind === "flight" ? "plane" : deep ? "shield" : "sun"))}</span><div><p class="h-lab">The main thing</p><p class="h-txt">${esc(headlineText(d))}</p>${top?.why ? `<p class="small muted" style="margin-top:.5rem">Why: ${esc(top.why)}</p>` : ""}</div></div>` : ""}
-        <h3 id="todo-h" class="${rest.length ? "" : "sr-only"}">Also today</h3>
-        ${
-          rest.length
-            ? `<ul class="plan">${rest.map((a) => `<li data-ic><span class="p-ic" aria-hidden="true">${icon(ADVICE_ICON[a.id] || "info")}</span><span class="p-text">${esc(a.text)}</span>${a.why ? `<span class="p-why">Why: ${esc(a.why)}</span>` : ""}</li>`).join("")}</ul>`
-            : top ? "" : `<p class="muted">Nothing special for your skin today. Usual routine.</p>`
-        }
-        ${!uvKnown && d.kind === "typical" ? `<p class="note">${icon("info")} UV not known yet: check again within 16 days of travel.</p>` : ""}
-      </section>
+        ${wx.dustMax != null ? stat("haze", "Dust", r(wx.dustMax), "", wx.dustMax >= 50 ? "hazy air" : "") : stat("thermo", "Feels like", r(wx.feelsMin), "°", "coldest hour")}
+        ${wx.pm25Max != null ? stat("haze", "Air", r(wx.pm25Max), "", wx.pm25Max >= 35 ? "poor" : "ok") : ""}
+      </div>`
+    : "";
+  const head = headlineText(d) || "Nothing special for your skin today. Usual routine.";
+  box.innerHTML = `
+  <article class="city-hero ${photo ? "" : "no-photo"}" aria-labelledby="day-h">
+    ${photo}
+    <div class="ch-top">
+      <div><p class="ch-sub">${icon(d.kind === "flight" ? "plane" : "pin")} ${d.kind === "flight" ? `Flight to ${esc(d.city)}` : esc(d.city)}</p><h2 id="day-h" tabindex="-1">${esc(fmtLong(d.date))}</h2></div>
+      <span class="badge badge-glass">${esc(d.label || KIND[d.kind] || "")}</span>
     </div>
+    <div>
+      <p class="ch-say">${esc(head)}</p>
+      ${photo ? `<p class="credit" style="margin-top:.5rem">${SCENE_CREDIT}</p>` : ""}
+    </div>
+  </article>
+  <div class="cols">
     <div>
       ${d.kind === "flight" ? flightNote(d) : ""}
       <section class="dk" aria-labelledby="burn-h">
-        <div class="card-head"><h2 id="burn-h" style="font-size:1.375rem">Burn clock</h2><span class="badge badge-glass">Sun type ${esc(p.fitz)}${p.albinism ? " · albinism" : ""}</span></div>
+        <div class="card-head"><h2 id="burn-h" style="font-size:1.375rem">Burn clock</h2></div>
         ${burnDial(d.burn, wx.uvMax, { deep })}
         ${burnText(d, p, deep)}
-        ${d.protect ? `<div class="protect">${icon("sun")}<div><p class="p-lab">Protect hours${["I"].includes(p.fitz) || p.albinism ? " (our conservative choice: UV 2 and up)" : " (UV 3 and up)"}</p><p class="p-val">${esc(fmtClock(d.protect.from))} – ${esc(fmtClock(d.protect.to))}: shade, hat, sunscreen</p></div></div>` : ""}
-        <p class="credit">Estimate. Not medical advice. The ring shows how strong the sun is at its peak, out of UV 12.</p>
       </section>
-      <section class="dk" aria-labelledby="uvh-h">
-        <div class="card-head"><h2 id="uvh-h" style="font-size:1.375rem">UV through the day</h2></div>
-        ${uvGauge(wx.uvMax, { label: uvKnown ? `peak at ${fmtHour(wx.uvPeakHour)}` : "" })}
-        ${uvChart(d.hourly || [], { title: `UV by hour, ${d.city}, ${fmtDate(d.date)}`, protect: d.protect })}
-      </section>
+      ${rest.length ? `<section class="card" aria-labelledby="todo-h"><h3 id="todo-h">Also today</h3><ul class="plan">${rest.map((a) => `<li data-ic><span class="p-ic" aria-hidden="true">${icon(ADVICE_ICON[a.id] || "info")}</span><span class="p-text">${esc(a.text)}</span></li>`).join("")}</ul></section>` : ""}
+    </div>
+    <div>
+      <button type="button" class="btn btn-secondary btn-block" id="more-btn" aria-expanded="false" aria-controls="more-box">Show details</button>
+      <div id="more-box" class="stack" hidden>
+        ${tiles ? `<section class="dk" aria-label="Weather details">${tiles}</section>` : ""}
+        ${top?.why || rest.some((a) => a.why) ? `<section class="card stack-sm" aria-label="Why"><h3>Why</h3>${[top, ...rest].filter((a) => a?.why).map((a) => `<p class="small muted">${esc(a.why)}</p>`).join("")}</section>` : ""}
+        ${d.protect ? `<div class="protect">${icon("sun")}<div><p class="p-lab">Protect hours</p><p class="p-val">${esc(fmtClock(d.protect.from))} – ${esc(fmtClock(d.protect.to))}: shade, hat, sunscreen</p></div></div>` : ""}
+        ${deep && d.burn ? `<p class="small">Without sunscreen, at ${esc(fmtHour(d.burn.atHour))}, you may start to burn after about ${minutesText(d.burn)}. Estimate.</p>` : ""}
+        ${!uvKnown && d.kind === "typical" ? `<p class="note">${icon("info")} UV not known yet: check again within 16 days of travel.</p>` : ""}
+        <section class="dk" aria-labelledby="uvh-h">
+          <div class="card-head"><h2 id="uvh-h" style="font-size:1.375rem">Sun through the day</h2></div>
+          ${uvGauge(wx.uvMax, { label: uvKnown ? `peak at ${fmtHour(wx.uvPeakHour)}` : "" })}
+          ${uvChart(d.hourly || [], { title: `Sun strength by hour, ${d.city}, ${fmtDate(d.date)}`, protect: d.protect })}
+        </section>
+      </div>
     </div>
   </div>`;
+  $("#more-btn").addEventListener("click", (e) => {
+    const open = e.currentTarget.getAttribute("aria-expanded") !== "true";
+    e.currentTarget.setAttribute("aria-expanded", String(open));
+    e.currentTarget.textContent = open ? "Hide details" : "Show details";
+    $("#more-box").hidden = !open;
+  });
   if (focus) $("#day-h").focus();
 }
 
@@ -195,11 +197,8 @@ function burnText(d, p, deep) {
     const u = Number(d.wx?.uvMax);
     return `<p class="center muted">${Number.isFinite(u) ? (u < 1 ? "The sun stays weak all day: no burn estimate." : "No burn estimate for this day.") : "UV isn't known for this day yet, so the burn clock is off."}</p>`;
   }
-  const mins = minutesText(d.burn);
-  if (deep)
-    return `<p class="center">Strong sun can leave dark marks on your skin that take months to fade. Use SPF 50 with no white cast; a tinted one also blocks visible light.</p>
-    <details class="more"><summary>Burn time estimate</summary><div><p>Without sunscreen, at ${esc(fmtHour(d.burn.atHour))} (UV ${Math.round(d.burn.atUvi)}), you may start to burn after about ${mins}. Estimate. Not medical advice.</p></div></details>`;
-  return `<p class="center">Without sunscreen, you may start to burn in about <strong>${mins}</strong> at ${esc(fmtHour(d.burn.atHour))}${p.albinism ? ", and it may be faster" : ""}.</p>`;
+  if (deep) return `<p class="center">Strong sun can leave dark marks that take months to fade. Use SPF 50 with no white cast.</p>`;
+  return `<p class="center">Without sunscreen${p.albinism ? ", maybe faster" : ""}. Estimate, not medical advice.</p>`;
 }
 
 function flightNote(d) {

@@ -3,7 +3,7 @@ import { shell, esc, icon, $, $$, fmtLong, fmtHour, fmtClock, fmtWeekday, fmtDat
 import { load, update, todayIn, PERSONAS, DEMO_RESCAN_CITY } from "./state.js";
 import { announce, focusHeading } from "./a11y.js";
 import * as T from "./timer.js";
-import { burnDial, minutesText, uvGauge, wxGlyph } from "./parts.js";
+import { FITZ, burnDial, minutesText, uvGauge, wxGlyph } from "./parts.js";
 
 const view = $("#view");
 const st = load();
@@ -74,7 +74,7 @@ function speech() {
   if (!day) return "Today. Build your forecast first.";
   const wx = day.wx || {};
   const parts = [`Today in ${day.city}.`, label];
-  if (Number.isFinite(Number(wx.uvMax))) parts.push(`UV ${Math.round(wx.uvMax)} at ${fmtHour(wx.uvPeakHour)}.`);
+  if (Number.isFinite(Number(wx.uvMax))) parts.push(`UV ${Math.round(wx.uvMax)}, ${uvLevel(wx.uvMax).name}, at ${fmtHour(wx.uvPeakHour)}.`);
   parts.push(typeof day.headline === "string" ? day.headline : "");
   const left = T.secondsLeft();
   if (left != null) parts.push(left > 0 ? `Reapply sunscreen in ${Math.ceil(left / 60)} minutes.` : "Time to reapply your sunscreen.");
@@ -104,7 +104,7 @@ function dayStrip() {
 function render() {
   const c = chooseDay();
   if (!c) {
-    view.innerHTML = `<div class="card stack-sm"><h2>No forecast yet</h2><p class="muted">Today's routine comes from your trip forecast.</p><p class="row gap"><a class="btn btn-primary" href="${st.trip ? "/forecast" : "/trip"}">${st.trip ? "Build my forecast" : "Plan my trip"}</a><a class="btn btn-secondary" href="/#demo">Try the demo</a></p></div>`;
+    view.innerHTML = `<div class="card stack-sm"><h2>No forecast yet</h2><p class="muted">Make your trip forecast first.</p><p class="row gap"><a class="btn btn-primary" href="${st.trip ? "/forecast" : "/trip"}">${st.trip ? "Build my forecast" : "Plan my trip"}</a><a class="btn btn-secondary" href="/#demo">Try the demo</a></p></div>`;
     return;
   }
   day = c.d;
@@ -142,15 +142,15 @@ function render() {
           <div class="stat"><span class="s-lab">${icon("drop")} Humidity</span><span class="s-val">${wx.rhMean != null ? Math.round(wx.rhMean) : "–"}<small>%</small></span></div>
           <div class="stat"><span class="s-lab">${icon("timer")} ${deep ? "Dark marks" : "Burn in"}</span><span class="s-val">${burnNow && !deep ? `${burnNow.minutesLow}<small>min</small>` : deep && Number(uvNow) >= 3 ? "Risk" : "–"}</span></div>
         </div>
-        <button type="button" class="briefing" id="brief"><span class="b-ic" aria-hidden="true">${icon("speaker")}</span><span class="b-txt"><strong>Read my briefing aloud</strong><span class="small">Weather, routine and timer</span></span>${icon("play", "play")}</button>
+        <button type="button" class="briefing" id="brief"><span class="b-ic" aria-hidden="true">${icon("speaker")}</span><span class="b-txt"><strong>Read my briefing aloud</strong><span class="small">Weather and routine</span></span>${icon("play", "play")}</button>
       </section>
       <section class="dk" aria-labelledby="timer-h">
-        <div class="card-head"><h2 id="timer-h" style="font-size:1.25rem">Sun timer</h2><span class="badge badge-glass">Sun type ${esc(st.profile?.fitz || "?")}</span></div>
+        <div class="card-head"><h2 id="timer-h" style="font-size:1.25rem">Sun timer</h2><span class="badge badge-glass">${esc(FITZ[st.profile?.albinism ? "I" : st.profile?.fitz]?.cap || "")}</span></div>
         <div id="timer"></div>
       </section>
       ${
         Number.isFinite(uvNow) && uvNow >= 6
-          ? `<div class="alert">${icon("warn")}<div><p><strong>UV ${Math.round(uvNow)} (${lvNow.name}) ${label ? "at the peak hour" : "right now"}.</strong></p><p>Reapply straight away after swimming, towel drying or heavy sweating.</p></div></div>`
+          ? `<div class="alert">${icon("warn")}<div><p><strong>UV ${Math.round(uvNow)}: ${esc(lvNow.name)} ${label ? "at the peak hour" : "right now"}.</strong></p><p>Reapply after swimming or sweating.</p></div></div>`
           : ""
       }
     </div>
@@ -170,14 +170,14 @@ function render() {
         ${
           burnNow
             ? deep
-              ? `<p class="center">Strong sun can leave dark marks that take months to fade. SPF 50, no white cast.</p><details class="more"><summary>Burn time estimate</summary><div><p>Without sunscreen you may start to burn after about ${minutesText(burnNow)}.</p></div></details>`
-              : `<p class="center">Without sunscreen, you may start to burn in about <strong>${minutesText(burnNow)}</strong>${st.profile?.albinism ? ", and it may be faster" : ""}.</p>`
+              ? `<p class="center">Strong sun can leave dark marks. SPF 50, no white cast.</p>`
+              : `<p class="center">Without sunscreen${st.profile?.albinism ? ", maybe faster" : ""}.</p>`
             : `<p class="center muted">${Number.isFinite(uvNow) ? "The sun is weak this hour." : "UV isn't known for this hour."}</p>`
         }
         ${day.protect ? `<div class="protect">${icon("sun")}<div><p class="p-lab">Protect hours</p><p class="p-val">${esc(fmtClock(day.protect.from))} – ${esc(fmtClock(day.protect.to))}</p></div></div>` : ""}
         <p class="credit">Estimate. Not medical advice.</p>
       </section>
-      <section class="card-tint stack-sm" aria-labelledby="bo-h"><h2 id="bo-h">Skin playing up?</h2><p class="muted">Scan again and Parasol compares it with your first scan and the weather since you landed.</p><a class="btn btn-secondary" href="/rescan">Do a rescan ${icon("arrow")}</a></section>
+      <section class="card-tint stack-sm" aria-labelledby="bo-h"><h2 id="bo-h">Skin playing up?</h2><p class="muted">Take a new selfie and we compare it with your first one.</p><a class="btn btn-secondary" href="/rescan">My skin changed ${icon("arrow")}</a></section>
     </div>
   </div>`;
 
@@ -209,13 +209,13 @@ function renderTimer() {
     box.innerHTML = `
       <div class="ring idle"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="none" class="r-track" stroke-width="7"/><circle cx="50" cy="50" r="42" fill="none" class="r-prog" stroke-width="7" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="0"/></svg>
       <div class="ring-in"><span class="r-lab">Reapply every</span><span class="r-big" id="idle-min">2:00</span><span class="r-unit">hours : mins</span></div></div>
-      <fieldset class="seg"><legend>Swimming or sweating? (with water-resistant sunscreen)</legend>
+      <fieldset class="seg"><legend>Swimming or sweating?</legend>
         <label><input type="radio" name="tmode" value="120" checked><span>No: 2 hours</span></label>
         <label><input type="radio" name="tmode" value="80"><span>80 min label</span></label>
         <label><input type="radio" name="tmode" value="40"><span>40 min label</span></label>
       </fieldset>
       <button type="button" class="btn btn-primary btn-block" id="t-start">${icon("sun")} I'm going outside now</button>
-      <p class="credit">Reapply every 2 hours, or after 40 or 80 minutes of swimming or sweating, matching the water-resistance on the label (FDA, AAD).</p>`;
+      <p class="credit">Reapply every 2 hours, or sooner after swimming (FDA, AAD).</p>`;
     box.querySelectorAll('[name="tmode"]').forEach((r) =>
       r.addEventListener("change", () => {
         const m = Number(r.value);

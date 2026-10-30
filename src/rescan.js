@@ -98,7 +98,7 @@ export function compare(baseline, current, days = [], selfReport = {}, profile =
         const wet = h.filter((d) => d.wx.rhMean >= HUMID_RH);
         return wet.length
           ? `up to ${maxOf(wet, "rhMean")}% humidity and ${fmt(maxOf(h, "tMax"))} °C`
-          : `muggy heat (dew point up to ${fmt(maxOf(h, "dewMean"))} °C) and ${fmt(maxOf(h, "tMax"))} °C`;
+          : `hot, sticky air and ${fmt(maxOf(h, "tMax"))} °C`;
       });
       if (ev) causes.push({ id: "humid_heat", evidence: ev, confidence: "likely" });
     }

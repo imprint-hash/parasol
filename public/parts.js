@@ -74,19 +74,19 @@ export function concernBars(scores = {}, { only } = {}) {
 /* ---------- sun type ---------- */
 
 export const FITZ = {
-  I: { cap: "Very fair", line: "Always burns, never tans. Burns fast in strong sun." },
-  II: { cap: "Fair", line: "Burns easily, tans a little." },
-  III: { cap: "Medium", line: "Sometimes burns, tans slowly to light brown." },
-  IV: { cap: "Olive", line: "Rarely burns, tans easily. Dark marks can follow strong sun." },
-  V: { cap: "Brown", line: "Very rarely burns. Strong sun can leave dark marks that last months." },
-  VI: { cap: "Deep", line: "Almost never burns. Sun still damages skin and can leave dark marks." },
+  I: { cap: "Burns very easily", line: "Always burns, never tans." },
+  II: { cap: "Burns easily", line: "Burns easily, tans a little." },
+  III: { cap: "Sometimes burns", line: "Sometimes burns, tans slowly." },
+  IV: { cap: "Burns a little", line: "Rarely burns, tans easily. Strong sun can leave dark marks." },
+  V: { cap: "Seldom burns", line: "Very rarely burns. Strong sun can leave dark marks that last months." },
+  VI: { cap: "Rarely burns", line: "Almost never burns. Sun still harms skin and can leave dark marks." },
 };
 export const FITZ_KEYS = ["I", "II", "III", "IV", "V", "VI"];
 
 export function fitzScale(selected, name = "fitz") {
   return `<div class="fitz-row">${FITZ_KEYS.map(
     (k, i) =>
-      `<label><input type="radio" name="${name}" value="${k}" ${k === selected ? "checked" : ""} aria-label="Sun type ${k}: ${FITZ[k].cap}"><span class="fitz-sw fz${i + 1}" aria-hidden="true">${k === selected ? icon("check") : k}</span><span class="f-cap" aria-hidden="true">${k === selected ? `Type ${k}` : FITZ[k].cap}</span></label>`
+      `<label><input type="radio" name="${name}" value="${k}" ${k === selected ? "checked" : ""} aria-label="${k}: ${FITZ[k].cap}"><span class="fitz-sw fz${i + 1}" aria-hidden="true">${k === selected ? icon("check") : k}</span><span class="f-cap" aria-hidden="true">${FITZ[k].cap}</span></label>`
   ).join("")}</div>`;
 }
 
@@ -100,11 +100,11 @@ export function burnDial(burn, uvMax, { deep = false } = {}) {
   const frac = Number.isFinite(u) ? Math.min(1, u / 12) : 0;
   let inner;
   if (!burn) {
-    inner = `<span class="d-sub">${icon("sun")} UV ${Number.isFinite(u) ? Math.round(u) : "?"}</span><span class="d-big" style="font-size:1.5rem">${Number.isFinite(u) && u < 1 ? "Low sun" : "No estimate"}</span>`;
+    inner = `<span class="d-big" style="font-size:1.5rem">${Number.isFinite(u) && u < 1 ? "Low sun" : "No estimate"}</span>`;
   } else if (deep) {
-    inner = `<span class="d-lab">${icon("warn")} Dark-mark risk</span><span class="d-big" style="font-size:2rem">UV ${Math.round(u)}</span><span class="d-sub">${icon("clock")} peak ${esc(fmtHour(burn.atHour))}</span>`;
+    inner = `<span class="d-lab">${icon("warn")} Dark marks</span><span class="d-big" style="font-size:1.75rem">${esc(lvl.name)}</span><span class="d-sub">${icon("clock")} at ${esc(fmtHour(burn.atHour))}</span>`;
   } else {
-    inner = `<span class="d-lab">${icon("warn")} May burn in</span><span class="d-big">${burn.minutesLow === burn.minutesHigh ? burn.minutesLow : `${burn.minutesLow}–${burn.minutesHigh}`}<span class="d-unit"> min</span></span><span class="d-sub">${icon("clock")} at ${esc(fmtHour(burn.atHour))}, UV ${Math.round(u)}</span>`;
+    inner = `<span class="d-lab">Burns in about</span><span class="d-big">${burn.minutesLow === burn.minutesHigh ? burn.minutesLow : `${burn.minutesLow}–${burn.minutesHigh}`}<span class="d-unit"> min</span></span><span class="d-sub">${icon("clock")} at ${esc(fmtHour(burn.atHour))}</span>`;
   }
   return `<div class="dial" style="--uv-c: var(--uv-${lvl.key})">
     <svg viewBox="0 0 160 160" aria-hidden="true" focusable="false">

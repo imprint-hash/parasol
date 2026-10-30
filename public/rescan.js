@@ -52,7 +52,7 @@ function start() {
   const persona = st.demo ? PERSONAS[st.demo] : null;
   const demoBase = persona ? bases.find((s) => s.demo?.persona === persona.id) : null;
   if (!bases.length) {
-    view.innerHTML = `<div class="card stack-sm"><h2>No first scan yet</h2><p class="muted">A rescan compares against your first scan. Start there, or try the demo.</p><p class="row gap"><a class="btn btn-primary" href="/scan">Use my selfie</a><a class="btn btn-secondary" href="/#demo">Try the demo</a></p></div>`;
+    view.innerHTML = `<div class="card stack-sm"><h2>No first scan yet</h2><p class="muted">We compare with your first selfie. Start there, or try the demo.</p><p class="row gap"><a class="btn btn-primary" href="/scan">Use my selfie</a><a class="btn btn-secondary" href="/#demo">Try the demo</a></p></div>`;
     return;
   }
   const defBase = (demoBase || bases[0]).id;

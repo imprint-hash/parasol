@@ -20,7 +20,7 @@ export function applyPrefs() {
   const s = Math.min(2, Math.max(1, Number(p.textScale) || 1));
   root.style.fontSize = s === 1 ? "" : `${s * 100}%`;
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.content = dark ? "#15171a" : "#faf8ff";
+  if (meta) meta.content = dark ? "#1d1410" : "#faf6f1";
   document.dispatchEvent(new CustomEvent("parasol:prefs"));
 }
 darkQ.addEventListener?.("change", applyPrefs);

@@ -103,6 +103,10 @@ const P = {
   compass: '<circle cx="12" cy="12" r="10"/><path d="m16.2 7.8-2.1 6.3-6.3 2.1 2.1-6.3z"/>',
   bottle: '<path d="M9 2h6v3l2 3v12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V8l2-3z"/><path d="M7 12h10"/>',
   search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+  snow: '<path d="M12 2v20M4.9 7l14.2 10M4.9 17 19.1 7M9 4l3 2 3-2M9 20l3-2 3 2"/>',
+  haze: '<path d="M3 8h12M3 12h18M3 16h14M7 20h12M17 6a3 3 0 0 1 3 3"/>',
+  home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+  swing: '<path d="M7 4v16M7 4 4 7M7 4l3 3M17 20V4M17 20l-3-3M17 20l3-3"/>',
   vibrate: '<rect x="7" y="4" width="10" height="16" rx="2"/><path d="M3 8v8M21 8v8"/>',
 };
 export const icon = (name, cls = "") =>
@@ -110,7 +114,7 @@ export const icon = (name, cls = "") =>
 
 /** The Parasol mark: a parasol canopy over a handle. */
 export const mark = (size = 40) =>
-  `<svg class="mark" viewBox="0 0 64 64" width="${size}" height="${size}" aria-hidden="true" focusable="false"><rect width="64" height="64" rx="16" fill="var(--mark-bg)"/><path d="M10 32C10 19.8 19.8 11 32 11s22 8.8 22 21c-3.2-2.6-6.6-2.6-9.6 0-3.2-2.6-6.8-2.6-10 0h-.8c-3.2-2.6-6.8-2.6-10 0-3-2.6-6.4-2.6-9.6 0z" fill="var(--mark-fg)"/><path d="M32 32v15a5 5 0 0 1-10 0" fill="none" stroke="var(--mark-ink)" stroke-width="4" stroke-linecap="round"/><path d="M32 11V7" stroke="var(--mark-ink)" stroke-width="4" stroke-linecap="round"/></svg>`;
+  `<svg class="mark" viewBox="0 0 64 64" width="${size}" height="${size}" aria-hidden="true" focusable="false"><rect width="64" height="64" rx="32" fill="var(--mark-bg)"/><path d="M10 32C10 19.8 19.8 11 32 11s22 8.8 22 21c-3.2-2.6-6.6-2.6-9.6 0-3.2-2.6-6.8-2.6-10 0h-.8c-3.2-2.6-6.8-2.6-10 0-3-2.6-6.4-2.6-9.6 0z" fill="var(--mark-fg)"/><path d="M32 32v15a5 5 0 0 1-10 0" fill="none" stroke="var(--mark-ink)" stroke-width="4" stroke-linecap="round"/><path d="M32 11V7" stroke="var(--mark-ink)" stroke-width="4" stroke-linecap="round"/></svg>`;
 
 /* ---------- shell ---------- */
 
@@ -126,7 +130,7 @@ const DEMO_STEPS = [
   { page: "scan", label: "Your skin result", next: "/trip", nextLabel: "Your trip" },
   { page: "trip", label: "Your trip", next: "/forecast", nextLabel: "Your skin forecast" },
   { page: "forecast", label: "Skin forecast", next: "/kit", nextLabel: "Build my trip kit" },
-  { page: "kit", label: "Trip kit and checkout", next: "/rescan?demo=1", nextLabel: "Day 3 in Lagos: rescan" },
+  { page: "kit", label: "Trip kit and checkout", next: "/rescan?demo=1", nextLabel: "Day 3 in Dubai: rescan" },
   { page: "rescan", label: "Day 3 rescan", next: "/today", nextLabel: "Today and the sun timer" },
   { page: "today", label: "Today", next: "/data", nextLabel: "My data (end of demo)" },
 ];
@@ -146,7 +150,7 @@ export function shell({ page, speechText } = {}) {
   const header = document.createElement("header");
   header.className = "topbar";
   header.innerHTML = `
-    <a class="brand" href="/" aria-label="Parasol home">${mark(44)}<span class="brand-txt"><span class="brand-name">Parasol</span><span class="brand-sub">Your skin, on the road.</span></span></a>
+    <a class="brand" href="/" aria-label="Parasol home">${mark(40)}<span class="brand-txt"><span class="brand-name">Parasol</span><span class="brand-sub">Your skin, on the road.</span></span></a>
     <nav class="topnav" aria-label="Main">${navLinks(page)}</nav>
     <div class="tb-actions" role="group" aria-label="Reading and display">
       <button type="button" class="icon-btn aa" id="btn-aa" aria-expanded="false" aria-controls="display-panel"><span aria-hidden="true">Aa</span><span class="sr-only">Display and low-vision settings</span></button>
@@ -344,6 +348,7 @@ document.addEventListener(
   (e) => {
     const img = e.target;
     if (img?.classList?.contains("thumb") && img.nextElementSibling?.tagName === "TEMPLATE") img.parentElement.replaceWith(img.nextElementSibling.content.cloneNode(true));
+    else if (img?.tagName === "IMG" && img.closest(".r-thumb")) img.remove();
   },
   true
 );
@@ -357,3 +362,28 @@ export const money = (amount, currency = "USD") => {
     return `${n} ${currency}`;
   }
 };
+
+/** ARIA tabs: click or arrow keys switch panels; only the active tab is in the tab order. */
+export function wireTabs(list) {
+  if (!list) return;
+  const tabs = [...list.querySelectorAll('[role="tab"]')];
+  const select = (t, focus) => {
+    tabs.forEach((x) => {
+      const on = x === t;
+      x.setAttribute("aria-selected", String(on));
+      x.tabIndex = on ? 0 : -1;
+      const pan = document.getElementById(x.getAttribute("aria-controls"));
+      if (pan) pan.hidden = !on;
+    });
+    if (focus) t.focus();
+  };
+  tabs.forEach((t, i) => {
+    t.addEventListener("click", () => select(t));
+    t.addEventListener("keydown", (e) => {
+      const k = { ArrowRight: 1, ArrowLeft: -1, Home: -i, End: tabs.length - 1 - i }[e.key];
+      if (k === undefined) return;
+      e.preventDefault();
+      select(tabs[(i + k + tabs.length) % tabs.length], true);
+    });
+  });
+}

@@ -2,14 +2,76 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Parasol</title>
+  <meta name="description" content="Your skin, on the road. A day-by-day skin and sun forecast for your trip, built for every skin tone, from albinism to very deep skin.">
+  <meta name="theme-color" content="#faf8ff">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon-180.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;700&family=Literata:opsz,wght@7..72,500..700&display=swap">
+  <link rel="stylesheet" href="/app.css">
+  <script src="/boot.js"></script>
+  <script type="module" src="/home.js"></script>
 </head>
 <body>
-  <main>
-    <h1>Parasol</h1>
-    <p>Your skin, on the road. The app is being built; the API lives under <code>/api/health</code>.</p>
-    <p>Not medical advice. Burn times are estimates.</p>
-  </main>
+<main>
+  <div class="home-grid">
+    <section class="hero" aria-labelledby="h1">
+      <div class="row spread gap">
+        <span class="badge badge-warm">For every skin tone</span>
+        <span class="badge badge-neutral">No account needed</span>
+      </div>
+      <h1 id="h1">Sunlight shifts.<br>Your protection should too.</h1>
+      <p class="lede">A day-by-day skin forecast for your trip. Humidity, cabin air, cold and UV, matched to your skin. Made for every skin tone, light-sensitive eyes, and travellers who burn or mark easily.</p>
+      <div class="mosaic" aria-hidden="true">
+        <div class="tile-art">
+          <svg viewBox="0 0 200 120" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6c58f"/><stop offset="1" stop-color="#d14221"/></linearGradient></defs><rect width="200" height="120" fill="url(#g1)"/><circle cx="150" cy="30" r="22" fill="#fff3d6" opacity=".9"/><g transform="translate(18 52)"><rect width="24" height="40" rx="8" fill="#fbeee6"/><rect x="28" width="24" height="40" rx="8" fill="#f1d9c6"/><rect x="56" width="24" height="40" rx="8" fill="#ddb898"/><rect x="84" width="24" height="40" rx="8" fill="#b98763"/><rect x="112" width="24" height="40" rx="8" fill="#8a5a3c"/><rect x="140" width="24" height="40" rx="8" fill="#4f3326"/></g></svg>
+          <span>Sun types I to VI</span>
+        </div>
+        <div class="tile-art">
+          <svg viewBox="0 0 200 120" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7bc2ff"/><stop offset="1" stop-color="#fff1e0"/></linearGradient></defs><rect width="200" height="120" fill="#e9e3dc"/><rect x="55" y="8" width="90" height="104" rx="40" fill="#cfc6bc"/><rect x="63" y="16" width="74" height="88" rx="34" fill="url(#g2)"/><circle cx="118" cy="40" r="10" fill="#fff" opacity=".95"/><path d="M63 80c12-8 26-6 36 0s24 6 38-2v26H63z" fill="#fff" opacity=".9"/></svg>
+          <span>Cabin air: often under 20% humidity</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="stack">
+      <section aria-labelledby="start-h" class="stack-sm">
+        <h2 id="start-h" class="sr-only">Get started</h2>
+        <button type="button" class="choice choice-blue" id="btn-demo" aria-expanded="false" aria-controls="demo">
+          <span class="c-ic" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg></span>
+          <span class="c-txt"><span class="c-title">Try the demo (no selfie)</span><span class="c-sub">London → Lagos → Cape Town, starting tomorrow</span></span>
+          <span class="c-go" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></span>
+        </button>
+
+        <section id="demo" class="card" hidden aria-labelledby="demo-h">
+          <h2 id="demo-h">Choose a demo traveller</h2>
+          <p class="muted">Each one is a real YouCam skin analysis of an AI-generated face. Nothing is sent from your device.</p>
+          <div class="personas" id="personas"></div>
+          <div id="demo-msg"></div>
+        </section>
+
+        <a class="choice choice-primary" href="/scan">
+          <span class="c-ic" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3.5"/></svg></span>
+          <span class="c-txt"><span class="c-title">Use my selfie</span><span class="c-sub">About 30 seconds. Analysed by YouCam, not kept by Parasol.</span></span>
+          <span class="c-go" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </a>
+        <p class="center"><a href="/scan?manual=1">Rather not use a photo? Choose your skin by hand</a></p>
+      </section>
+
+      <section class="card-tint stack-sm" aria-labelledby="how-h">
+        <h2 id="how-h" class="h3" style="font-size:1.1875rem">What happens to your data</h2>
+        <div class="facts">
+          <div class="fact"><span class="f-ic f-warm" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="11" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span><div><strong>Your photo is not kept</strong><span>It is sent to YouCam (Perfect Corp.) for skin analysis and is not stored by Parasol.</span></div></div>
+          <div class="fact"><span class="f-ic f-amber" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><div><strong>Your trip and results stay on this device</strong><span>No account. Delete everything any time in My data.</span></div></div>
+          <div class="fact"><span class="f-ic f-blue" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span><div><strong>Easy to see and hear</strong><span>Tap Aa for low-vision mode and gentle dark. The speaker reads each page aloud.</span></div></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
 </body>
 </html>

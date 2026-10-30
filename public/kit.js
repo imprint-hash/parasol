@@ -1,6 +1,6 @@
 // /kit: one pick per slot with "why" chips, alternatives, buy-it-there specs
 // and Shopify checkout (opens in a new tab, password and test card beside it).
-import { shell, esc, icon, $, errorBox, loading, productThumb, money, setRibbonNext } from "./ui.js";
+import { shell, esc, icon, $, errorBox, loading, productThumb, photoImg, money, setRibbonNext } from "./ui.js";
 import { load, update, profileForApi } from "./state.js";
 import { kit as getKit, cart, config } from "./api.js";
 import { announce, focusHeading } from "./a11y.js";
@@ -15,13 +15,22 @@ let extra = []; // products added from a rescan: [{slot, product}]
 
 const slotName = (s) => SLOT_NAMES[s] || s;
 
+// The kit starts with only the essentials hearted; every other slot waits
+// under "Add if you like" until the person adds it. The hat is an essential
+// for sun type I-II and for albinism.
+const ESSENTIALS = ["sunscreen", "lip", "moisturiser-day"];
+const KIT_VERSION = 2; // saved kits from before essentials-first are re-chosen once
+const isEssential = (slot, profile = load().profile) => ESSENTIALS.includes(slot) || (slot === "hat" && !!(profile?.albinism || ["I", "II"].includes(profile?.fitz)));
+const firstChoice = (profile) => Object.fromEntries(res.slots.map((s) => [s.slot, isEssential(s.slot, profile) && s.pick && s.pick.available !== false ? pid(s.pick) : null]));
+
 shell({ page: "kit", speechText });
 
 function speechText() {
   if (!res) return "Your trip kit. Loading.";
   const items = lines();
   const picks = res.slots.filter((s) => chosen[s.slot] && pickOf(s)).map((s) => `${slotName(s.slot)}: ${pickOf(s).title}. Why: ${(s.why || []).join(", ")}.`);
-  return `Your trip kit. ${picks.join(" ")} ${items.length} items, ${money(total(), currency())} in total. Checkout opens the Parasol demo shop in a new tab. Demo shop. Not affiliated with these brands.`;
+  const more = res.slots.filter((s) => !chosen[s.slot] && pickOf(s) && !isEssential(s.slot)).map((s) => slotName(s.slot));
+  return `Your trip kit. ${picks.join(" ")} ${more.length ? `Add if you like: ${more.join(", ")}.` : ""} ${items.length} items, ${money(total(), currency())} in total. Checkout opens the Parasol demo shop in a new tab. Demo shop. Not affiliated with these brands.`;
 }
 
 // Products are keyed by variant id; the offline CSV list has none, so fall back to the handle.
@@ -46,15 +55,19 @@ async function start() {
   }
   if (st.kit?.res) {
     ({ res, chosen = {}, extra = [] } = st.kit);
+    if (st.kit.v !== KIT_VERSION) {
+      chosen = firstChoice(st.profile);
+      persist();
+    }
     return render();
   }
   view.innerHTML = loading("Choosing products for your skin and trip…");
   try {
     res = await getKit(profileForApi(st.profile), st.forecast.needs, st.trip?.carryOn !== false);
-    chosen = Object.fromEntries(res.slots.map((s) => [s.slot, s.pick?.available === false ? null : pid(s.pick)]));
+    chosen = firstChoice(st.profile);
     persist();
     render();
-    announce(`Your kit is ready: ${res.slots.length} items.`);
+    announce(`Your kit is ready: ${lines().length} essentials picked, more to add if you like.`);
   } catch (err) {
     view.innerHTML = errorBox(err, { retry: true });
     view.querySelector("[data-retry]")?.addEventListener("click", start);
@@ -62,7 +75,7 @@ async function start() {
 }
 
 function persist() {
-  update((s) => (s.kit = { res, chosen, extra }));
+  update((s) => (s.kit = { res, chosen, extra, v: KIT_VERSION }));
 }
 
 const GROUPS = {
@@ -83,7 +96,7 @@ function card(s, i) {
     return `<article class="pcard" data-slot="${esc(s.slot)}" aria-labelledby="k-${i}" ${hidden}><div class="pc-img">${productArt(null)}<span class="badge badge-neutral pc-slot">${esc(slotName(s.slot))}</span></div><div class="pc-body"><h2 class="k-title" id="k-${i}">${esc(slotName(s.slot))}</h2><p class="k-meta">Nothing in the demo shop fits this yet. See "Or buy it there".</p></div></article>`;
   const on = !!chosen[s.slot];
   const alts = [s.pick, ...(s.alternatives || [])].filter((x) => x && pid(x) !== pid(p));
-  const img = p.image ? `<span class="thumb-wrap"><img class="thumb" src="${esc(p.image)}" alt="${esc(p.imageAlt || "")}" loading="lazy"><template>${productArt(p)}</template></span>` : productArt(p);
+  const img = photoImg(p, productArt(p));
   return `<article class="pcard" data-slot="${esc(s.slot)}" aria-labelledby="k-${i}" ${hidden}>
     <div class="pc-img">${img}<span class="badge badge-neutral pc-slot">${esc(slotName(s.slot))}</span>
       <button type="button" class="heart" data-toggle="${esc(s.slot)}" aria-pressed="${on}" ${p.available === false ? "disabled" : ""}>${HEART}<span class="sr-only">${on ? "In my kit" : "Add to my kit"}: ${esc(p.title)}</span></button>
@@ -114,6 +127,9 @@ async function render() {
   const cities = (st.trip?.legs || []).map((l) => l.name).filter(Boolean);
   $("#sub").textContent = `Picked from the Parasol demo shop for ${skinWord(st.profile)} and your trip${cities.length ? ` to ${cities.join(", ")}` : ""}. Tap the heart to keep or drop an item.`;
   const groups = ["all", ...Object.keys(GROUPS).filter((g) => res.slots.some((x) => groupOf(x.slot) === g))];
+  const indexed = res.slots.map((s, i) => [s, i]);
+  const essential = indexed.filter(([s]) => isEssential(s.slot, st.profile));
+  const optional = indexed.filter(([s]) => !isEssential(s.slot, st.profile));
   view.innerHTML = `
   <div class="row spread gap">
     <h2 id="find-h" style="font-size:1.5rem">Find products for your trip</h2>
@@ -121,7 +137,13 @@ async function render() {
   </div>
   <div class="filters" role="group" aria-labelledby="find-h">${groups.map((g) => `<button type="button" class="filter" data-filter="${g}" aria-pressed="${g === filter}">${GROUP_NAMES[g]}</button>`).join("")}</div>
   ${offline ? `<div class="alert alert-info">${icon("info")}<div><p><strong>${esc(res.shop?.message || res.message || "Shop is offline. Here's the list.")}</strong></p></div></div>` : ""}
-  <div class="kit-grid" id="cards">${res.slots.map(card).join("")}</div>
+  <div class="kit-grid" id="cards">${essential.map(([s, i]) => card(s, i)).join("")}</div>
+  ${
+    optional.length
+      ? `<section class="stack-sm" id="more" aria-labelledby="more-h" ${moreHidden() ? "hidden" : ""}><h2 id="more-h" style="font-size:1.375rem">Add if you like</h2><p class="muted small">Not in your kit yet. Tap the heart to add one.</p><div class="kit-grid" id="cards-more">${optional.map(([s, i]) => card(s, i)).join("")}</div></section>`
+      : ""
+  }
+  <p class="credit">Product images © their brands or credited photographers. Demo shop, not affiliated with these brands.</p>
   ${
     extra.length
       ? `<section class="card" aria-labelledby="extra-h"><h2 id="extra-h">Added after your rescan</h2><ul class="alts">${extra
@@ -151,6 +173,9 @@ async function render() {
   updateBar();
   setRibbonNext("/rescan?demo=1", "Day 3 in Dubai: rescan");
 }
+
+// The "Add if you like" section hides when the filter leaves none of its cards.
+const moreHidden = () => filter !== "all" && !res.slots.some((s) => !isEssential(s.slot) && groupOf(s.slot) === filter);
 
 const skinWord = (p) => (p ? `${{ oily: "oily", dry: "dry", combination: "combination", normal: "normal" }[p.skinType] || ""} skin, sun type ${p.fitz}${p.albinism ? " with albinism" : ""}` : "your skin");
 
@@ -189,6 +214,7 @@ view.addEventListener("click", async (e) => {
     filter = b.dataset.filter;
     view.querySelectorAll(".filter").forEach((f) => f.setAttribute("aria-pressed", String(f.dataset.filter === filter)));
     view.querySelectorAll(".pcard").forEach((c) => (c.hidden = filter !== "all" && groupOf(c.dataset.slot) !== filter));
+    if ($("#more")) $("#more").hidden = moreHidden();
     announce(`Showing ${GROUP_NAMES[filter]}.`);
   } else if (b.dataset.rmextra != null) {
     extra.splice(Number(b.dataset.rmextra), 1);

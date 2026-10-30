@@ -694,7 +694,7 @@ table.data .link-btn { white-space: nowrap; min-height: 0; padding: 0; }
 .kit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1rem; }
 .pcard { background: var(--card); border-radius: var(--r-lg); padding: 0.625rem 0.625rem 1rem; display: flex; flex-direction: column; gap: 0.625rem; position: relative; }
 .pcard .pc-img { position: relative; border-radius: 1.25rem; background: var(--beige-2); aspect-ratio: 1 / 0.82; display: grid; place-items: center; overflow: hidden; }
-.pcard .pc-img img { width: 72%; height: 82%; object-fit: contain; mix-blend-mode: multiply; }
+.pcard .pc-img img { position: absolute; inset: 0; margin: auto; width: 72%; height: 82%; object-fit: contain; background: transparent; border-radius: 0; mix-blend-mode: multiply; }
 :root[data-theme="dark"] .pcard .pc-img img { mix-blend-mode: normal; }
 .pcard .pc-img .thumb-ic .ic, .pcard .pc-img > .ic { width: 56px; height: 56px; color: var(--ink-3); }
 .pcard .pc-slot { position: absolute; left: 0.625rem; top: 0.625rem; }

@@ -1,0 +1,212 @@
+{
+  "supergoop-unseen-sunscreen-spf-50-mini": {
+    "source": "brand",
+    "image": "https://cdn.shopify.com/s/files/1/1503/5658/files/supergoop-unseen-sunscreen-spf-50-product-and-texture-20ml.jpg?v=1774797043",
+    "page": "https://supergoop.com/products/unseen-sunscreen-spf-50",
+    "owner": "Supergoop!",
+    "license": "© Supergoop!, used for demo identification only"
+  },
+  "supergoop-play-everyday-lotion-spf-50-1oz": {
+    "source": "brand",
+    "image": "https://cdn.shopify.com/s/files/1/1503/5658/files/PLAY_30ml_Img1_new.jpg?v=1774797451",
+    "page": "https://supergoop.com/products/everyday-sunscreen",
+    "owner": "Supergoop!",
+    "license": "© Supergoop!, used for demo identification only"
+  },
+  "supergoop-mineral-mattescreen-spf-40-mini": {
+    "source": "open-beauty-facts",
+    "image": "https://images.openbeautyfacts.org/images/products/081/621/802/6110/front_en.5.full.jpg",
+    "page": "https://world.openbeautyfacts.org/product/0816218026110",
+    "code": "0816218026110",
+    "author": "laurren",
+    "license": "CC BY-SA 3.0",
+    "note": "Photo shows the 1.5 fl oz size in the same packaging."
+  },
+  "supergoop-play-everyday-face-lotion-spf-50-fragrance-free": {
+    "source": "brand",
+    "image": "https://cdn.shopify.com/s/files/1/1503/5658/files/supergoop-play-face-lotion-spf-50-product-and-texture_8373c238-583f-4d37-a6e3-34d550c84b67.jpg?v=1744305168",
+    "page": "https://supergoop.com/products/play-everyday-face-lotion-spf-50",
+    "owner": "Supergoop!",
+    "license": "© Supergoop!, used for demo identification only"
+  },
+  "supergoop-glowscreen-spf-40-mini": {
+    "source": "brand",
+    "image": "https://cdn.shopify.com/s/files/1/1503/5658/files/Glowscreen_Sunrise_20ml_Img1_1f710ae4-fdd7-4c81-96db-dbfc1498d287.jpg?v=1756225681",
+    "page": "https://supergoop.com/products/glowscreen-spf-40",
+    "owner": "Supergoop!",
+    "license": "© Supergoop!, used for demo identification only"
+  },
+  "eltamd-uv-clear-spf-46-deluxe-mini": {
+    "source": "brand",
+    "image": "https://cdn.shopify.com/s/files/1/0467/8120/2585/files/UVClearUntinted0.5oz_6efd9457-7bb7-483c-802c-6ff04b0faf53.png?v=1791269128",
+    "page": "https://eltamd.com/products/eltamd-uv-clear-broad-spectrum-spf-46-copy",
+    "owner": "EltaMD",
+    "license": "© EltaMD, used for demo identification only"
+  },
+  "eltamd-uv-clear-tinted-spf-46-deluxe-mini": {
+    "source": "brand",
+    "image": "https://cdn.shopify.com/s/files/1/0467/8120/2585/files/UVClearTinted0.5oz.jpg?v=1791265517",
+    "page": "https://eltamd.com/products/mini-deluxe-uv-clear-tinted-broad-spectrum-spf-46",
+    "owner": "EltaMD",
+    "license": "© EltaMD, used for demo identification only"
+  },
+  "eltamd-uv-clear-deep-tinted-spf-46": {
+    "source": "brand",
+    "image": "https://cdn.shopify.com/s/files/1/0467/8120/2585/files/UVClearDeepTinted1.7oz.jpg?v=1791265647",
+    "page": "https://eltamd.com/products/eltamd-uv-clear-deep-tinted-broad-spectrum-spf-46",
+    "owner": "EltaMD",
+    "license": "© EltaMD, used for demo identification only"
+  },
+  "eltamd-uv-clear-blemish-prone-oil-balancing-spf-50-deluxe-mini": {
+    "source": "brand",
+    "image": "https://cdn.shopify.com/s/files/1/0467/8120/2585/files/UVClearBPOP0.5oz.jpg?v=1791268597",
+    "page": "https://eltamd.com/products/deluxe-mini-uv-clear-blemish-prone-oil-balancing-spf-50",
+    "owner": "EltaMD",
+    "license": "© EltaMD, used for demo identification only"
+  },
+  "black-girl-sunscreen-make-it-matte-spf-45": {
+    "source": "brand",
+    "image": "https://blackgirlsunscreen.com/wp-content/uploads/2021/01/Hero.jpg",
+    "page": "https://blackgirlsunscreen.com/product/make-it-matte-spf-45/",
+    "owner": "Black Girl Sunscreen",
+    "license": "© Black Girl Sunscreen, used for demo identification only"
+  },
+  "beauty-of-joseon-relief-sun-spf50": {
+    "source": "brand",
+    "image": "https://cdn.shopify.com/s/files/1/0558/4135/7989/files/03_0805__-_ROW.jpg?v=1787196277",
+    "page": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+    "owner": "Beauty of Joseon",
+    "license": "© Beauty of Joseon, used for demo identification only"
+  },
+  "cerave-hydrating-mineral-sunscreen-spf-30-sheer-tint-deep": {
+    "source": "brand",
+    "image": "https://www.cerave.com/-/media/project/loreal/brand-sites/cerave/americas/us/sunscreen/face/sheer-tint-deep/sheer-tint-deep_front.jpg",
+    "page": "https://www.cerave.com/sunscreen/face/hydrating-mineral-sunscreen-spf-30-face-sheer-tint-deep",
+    "owner": "CeraVe",
+    "license": "© CeraVe, used for demo identification only"
+  },
+  "neutrogena-hydro-boost-water-gel": {
+    "source": "open-beauty-facts",
+    "image": "https://images.openbeautyfacts.org/images/products/007/050/111/0478/front_en.3.full.jpg",
+    "page": "https://world.openbeautyfacts.org/product/0070501110478",
+    "code": "0070501110478",
+    "author": "openfoodfacts-contributors",
+    "license": "CC BY-SA 3.0"
+  },
+  "cerave-moisturizing-cream-travel": {
+    "source": "open-beauty-facts",
+    "image": "https://images.openbeautyfacts.org/images/products/030/187/137/3324/front_en.9.full.jpg",
+    "page": "https://world.openbeautyfacts.org/product/0301871373324",
+    "code": "0301871373324",
+    "author": "maddoxschmidlkofer",
+    "license": "CC BY-SA 3.0"
+  },
+  "vanicream-daily-facial-moisturizer": {
+    "source": "brand",
+    "image": "https://www.vanicream.com/dynamic-media/product/images/dfm-at24g-front-2671-ret-crop.jpg?gravity=center&v=galleryZoom&k=mvaGy9Fmo84Lz5jINUACoA",
+    "page": "https://www.vanicream.com/product/vanicream-daily-facial-moisturizer",
+    "owner": "Vanicream",
+    "license": "© Vanicream, used for demo identification only"
+  },
+  "cerave-hydrating-facial-cleanser-travel": {
+    "source": "open-beauty-facts",
+    "image": "https://images.openbeautyfacts.org/images/products/360/600/053/7576/front_en.11.full.jpg",
+    "page": "https://world.openbeautyfacts.org/product/3606000537576",
+    "code": "3606000537576",
+    "author": "chancewash",
+    "license": "CC BY-SA 3.0"
+  },
+  "cerave-foaming-facial-cleanser-travel": {
+    "source": "open-beauty-facts",
+    "image": "https://images.openbeautyfacts.org/images/products/360/600/053/7194/front_en.4.full.jpg",
+    "page": "https://world.openbeautyfacts.org/product/3606000537194",
+    "code": "3606000537194",
+    "author": "thaialagata",
+    "license": "CC BY-SA 3.0"
+  },
+  "vanicream-gentle-facial-cleanser-travel": {
+    "source": "brand",
+    "image": "https://www.vanicream.com/dynamic-media/product/images/facial-2.5-0000-dsc-0238.jpg?gravity=center&v=galleryZoom&k=e25DwhaYI7OW9eYx%2FXRerw",
+    "page": "https://www.vanicream.com/product/vanicream-facial-cleanser",
+    "owner": "Vanicream",
+    "license": "© Vanicream, used for demo identification only"
+  },
+  "supergoop-play-lip-shield-spf-30-mint": {
+    "source": "brand",
+    "image": "https://cdn.shopify.com/s/files/1/1503/5658/files/LipShieldTrio_Mint_Img2_f3cdc8f5-3b39-45fb-bc52-a8f6f296e9f8.jpg?v=1716987652",
+    "page": "https://supergoop.com/products/play-lip-shield-spf-30-mint",
+    "owner": "Supergoop!",
+    "license": "© Supergoop!, used for demo identification only"
+  },
+  "aquaphor-lip-repair-stick-spf-30": {
+    "source": "brand",
+    "image": "https://images-1.eucerin.com/~/media/eucerin%20relaunch%20media/media-center-items/2/7/b/474db1ef8fe04f62a3600591f85f01d2-screen.jpg",
+    "page": "https://www.aquaphorus.com/products/aquaphor/aquaphor-lip-repair-stick-sunscreen",
+    "owner": "Aquaphor (Beiersdorf)",
+    "license": "© Aquaphor (Beiersdorf), used for demo identification only"
+  },
+  "avene-thermal-spring-water-50ml": {
+    "source": "open-beauty-facts",
+    "image": "https://images.openbeautyfacts.org/images/products/328/277/922/8305/front_en.6.full.jpg",
+    "page": "https://world.openbeautyfacts.org/product/3282779228305",
+    "code": "3282779228305",
+    "author": "thaialagata",
+    "license": "CC BY-SA 3.0"
+  },
+  "sun-bum-after-sun-cool-down-lotion-3oz": {
+    "source": "brand",
+    "image": "https://cdn.shopify.com/s/files/1/0053/1798/4323/files/SB_USA_SUN_Cool_Down_Lotion_3_oz_DTC_Front_20-40385.png?v=1776878397",
+    "page": "https://www.sunbum.com/products/after-sun-cool-down-lotion",
+    "owner": "Sun Bum",
+    "license": "© Sun Bum, used for demo identification only"
+  },
+  "clean-and-clear-oil-absorbing-sheets-50": {
+    "source": "brand",
+    "image": "https://images.ctfassets.net/gknt2bo9hnlu/qiglTpAGbA6Qe11R3At4Y/40c179ec1c82e2f3db4a7fb492885028/CNC_NA_US_38137003566_120239817_500321_Oil_Absorb_Sheets_50ct_00000.webp?fm=jpg",
+    "page": "https://www.cleanandclear.com/classics/oil-absorbing-sheets",
+    "owner": "Clean & Clear (Kenvue)",
+    "license": "© Clean & Clear (Kenvue), used for demo identification only"
+  },
+  "coolibar-perla-packable-wide-brim-hat-black": {
+    "source": "brand",
+    "image": "https://cdn.shopify.com/s/files/1/0807/2298/5274/files/02214-001-1000_01_G_R_beaba512-6a03-4ae4-9458-7b0de1b09cde.jpg?v=1744390669",
+    "page": "https://coolibar.com/products/womens-perla-packable-wide-brim-hat-black",
+    "owner": "Coolibar",
+    "license": "© Coolibar, used for demo identification only"
+  },
+  "coolibar-leo-shapeable-wide-brim-hat-black": {
+    "source": "brand",
+    "image": "https://cdn.shopify.com/s/files/1/0807/2298/5274/files/02595-001-1000-03.jpg?v=1767891260",
+    "page": "https://coolibar.com/products/unisex-leo-shapeable-wide-brim-hat-black",
+    "owner": "Coolibar",
+    "license": "© Coolibar, used for demo identification only"
+  },
+  "coolibar-navagio-arm-sleeves-blue-dusk": {
+    "source": "brand",
+    "image": "https://cdn.shopify.com/s/files/1/0807/2298/5274/files/07008-097-1000-01_G.jpg?v=1770672915",
+    "page": "https://coolibar.com/products/mens-sun-arm-sleeves-blue-dusk",
+    "owner": "Coolibar",
+    "license": "© Coolibar, used for demo identification only"
+  },
+  "coolibar-lumaleo-sun-sleeves-arctic-blue": {
+    "source": "brand",
+    "image": "https://cdn.shopify.com/s/files/1/0807/2298/5274/files/10372-728-1000-01_G.jpg?v=1756328678",
+    "page": "https://coolibar.com/products/womens-w-lumaleo-sun-sleeves-arctic-blue",
+    "owner": "Coolibar",
+    "license": "© Coolibar, used for demo identification only"
+  },
+  "coolibar-solaira-polarized-sunglasses-black": {
+    "source": "brand",
+    "image": "https://cdn.shopify.com/s/files/1/0807/2298/5274/files/11115-001-1000-01_G.jpg?v=1779198289",
+    "page": "https://coolibar.com/products/unisex-solaira-polarized-sunglasses-black",
+    "owner": "Coolibar",
+    "license": "© Coolibar, used for demo identification only"
+  },
+  "coolibar-solvana-sunglasses-black": {
+    "source": "brand",
+    "image": "https://cdn.shopify.com/s/files/1/0807/2298/5274/files/11178-001-1000-01_W.jpg?v=1790277826",
+    "page": "https://coolibar.com/products/solvana-sunglasses-black",
+    "owner": "Coolibar",
+    "license": "© Coolibar, used for demo identification only"
+  }
+}

@@ -2,6 +2,7 @@
 // bottom nav, the demo "Next" ribbon, footer, plus small DOM helpers and icons.
 import { applyPrefs, setPref, prefs, lowVisionOn, speak, stopSpeaking, speechSupported, onSpeech, isSpeaking, focusHeading, announce } from "./a11y.js";
 import { load } from "./state.js";
+import { LOCAL_PHOTOS } from "./product-photos.js";
 
 /* ---------- helpers ---------- */
 
@@ -335,21 +336,43 @@ export function errorBox(err, { retry, demo } = {}) {
 
 export const loading = (text = "Loading…") => `<div class="loading" role="status">${icon("sun", "spin")}<span>${esc(text)}</span></div>`;
 
+/**
+ * Photo sources for a product, best first: our own copy in /products/<handle>.webp
+ * (credited in THIRD_PARTY_NOTICES.md), then the shop's featured image.
+ * Returns { src, fallback } or null when there is no photo at all.
+ */
+export function productPhoto(p) {
+  const local = p?.handle && LOCAL_PHOTOS.has(p.handle) ? `/products/${p.handle}.webp` : null;
+  const src = local || p?.image || null;
+  if (!src) return null;
+  return { src, fallback: local && p?.image && p.image !== local ? p.image : null };
+}
+
+/** `<img>` markup for a product photo with the drawn/icon stand-in kept in a <template> as the last fallback. */
+export function photoImg(p, stand, attrs = "") {
+  const ph = productPhoto(p);
+  if (!ph) return stand;
+  return `<span class="thumb-wrap"><img class="thumb" src="${esc(ph.src)}"${ph.fallback ? ` data-fallback="${esc(ph.fallback)}"` : ""} alt="${esc(p.title || p.imageAlt || "")}" loading="lazy" ${attrs}><template>${stand}</template></span>`;
+}
+
 /** Product image or a neutral icon per product type. */
 export function productThumb(p) {
   const t = (p?.tags || []).find((x) => x.startsWith("type-")) || "";
   const ic = { "type-hat": "hat", "type-sunglasses": "glasses", "type-sleeves": "shield", "type-mist": "drop", "type-lip": "heart" }[t] || "bottle";
   const fallback = `<span class="thumb thumb-ic" aria-hidden="true">${icon(ic)}</span>`;
-  if (p?.image) return `<span class="thumb-wrap"><img class="thumb" src="${esc(p.image)}" alt="${esc(p.imageAlt || "")}" loading="lazy" width="72" height="72"><template>${fallback}</template></span>`;
-  return fallback;
+  return photoImg(p, fallback, `width="72" height="72"`);
 }
 
-// A product photo that can't load (offline, blocked) becomes the neutral icon.
+// A product photo that can't load (offline, blocked) tries the next source,
+// then becomes the drawn stand-in or neutral icon.
 document.addEventListener(
   "error",
   (e) => {
     const img = e.target;
-    if (img?.classList?.contains("thumb") && img.nextElementSibling?.tagName === "TEMPLATE") img.parentElement.replaceWith(img.nextElementSibling.content.cloneNode(true));
+    if (img?.classList?.contains("thumb") && img.dataset?.fallback) {
+      img.src = img.dataset.fallback;
+      delete img.dataset.fallback;
+    } else if (img?.classList?.contains("thumb") && img.nextElementSibling?.tagName === "TEMPLATE") img.parentElement.replaceWith(img.nextElementSibling.content.cloneNode(true));
     else if (img?.tagName === "IMG" && img.closest(".r-thumb")) img.remove();
   },
   true

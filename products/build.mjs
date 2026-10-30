@@ -8,12 +8,18 @@
  * Rules (PLAN.md section 9):
  * - Every claim in `desc` was read on the source page on `checked`. A product
  *   with a claim we could not verify was dropped (see DROPPED).
- * - Images only from Open Beauty Facts (CC BY-SA), never brand photography.
+ * - Photos come from products/photos.json. Only openly licensed ones (Open
+ *   Beauty Facts, CC BY-SA) go into the CSV "Image Src"; brand photos are kept
+ *   as local copies in public/products/ for demo identification only, never
+ *   re-uploaded to the shop. Credits are written into THIRD_PARTY_NOTICES.md.
  * - Tags only from src/tags.js; exactly one type-* tag; `parasol` added here.
  * - Prices are the USD price on the source page on the date checked.
  */
 
-import { writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+
+const PHOTOS = JSON.parse(readFileSync(new URL("photos.json", import.meta.url), "utf8"));
+const OPEN = (ph) => ph?.source === "open-beauty-facts";
 
 // Shopify's CLASSIC product template, column for column as in the dev store's
 // own export (products_export_1.csv, 30 Oct 2026), minus the two snowboard
@@ -131,7 +137,6 @@ const P = [
   {
     handle: "neutrogena-hydro-boost-water-gel", title: "Neutrogena Hydro Boost Water Gel (1.7 oz)", vendor: "Neutrogena", type: "Moisturiser",
     price: 26.99, tags: ["type-moisturiser", "gel", "dewy", "normal", "oily", "combination", "humid", "under-100ml"],
-    image: "https://images.openbeautyfacts.org/images/products/007/050/111/0478/front_en.3.400.jpg", obf: "0070501110478",
     desc: ["Ultra-light water gel moisturiser with hyaluronic acid for normal to oily and combination skin.", "Leaves skin looking refreshed and dewy. Contains the brand's signature fragrance.", "1.7 oz."],
     src: "https://www.neutrogena.com/products/skincare/neutrogena-hydro-boost-water-gel-with-hyaluronic-acid/6811047", how: "page", claims: "Water gel; hyaluronic acid; normal to oily & combination; dewy; with signature fragrance; 1.7 oz. Price $26.99 from Ulta (search): https://www.ulta.com/p/hydro-boost-water-gel-pimprod2043020?sku=2620419",
   },
@@ -150,7 +155,6 @@ const P = [
   {
     handle: "la-roche-posay-cicaplast-balm-b5-plus-40ml", title: "La Roche-Posay Cicaplast Balm B5+ (40 ml)", vendor: "La Roche-Posay", type: "Barrier balm",
     price: 18.99, tags: ["type-barrier", "cream", "barrier", "cold", "dry", "sensitive", "fragrance-free", "under-100ml"],
-    image: "", obf: "",
     desc: ["Multi-purpose soothing balm with panthenol, madecassoside and shea butter for dry, chapped and irritated skin on face and body.", "The brand says it helps protect skin from the drying effects of wind and cold. Fragrance-free and non-comedogenic.", "40 ml."],
     src: "https://www.dermstore.com/p/la-roche-posay-cicaplast-balm-b5-soothing-therapeutic-multi-purpose-cream-40ml/11288509/", how: "page", claims: "40 ml variant $18.99 (Dermstore offer sku 11288509); dry/very dry skin; protects from wind and cold; fragrance free; non-comedogenic",
   },
@@ -271,7 +275,10 @@ const csvCell = (v) => {
 };
 const html = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-export const products = P.map((p, i) => ({ ...p, tags: [...new Set([...p.tags, "parasol"])], sku: `PZ-${String(i + 1).padStart(3, "0")}` }));
+export const products = P.map((p, i) => {
+  const ph = PHOTOS[p.handle];
+  return { ...p, image: OPEN(ph) ? ph.image : "", obf: OPEN(ph) ? ph.code : "", photo: ph || null, tags: [...new Set([...p.tags, "parasol"])], sku: `PZ-${String(i + 1).padStart(3, "0")}` };
+});
 
 function row(p) {
   const description = `<p>${p.desc.map(html).join(" ")}</p> <p>${NOT_AFFILIATED}</p>`;
@@ -285,7 +292,7 @@ function row(p) {
     "Variant SKU": p.sku, "Variant Grams": "0.0", "Variant Inventory Tracker": "", "Variant Inventory Policy": "deny",
     "Variant Fulfillment Service": "manual", "Variant Price": p.price.toFixed(2), "Variant Requires Shipping": "true",
     "Variant Taxable": "true", "Image Src": p.image || "", "Image Position": p.image ? "1" : "",
-    "Image Alt Text": p.image ? `${p.title}, photo from Open Beauty Facts` : "", "Gift Card": "false",
+    "Image Alt Text": p.image ? p.title : "", "Gift Card": "false",
     "Variant Weight Unit": "g", Status: "active", Collection: "Parasol",
   };
   return HEADER.map((h) => csvCell(cells[h])).join(",");
@@ -301,7 +308,7 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
     "",
     "How the page was read: **brand-json** the brand's own product data/page fetched directly; **page** the brand or retailer page fetched directly (prices from its JSON-LD offer where shown); **page-ai** the brand page read through a fetch-and-summarise tool; **search** the retailer page as captured by a web search index (used for prices only when the page blocks direct reading).",
     "",
-    "Images: only from Open Beauty Facts (CC BY-SA 3.0, https://world.openbeautyfacts.org), credited in THIRD_PARTY_NOTICES.md. All other products have no image and the app shows a neutral icon.",
+    "Images: listed in `products/photos.json` and credited in THIRD_PARTY_NOTICES.md. Open Beauty Facts photos (CC BY-SA 3.0, https://world.openbeautyfacts.org) are used as the CSV \"Image Src\". Brand photos are only kept as local copies in `public/products/` for demo identification and are never put in the CSV. Products with no photo show a drawn stand-in.",
     "",
     "| handle | source URL | date checked | read as | claims verified | OBF code |",
     "|---|---|---|---|---|---|",
@@ -315,5 +322,37 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
     "",
   ];
   writeFileSync(new URL("SOURCES.md", dir), lines.join("\n"));
+
+  // Local photo copies the app can show (public/products/<handle>.webp).
+  const pub = new URL("../public/", dir);
+  const local = products.filter((p) => p.photo && existsSync(new URL(`products/${p.handle}.webp`, pub))).map((p) => p.handle);
+  writeFileSync(
+    new URL("product-photos.js", pub),
+    `// Generated by \`node products/build.mjs\`. Products with a local photo in /products/<handle>.webp (credits: THIRD_PARTY_NOTICES.md).\nexport const LOCAL_PHOTOS = new Set(${JSON.stringify(local, null, 2)});\n`
+  );
+
+  // Photo credits in THIRD_PARTY_NOTICES.md, between the markers.
+  const notices = new URL("../THIRD_PARTY_NOTICES.md", dir);
+  const START = "<!-- product-photos:start -->", END = "<!-- product-photos:end -->";
+  const credit = (p) => {
+    const ph = p.photo;
+    return OPEN(ph)
+      ? `| ${p.title} | Open Beauty Facts, product [${ph.code}](${ph.page}) ([image](${ph.image})) | ${ph.author} | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)${ph.note ? `. ${ph.note}` : ""} |`
+      : `| ${p.title} | [${ph.owner} product page](${ph.page}) ([image](${ph.image})) | ${ph.owner} | ${ph.license} |`;
+  };
+  const block = [
+    START,
+    "Generated by `node products/build.mjs` from `products/photos.json`. Local copies (resized, WebP) are in `public/products/<handle>.webp`.",
+    "",
+    "| product | source | author / owner | license |",
+    "|---|---|---|---|",
+    ...products.filter((p) => local.includes(p.handle)).map(credit),
+    "",
+    `Products without a photo (drawn stand-in shown): ${products.filter((p) => !local.includes(p.handle)).map((p) => p.title).join("; ") || "none"}.`,
+    END,
+  ].join("\n");
+  const text = readFileSync(notices, "utf8");
+  writeFileSync(notices, text.includes(START) ? text.replace(new RegExp(`${START}[\\s\\S]*?${END}`), block) : text);
+  console.log(`${local.length} local photos`);
   console.log(`wrote ${products.length} products`);
 }

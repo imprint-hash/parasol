@@ -300,7 +300,6 @@ test("unit burn: kill switch LIVE_SCANS=off (any case) is 503 with zero task cal
 
 test(
   "unit burn: kill switch fails closed for obvious 'off' spellings",
-  { todo: "BUG-2: settings().live treats anything but exactly 'off' as ON, so LIVE_SCANS=false / 0 / no / 'off ' keep spending units (src/budget.js:33)" },
   async () => {
     for (const v of ["false", "0", "no", "off ", "disabled"]) {
       youcam.forgetCredit();

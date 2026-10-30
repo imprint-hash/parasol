@@ -30,9 +30,13 @@ export const LIVE_PER_IP_HOUR = 3;
 export const LIVE_PER_IP_DAY = 6;
 const HOUR = 3600_000;
 
+/** The kill switch. Only on / true / 1 / yes (any case, spaces trimmed) mean on; unset means on; anything else is off. */
+const ON = new Set(["on", "true", "1", "yes"]);
+const switchOn = (v) => (v === undefined ? true : ON.has(String(v).trim().toLowerCase()));
+
 const num = (v, d) => (v !== undefined && v !== "" && Number.isFinite(Number(v)) ? Number(v) : d);
 export const settings = () => ({
-  live: String(process.env.LIVE_SCANS || "on").toLowerCase() !== "off" && Boolean(process.env.YOUCAM_API_KEY),
+  live: switchOn(process.env.LIVE_SCANS) && Boolean(process.env.YOUCAM_API_KEY),
   perDay: num(process.env.LIVE_SCANS_PER_DAY, 15),
   floor: num(process.env.UNITS_FLOOR, 150),
 });

@@ -1,10 +1,10 @@
 // /kit: one pick per slot with "why" chips, alternatives, buy-it-there specs
 // and Shopify checkout (opens in a new tab, password and test card beside it).
-import { shell, esc, icon, $, errorBox, loading, productThumb, photoImg, money, setRibbonNext } from "./ui.js";
+import { shell, esc, icon, $, errorBox, loading, productThumb, photoImg, productName, money, setRibbonNext } from "./ui.js";
 import { load, update, profileForApi } from "./state.js";
 import { kit as getKit, cart, config } from "./api.js";
 import { announce, focusHeading } from "./a11y.js";
-import { SLOT_NAMES } from "./kit-names.js";
+import { SLOT_NAMES, SLOT_JOBS, skinPhrase } from "./kit-names.js";
 import { productArt } from "./parts.js";
 
 const view = $("#view");
@@ -89,6 +89,29 @@ let filter = "all";
 const groupOf = (slot) => Object.keys(GROUPS).find((g) => GROUPS[g].includes(slot)) || "all";
 const HEART = `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21.2l8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></svg>`;
 
+// One plain sentence tying the pick to this person's skin and trip.
+function whyLine(slot) {
+  const st = load();
+  const cities = (st.trip?.legs || []).map((l) => l.name).filter(Boolean);
+  const where = cities.length ? ` in ${cities.length > 1 ? `${cities.slice(0, -1).join(", ")} and ${cities.at(-1)}` : cities[0]}` : " on your trip";
+  return `${SLOT_JOBS[slot] || "Picked"}, chosen for your ${skinPhrase(st.profile)}${where}.`;
+}
+
+const chips = (why, label) => (why?.length ? `<ul class="chips" aria-label="${esc(label)}">${why.slice(0, 3).map((w) => `<li class="chip">${esc(w)}</li>`).join("")}</ul>` : "");
+
+// Smaller card for an alternative: its own photo, brand, name, price and a Choose button.
+function altCard(a, slot) {
+  const n = productName(a);
+  const full = [n.brand, n.name].filter(Boolean).join(" ");
+  return `<li class="acard">
+    <div class="ac-img">${photoImg(a, productArt(a))}</div>
+    <p class="ac-brand">${esc(n.brand)}</p>
+    <p class="ac-name">${esc(n.name)}</p>
+    <p class="ac-price">${money(a.price, a.currency)}${n.size ? `<span class="muted"> · ${esc(n.size)}</span>` : ""}</p>
+    <button type="button" class="btn btn-soft ac-btn" data-swap="${esc(slot)}" data-variant="${esc(pid(a))}" ${a.available === false ? "disabled" : ""}>Choose<span class="sr-only"> ${esc(full)}</span></button>
+  </li>`;
+}
+
 function card(s, i) {
   const p = pickOf(s);
   const hidden = filter !== "all" && groupOf(s.slot) !== filter ? "hidden" : "";
@@ -96,26 +119,26 @@ function card(s, i) {
     return `<article class="pcard" data-slot="${esc(s.slot)}" aria-labelledby="k-${i}" ${hidden}><div class="pc-img">${productArt(null)}<span class="badge badge-neutral pc-slot">${esc(slotName(s.slot))}</span></div><div class="pc-body"><h2 class="k-title" id="k-${i}">${esc(slotName(s.slot))}</h2><p class="k-meta">Nothing in the demo shop fits this yet. See "Or buy it there".</p></div></article>`;
   const on = !!chosen[s.slot];
   const alts = [s.pick, ...(s.alternatives || [])].filter((x) => x && pid(x) !== pid(p));
-  const img = photoImg(p, productArt(p));
+  const why = pid(p) === pid(s.pick) ? s.why : p.why || s.why;
+  const n = productName(p);
+  const full = [n.brand, n.name].filter(Boolean).join(" ");
+  const meta = [n.size, (p.tags || []).includes("under-100ml") ? "Under 100 ml" : "", p.available === false ? "Out of stock" : ""].filter(Boolean);
   return `<article class="pcard" data-slot="${esc(s.slot)}" aria-labelledby="k-${i}" ${hidden}>
-    <div class="pc-img">${img}<span class="badge badge-neutral pc-slot">${esc(slotName(s.slot))}</span>
-      <button type="button" class="heart" data-toggle="${esc(s.slot)}" aria-pressed="${on}" ${p.available === false ? "disabled" : ""}>${HEART}<span class="sr-only">${on ? "In my kit" : "Add to my kit"}: ${esc(p.title)}</span></button>
+    <div class="pc-img">${photoImg(p, productArt(p))}<span class="badge badge-neutral pc-slot">${esc(slotName(s.slot))}</span>
+      <button type="button" class="heart" data-toggle="${esc(s.slot)}" aria-pressed="${on}" ${p.available === false ? "disabled" : ""}>${HEART}<span class="sr-only">${on ? "In my kit" : "Add to my kit"}: ${esc(full)}</span></button>
     </div>
     <div class="pc-body">
-      <div class="pc-top"><h2 class="k-title" id="k-${i}">${esc(p.title)}</h2><p class="k-price">${money(p.price, p.currency)}</p></div>
-      <p class="k-meta">${esc(p.vendor || "")}${(p.tags || []).includes("under-100ml") ? " · Under 100 ml" : ""}${p.available === false ? " · Out of stock" : ""}${on ? " · <strong>In my kit</strong>" : ""}</p>
-      ${s.why?.length ? `<ul class="chips" aria-label="Why this pick">${s.why.map((w) => `<li class="chip">${esc(w)}</li>`).join("")}</ul>` : ""}
-      ${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener" class="small">Product page ${icon("external")}<span class="sr-only"> (opens in a new tab)</span></a>` : ""}
-      ${
-        alts.length
-          ? `<details class="more"><summary>${alts.length} other option${alts.length > 1 ? "s" : ""}</summary><div><ul class="alts">${alts
-              .map(
-                (a) =>
-                  `<li>${productThumb(a)}<div><strong class="block small">${esc(a.title)}</strong><span class="small muted">${money(a.price, a.currency)}</span></div><button type="button" class="btn btn-soft" style="min-height:44px;padding:.5rem 1rem" data-swap="${esc(s.slot)}" data-variant="${esc(pid(a))}" ${a.available === false ? "disabled" : ""}>Choose<span class="sr-only"> ${esc(a.title)}</span></button></li>`
-              )
-              .join("")}</ul></div></details>`
-          : ""
-      }
+      <p class="pc-brand">${esc(n.brand)}</p>
+      <h2 class="k-title" id="k-${i}">${esc(n.name)}</h2>
+      ${meta.length ? `<p class="k-meta">${esc(meta.join(" · "))}</p>` : ""}
+      <p class="pc-price"><span class="k-price">${money(p.price, p.currency)}</span>${on ? `<span class="in-kit">${icon("check")} In my kit</span>` : ""}</p>
+      <div class="why">
+        <h3 class="why-h">Why it's for you</h3>
+        ${chips(why, "Why " + full)}
+        <p class="why-line">${esc(whyLine(s.slot))}</p>
+      </div>
+      ${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener" class="small pc-link">Product page ${icon("external")}<span class="sr-only"> for ${esc(full)} (opens in a new tab)</span></a>` : ""}
+      ${alts.length ? `<div class="alts-wrap"><h3 class="why-h">Other options</h3><ul class="acards">${alts.map((a) => altCard(a, s.slot)).join("")}</ul></div>` : ""}
     </div>
   </article>`;
 }
@@ -131,6 +154,10 @@ async function render() {
   const essential = indexed.filter(([s]) => isEssential(s.slot, st.profile));
   const optional = indexed.filter(([s]) => !isEssential(s.slot, st.profile));
   view.innerHTML = `
+  <figure class="kit-banner">
+    <img src="/scenes/campaign-products-800.webp" srcset="/scenes/campaign-products-800.webp 800w, /scenes/campaign-products.webp 1664w" sizes="(min-width: 1200px) 76rem, 100vw" alt="EltaMD UV Clear SPF 46, CeraVe Moisturizing Cream and Supergoop! PLAY Lip Shield SPF 30 on pink stone over rippling water." width="1664" height="928">
+    <figcaption class="credit">AI-generated image (YouCam AI Image Generator) featuring real products. Not affiliated with these brands.</figcaption>
+  </figure>
   <div class="row spread gap">
     <h2 id="find-h" style="font-size:1.5rem">Find products for your trip</h2>
     ${st.trip?.carryOn !== false ? `<span class="badge badge-neutral">${icon("luggage")} Carry-on: liquids under 100 ml</span>` : ""}
@@ -147,7 +174,11 @@ async function render() {
   ${
     extra.length
       ? `<section class="card" aria-labelledby="extra-h"><h2 id="extra-h">Added after your rescan</h2><ul class="alts">${extra
-          .map((x, k) => `<li>${productThumb(x.product)}<div><strong class="block">${esc(x.product.title)}</strong><span class="small muted">${esc(slotName(x.slot))} · ${money(x.product.price, x.product.currency)}</span></div><button type="button" class="icon-del" data-rmextra="${k}">${icon("trash")}<span class="sr-only">Remove ${esc(x.product.title)}</span></button></li>`)
+          .map((x, k) => {
+            const n = productName(x.product);
+            const full = [n.brand, n.name].filter(Boolean).join(" ");
+            return `<li>${productThumb(x.product)}<div><span class="block small pc-brand">${esc(n.brand)}</span><strong class="block">${esc(n.name)}</strong><span class="small muted">${esc(slotName(x.slot))} · ${money(x.product.price, x.product.currency)}</span></div><button type="button" class="icon-del" data-rmextra="${k}">${icon("trash")}<span class="sr-only">Remove ${esc(full)}</span></button></li>`;
+          })
           .join("")}</ul></section>`
       : ""
   }

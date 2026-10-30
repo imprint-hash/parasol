@@ -352,7 +352,22 @@ export function productPhoto(p) {
 export function photoImg(p, stand, attrs = "") {
   const ph = productPhoto(p);
   if (!ph) return stand;
-  return `<span class="thumb-wrap"><img class="thumb" src="${esc(ph.src)}"${ph.fallback ? ` data-fallback="${esc(ph.fallback)}"` : ""} alt="${esc(p.title || p.imageAlt || "")}" loading="lazy" ${attrs}><template>${stand}</template></span>`;
+  const n = productName(p);
+  return `<span class="thumb-wrap"><img class="thumb" src="${esc(ph.src)}"${ph.fallback ? ` data-fallback="${esc(ph.fallback)}"` : ""} alt="${esc([n.brand, n.name].filter(Boolean).join(" ") || p.imageAlt || "")}" loading="lazy" ${attrs}><template>${stand}</template></span>`;
+}
+
+// Brands in the demo catalog, for products saved before `vendor` came along.
+const BRANDS = ["Supergoop!", "EltaMD", "CeraVe", "Black Girl Sunscreen", "Beauty of Joseon", "La Roche-Posay", "Neutrogena", "Vanicream", "Aquaphor", "Avène", "Sun Bum", "Clean & Clear", "Coolibar"];
+
+/** Shop title → {brand, name, size}: "Supergoop! Unseen Sunscreen SPF 50 (0.68 fl oz)" →
+ *  {brand: "Supergoop!", name: "Unseen Sunscreen SPF 50", size: "0.68 fl oz"}. */
+export function productName(p) {
+  let title = String(p?.title || "").trim();
+  const brand = p?.vendor || BRANDS.find((b) => title.startsWith(b + " ")) || "";
+  if (brand && title.toLowerCase().startsWith(brand.toLowerCase() + " ")) title = title.slice(brand.length + 1);
+  const m = title.match(/^(.*?)\s*\(([^()]+)\)$/);
+  const name = (m ? m[1] : title).replace(/,\s*$/, "");
+  return { brand, name: name || title, size: m ? m[2] : "" };
 }
 
 /** Product image or a neutral icon per product type. */

@@ -1,5 +1,5 @@
 // /rescan: compare a new scan with a baseline and the weather since arrival.
-import { shell, esc, icon, $, $$, errorBox, loading, fmtDate, productThumb, money } from "./ui.js";
+import { shell, esc, icon, $, $$, errorBox, loading, fmtDate, photoImg, productThumb, productName, money } from "./ui.js";
 import { load, update, addScan, todayIn, PERSONAS, profileForApi, DEMO_RESCAN_CITY } from "./state.js";
 import { demoScan, liveScan, compare, kit as getKit } from "./api.js";
 import { preparePhoto } from "./camera.js";
@@ -222,11 +222,19 @@ async function productsToAdd(needs) {
     const have = new Set([...(st.kit?.res?.slots || []).map((s) => s.slot), ...(st.kit?.extra || []).map((x) => x.slot)]);
     const picks = res.slots.filter((s) => s.pick && !have.has(s.slot)).slice(0, 3);
     if (!picks.length) return;
-    box.innerHTML = `<section class="card" aria-labelledby="add-h"><h2 id="add-h">Products to add</h2><ul class="alts">${picks
-      .map(
-        (s) =>
-          `<li>${productThumb(s.pick)}<div><strong class="block">${esc(s.pick.title)}</strong><span class="small muted">${esc(SLOT_NAMES[s.slot] || s.slot)} · ${money(s.pick.price, s.pick.currency)}</span></div><button type="button" class="btn btn-soft" style="min-height:48px;padding:.5rem 1rem" data-add="${esc(s.slot)}">Add<span class="sr-only"> ${esc(s.pick.title)} to my kit</span></button></li>`
-      )
+    box.innerHTML = `<section class="card stack-sm" aria-labelledby="add-h"><h2 id="add-h">Products to add</h2><ul class="acards acards-wide">${picks
+      .map((s) => {
+        const n = productName(s.pick);
+        const full = [n.brand, n.name].filter(Boolean).join(" ");
+        return `<li class="acard">
+          <div class="ac-img">${photoImg(s.pick, productThumb({ ...s.pick, handle: null, image: null }))}</div>
+          <p class="ac-brand">${esc(n.brand)}</p>
+          <p class="ac-name">${esc(n.name)}</p>
+          <p class="ac-price">${money(s.pick.price, s.pick.currency)}<span class="muted"> · ${esc(SLOT_NAMES[s.slot] || s.slot)}</span></p>
+          ${s.why?.length ? `<ul class="chips" aria-label="Why ${esc(full)}">${s.why.slice(0, 3).map((w) => `<li class="chip">${esc(w)}</li>`).join("")}</ul>` : ""}
+          <button type="button" class="btn btn-soft ac-btn" data-add="${esc(s.slot)}">Add<span class="sr-only"> ${esc(full)} to my kit</span></button>
+        </li>`;
+      })
       .join("")}</ul></section>`;
     box.addEventListener("click", (e) => {
       const b = e.target.closest("[data-add]");

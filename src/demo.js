@@ -15,7 +15,12 @@
  *   { persona, about, capturedAt,
  *     face: { kind: "youcam-docs-sample"|"consented-selfie"|"ai-generated", image, credit },
  *     baseline: { skin, fitz, tone, masks: {metric: "/demo/<persona>/<metric>.png"} },
- *     rescan: null | { skin, fitz, tone, masks, face?: {image}, simulated?: {feature, params, note} } }
+ *     rescan: null | { skin, fitz, fitzFrom?: "baseline", tone, masks, face?: {image}, simulated?: {feature, params, note} },
+ *     profile?: { albinism, fitz },   persona settings the client applies (Sam: albinism → type I)
+ *     fitzNote?: string }             honest note when the persona's sun type differs from YouCam's
+ *
+ * The ScanView's `fitz` is always YouCam's real reading; `demo.profile` says
+ * what the persona's profile uses.
  */
 
 import { readFileSync, existsSync } from "node:fs";
@@ -70,6 +75,9 @@ export function demoScan(body) {
           placeholder: !own,
           face: { kind: fx.face?.kind || null, label: FACE_LABELS[fx.face?.kind] || null, image: rec.face?.image || fx.face?.image || null, credit: fx.face?.credit || null },
           simulated: rec.simulated || null,
+          fitzFrom: rec.fitzFrom || null,
+          profile: own ? fx.profile || null : null,
+          fitzNote: own ? fx.fitzNote || null : null,
         },
       },
     }),

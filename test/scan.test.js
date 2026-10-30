@@ -334,8 +334,16 @@ test("demo scans come from fixtures with zero YouCam calls", async () => {
   const rescan = await app.call("POST", "/api/demo/scan", { persona: "ada", kind: "rescan" });
   assert.equal(rescan.status, 200);
   assert.match(rescan.body.scan.demo.simulated.note, /Skin Simulation/);
+  assert.equal(rescan.body.scan.demo.fitzFrom, "baseline");
+  // The Day 3 rescan shows a change beyond the noise threshold (8) on some metric.
+  const before = ada.body.scan.skin.scores, now = rescan.body.scan.skin.scores;
+  assert.ok(Object.keys(before).some((k) => now[k] - before[k] <= -8));
   const sam = await app.call("POST", "/api/demo/scan", { persona: "sam" });
   assert.equal(sam.status, 200);
+  // Sam keeps YouCam's real reading; the persona profile forces type I for albinism.
+  assert.ok(["I", "II", "III", "IV", "V", "VI"].includes(sam.body.scan.fitz.scale));
+  assert.deepEqual(sam.body.scan.demo.profile, { albinism: true, fitz: "I" });
+  assert.match(sam.body.scan.demo.fitzNote, new RegExp(`YouCam read type ${sam.body.scan.fitz.scale}; with albinism Parasol uses type I`));
   assert.equal((await app.call("POST", "/api/demo/scan", { persona: "sam", kind: "rescan" })).body.code, "no_fixture");
   assert.equal((await app.call("POST", "/api/demo/scan", { persona: "../../.env" })).status, 400);
   assert.equal((await app.call("POST", "/api/demo/scan", { persona: "ada", kind: "x" })).status, 400);

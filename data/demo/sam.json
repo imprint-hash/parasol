@@ -41,5 +41,10 @@
       "radiance": "/demo/sam/radiance.png"
     }
   },
-  "rescan": null
+  "rescan": null,
+  "profile": {
+    "albinism": true,
+    "fitz": "I"
+  },
+  "fitzNote": "YouCam read type V; with albinism Parasol uses type I (most protective)."
 }

@@ -47,22 +47,23 @@
       "tZone": "dry",
       "uZone": "dry",
       "scores": {
-        "pore": 65,
-        "oiliness": 99,
-        "texture": 62,
-        "radiance": 76,
+        "pore": 66,
+        "oiliness": 98,
         "redness": 97,
+        "texture": 60,
         "age_spot": 78,
-        "acne": 83,
+        "radiance": 76,
+        "acne": 77,
         "moisture": 62
       },
-      "overall": 78,
-      "skinAge": 38
+      "overall": 77,
+      "skinAge": 37
     },
     "fitz": {
       "scale": "VI",
       "source": "youcam"
     },
+    "fitzFrom": "baseline",
     "tone": null,
     "masks": {
       "oiliness": "/demo/ada/day3-oiliness.png",
@@ -80,9 +81,14 @@
     "simulated": {
       "feature": "YouCam Skin Simulation",
       "params": {
-        "oiliness": 0.6
+        "oiliness": 1
       },
       "note": "Demo: the Day 3 photo is simulated with YouCam Skin Simulation."
-    }
+    },
+    "capturedAt": "2026-10-30T08:48:06.241Z"
+  },
+  "profile": {
+    "albinism": false,
+    "fitz": "VI"
   }
 }

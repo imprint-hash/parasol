@@ -1,0 +1,166 @@
+// Everything Parasol remembers lives here, in this browser only
+// (localStorage key "parasol.v1"). The server keeps no profile, trip or scans.
+
+const KEY = "parasol.v1";
+const MAX_SCANS = 10;
+
+const fresh = () => ({
+  prefs: { lowVision: null, theme: "auto", textScale: 1, speechRate: 1 },
+  scans: [],
+  profile: null,
+  trip: null,
+  timer: null,
+  forecast: null, // last /api/forecast answer, so pages can show it again
+  kit: null, // last /api/kit answer plus the user's choices
+  demo: null, // "ada" | "sam" while the guided demo is running
+  routine: {}, // { "YYYY-MM-DD": ["am-cleanse", …] }
+  rescan: null, // last rescan result
+});
+
+let memo = null;
+
+export function load() {
+  if (memo) return memo;
+  let s = null;
+  try {
+    s = JSON.parse(localStorage.getItem(KEY));
+  } catch {}
+  const base = fresh();
+  memo = s && typeof s === "object" ? { ...base, ...s, prefs: { ...base.prefs, ...(s.prefs || {}) } } : base;
+  if (!Array.isArray(memo.scans)) memo.scans = [];
+  return memo;
+}
+
+export function save() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(load()));
+  } catch {
+    // Storage full or blocked (private mode): the app still works for this visit.
+  }
+}
+
+export const get = (k) => load()[k];
+
+export function set(k, v) {
+  load()[k] = v;
+  save();
+  return v;
+}
+
+export function update(fn) {
+  const s = load();
+  fn(s);
+  save();
+  return s;
+}
+
+export function clearAll() {
+  try {
+    localStorage.removeItem(KEY);
+  } catch {}
+  memo = null;
+}
+
+/* ---------- scans and profile ---------- */
+
+export function addScan(scan) {
+  update((s) => {
+    s.scans = [scan, ...s.scans.filter((x) => x.id !== scan.id)].slice(0, MAX_SCANS);
+  });
+  return scan;
+}
+
+export const latestScan = (kind) => load().scans.find((x) => !kind || x.kind === kind) || null;
+
+/** Profile the forecast/kit/rescan routes expect (PLAN section 4). */
+export function profileFromScan(scan, { fitz, albinism = false } = {}) {
+  const sk = scan.skin || {};
+  const p = {
+    skinType: sk.type || "normal",
+    concerns: (scan.concerns || []).map((c) => c.metric),
+    fitz: albinism ? "I" : fitz || scan.fitz?.scale || "III",
+    albinism: !!albinism,
+  };
+  if (sk.tZone) p.tZone = sk.tZone;
+  if (sk.uZone) p.uZone = sk.uZone;
+  if (sk.scores) p.scores = { ...sk.scores };
+  if (scan.tone?.hex) p.toneHex = scan.tone.hex;
+  return p;
+}
+
+/* ---------- dates ---------- */
+
+const pad = (n) => String(n).padStart(2, "0");
+export const isoDate = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+export function addDays(iso, n) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return isoDate(new Date(y, m - 1, d + n));
+}
+export const today = () => isoDate(new Date());
+
+/** Today's date in a city's time zone, as YYYY-MM-DD. */
+export function todayIn(timezone) {
+  try {
+    return new Intl.DateTimeFormat("en-CA", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  } catch {
+    return today();
+  }
+}
+
+/* ---------- the demo ---------- */
+
+export const PERSONAS = {
+  ada: {
+    id: "ada",
+    name: "Ada",
+    line: "Very deep skin. Strong sun can leave dark marks.",
+    fitz: "V",
+    albinism: false,
+  },
+  sam: {
+    id: "sam",
+    name: "Sam",
+    line: "Very fair skin with albinism. Burns fast.",
+    fitz: "I",
+    albinism: true,
+  },
+};
+
+export const CITIES = {
+  london: { name: "London", admin1: "England", country: "United Kingdom", lat: 51.5074, lon: -0.1278, timezone: "Europe/London" },
+  lagos: { name: "Lagos", admin1: "Lagos", country: "Nigeria", lat: 6.4541, lon: 3.3947, timezone: "Africa/Lagos" },
+  capeTown: { name: "Cape Town", admin1: "Western Cape", country: "South Africa", lat: -33.9258, lon: 18.4232, timezone: "Africa/Johannesburg" },
+};
+
+/** London → Lagos → Cape Town, starting tomorrow, with the two flights. */
+export function demoTrip() {
+  const d1 = addDays(today(), 1);
+  const leg = (c, from, to) => ({ name: c.name, country: c.country, lat: c.lat, lon: c.lon, timezone: c.timezone, from, to });
+  return {
+    legs: [
+      leg(CITIES.london, d1, addDays(d1, 1)),
+      leg(CITIES.lagos, addDays(d1, 2), addDays(d1, 5)),
+      leg(CITIES.capeTown, addDays(d1, 6), addDays(d1, 8)),
+    ],
+    flights: [
+      { date: addDays(d1, 2), hours: 6.5, from: "London", to: "Lagos" },
+      { date: addDays(d1, 6), hours: 6, from: "Lagos", to: "Cape Town" },
+    ],
+    carryOn: true,
+  };
+}
+
+/** The trip in the exact shape /api/forecast accepts (drops UI-only fields). */
+export function tripForApi(trip) {
+  return {
+    legs: trip.legs.map(({ name, lat, lon, timezone, from, to }) => ({ name, lat, lon, timezone, from, to })),
+    flights: (trip.flights || []).filter((f) => f.date && f.hours).map(({ date, hours }) => ({ date, hours: Number(hours) })),
+    carryOn: trip.carryOn !== false,
+  };
+}
+
+/** The profile in the exact shape the API accepts (drops UI-only fields). */
+export function profileForApi(p) {
+  const { fitzFromScan, ...rest } = p || {};
+  return rest;
+}

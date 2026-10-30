@@ -49,6 +49,12 @@ export function announce(msg) {
 /* ---------- read aloud ---------- */
 
 export const speechSupported = () => "speechSynthesis" in window && typeof SpeechSynthesisUtterance === "function";
+// Chrome loads its voice list after the page, so ask early: by the time someone
+// taps the speaker, the female voices are there to choose from.
+if (speechSupported()) {
+  speechSynthesis.getVoices();
+  speechSynthesis.addEventListener?.("voiceschanged", () => speechSynthesis.getVoices());
+}
 
 let speaking = false;
 const listeners = new Set();
@@ -56,9 +62,17 @@ const emit = () => listeners.forEach((fn) => fn(speaking));
 export const onSpeech = (fn) => listeners.add(fn);
 export const isSpeaking = () => speaking;
 
+// A woman's voice where the device has one. Browsers don't say a voice's
+// gender, so this matches the names of common female voices on Windows,
+// macOS/iOS, Android/Chrome and Edge, then falls back to any English voice.
+const FEMALE = /\b(female|woman|zira|aria|jenny|libby|sonia|hazel|susan|ava|samantha|karen|moira|tessa|serena|kate|fiona|victoria|allison|susie|zoe|catherine|natasha|clara|emma|amy|joanna|salli|kimberly|ivy|ezinne|abeo|leah|neerja|heera)\b/i;
+const MALE = /\b(male|david|mark|george|james|ryan|guy|daniel|alex|fred|oliver|thomas|arthur|rishi|aaron|ravi|prabhat|tom)\b/i;
+
 function pickVoice() {
-  const vs = speechSynthesis.getVoices?.() || [];
-  return vs.find((v) => /^en-(GB|NG|ZA|US)/i.test(v.lang) && v.localService) || vs.find((v) => /^en/i.test(v.lang)) || null;
+  const vs = (speechSynthesis.getVoices?.() || []).filter((v) => /^en/i.test(v.lang));
+  const female = vs.filter((v) => FEMALE.test(v.name) && !/\bmale\b/i.test(v.name.replace(/female/i, "")));
+  const preferred = (list) => list.find((v) => /^en-(GB|NG|ZA|US)/i.test(v.lang)) || list[0];
+  return preferred(female) || preferred(vs.filter((v) => !MALE.test(v.name))) || preferred(vs) || null;
 }
 
 export function speak(text) {

@@ -52,7 +52,7 @@ The Skin AI brief says people wonder about their skin "right before a purchase, 
 Two more YouCam tools built the demo:
 
 - **AI Image Generator V2** (`POST /s2s/v2.0/task/text-to-image/youcam`): the demo faces for Sam and Ada are AI-generated, not real people.
-- **AI Skin Simulation** (`POST /s2s/v2.0/task/skin-simulation`): Ada's "Day 3 in Lagos" photo is simulated from her baseline face, then analysed for real, and the app says so.
+- **AI Skin Simulation** (`POST /s2s/v2.0/task/skin-simulation`): Ada's "Day 3 in Dubai" photo is simulated from her baseline face, then analysed for real, and the app says so.
 
 The Bearer key lives only in server env. Units are only spent when a task succeeds, so the server always polls to the end. Every scan result is cached by the photo's SHA-256, so the same photo never costs twice, and the demo replays real captured results from `data/demo/` at zero cost. Response shapes are pinned by the stub in `test/helpers/youcam-stub.js`.
 

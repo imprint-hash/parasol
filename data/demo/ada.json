@@ -80,10 +80,11 @@
     },
     "simulated": {
       "feature": "YouCam Skin Simulation",
+      "label": "Day 3 in Dubai",
       "params": {
         "oiliness": 1
       },
-      "note": "Demo: the Day 3 photo is simulated with YouCam Skin Simulation."
+      "note": "Demo: the Day 3 in Dubai photo is simulated with YouCam Skin Simulation."
     },
     "capturedAt": "2026-10-30T08:48:06.241Z"
   },

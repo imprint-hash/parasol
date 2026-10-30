@@ -217,13 +217,13 @@ export function wxGlyph(day, size = 40) {
   const id = `g${Math.random().toString(36).slice(2, 8)}`;
   const sun = (r = 11, cx = 20, cy = 20) => `<defs><radialGradient id="${id}" cx="35%" cy="35%" r="70%"><stop offset="0" stop-color="#ffe2a6"/><stop offset=".6" stop-color="#f4b860"/><stop offset="1" stop-color="#d9772b"/></radialGradient></defs><circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#${id})"/>`;
   let inner;
-  if (day?.kind === "flight") inner = `<circle cx="20" cy="20" r="17" fill="#e6d5c3"/><path d="M28 23.5 21.5 21l-2.5 7h-2.4l.8-7.6L12 18.6V16l5.4 1.6.8-7.6h2.4l2.5 7.5 6.4 2.4z" fill="#5e4c40"/>`;
+  if (day?.kind === "flight") inner = `<circle cx="20" cy="20" r="17" fill="#f6dfe2"/><path d="M28 23.5 21.5 21l-2.5 7h-2.4l.8-7.6L12 18.6V16l5.4 1.6.8-7.6h2.4l2.5 7.5 6.4 2.4z" fill="#6b5f62"/>`;
   else if (w.tMax != null && w.tMax <= 8)
     inner = `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cfd8e0"/></linearGradient></defs><path d="M11 26a6 6 0 0 1 1-11.9A8 8 0 0 1 27.5 13 6.5 6.5 0 0 1 28 26z" fill="url(#${id})" stroke="#a9b6c2"/><g stroke="#7d93a8" stroke-width="1.6" stroke-linecap="round"><path d="M14 30v5M12 32.5h4M21 30v5M19 32.5h4M28 30v5M26 32.5h4"/></g>`;
   else if (w.dustMax >= 50 || w.pm25Max >= 35)
     inner = `${sun(9, 22, 15)}<g stroke="#c9a77f" stroke-width="2.4" stroke-linecap="round" opacity=".95"><path d="M6 24h22M10 29h24M6 34h18"/></g>`;
   else if (Number(w.uvMax) >= 3 || w.tMax >= 26) inner = `${sun(11)}<g stroke="#f4b860" stroke-width="2" stroke-linecap="round"><path d="M20 3v4M20 33v4M3 20h4M33 20h4M8 8l2.8 2.8M29.2 29.2 32 32M8 32l2.8-2.8M29.2 10.8 32 8"/></g>`;
-  else inner = `${sun(8, 15, 15)}<path d="M13 31a6 6 0 0 1 1-11.9A8 8 0 0 1 29.5 18 6.5 6.5 0 0 1 30 31z" fill="#f3ebe1" stroke="#cdbba8"/>`;
+  else inner = `${sun(8, 15, 15)}<path d="M13 31a6 6 0 0 1 1-11.9A8 8 0 0 1 29.5 18 6.5 6.5 0 0 1 30 31z" fill="#fbedee" stroke="#dcbfc5"/>`;
   return `<svg class="wxg" viewBox="0 0 40 40" width="${size}" height="${size}" aria-hidden="true" focusable="false">${inner}</svg>`;
 }
 
@@ -231,20 +231,20 @@ export function wxGlyph(day, size = 40) {
 export function productArt(p) {
   const t = (p?.tags || []).find((x) => x.startsWith("type-")) || "";
   const id = `pa${Math.random().toString(36).slice(2, 8)}`;
-  const defs = `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e9ddd0"/><stop offset=".45" stop-color="#fbf6f0"/><stop offset="1" stop-color="#ddcdbc"/></linearGradient><linearGradient id="${id}c" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6a4330"/><stop offset=".5" stop-color="#8d5d42"/><stop offset="1" stop-color="#5c3a29"/></linearGradient></defs>`;
-  const shadow = `<ellipse cx="60" cy="112" rx="34" ry="5" fill="#2b1d16" opacity=".12"/>`;
-  const body = `fill="url(#${id})" stroke="#cdb8a3" stroke-width="1"`;
+  const defs = `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f3dde0"/><stop offset=".45" stop-color="#fff8f8"/><stop offset="1" stop-color="#ebd0d4"/></linearGradient><linearGradient id="${id}c" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3d3537"/><stop offset=".5" stop-color="#5a4e51"/><stop offset="1" stop-color="#1e1a1b"/></linearGradient></defs>`;
+  const shadow = `<ellipse cx="60" cy="112" rx="34" ry="5" fill="#1e1a1b" opacity=".12"/>`;
+  const body = `fill="url(#${id})" stroke="#e0c3c8" stroke-width="1"`;
   const cap = `fill="url(#${id}c)"`;
   const shapes = {
-    "type-sunscreen": `<path d="M44 20h32l-3 82a4 4 0 0 1-4 4H51a4 4 0 0 1-4-4z" ${body}/><rect x="47" y="96" width="26" height="14" rx="3" ${cap}/><rect x="52" y="40" width="16" height="30" rx="2" fill="#d9a77f" opacity=".55"/>`,
+    "type-sunscreen": `<path d="M44 20h32l-3 82a4 4 0 0 1-4 4H51a4 4 0 0 1-4-4z" ${body}/><rect x="47" y="96" width="26" height="14" rx="3" ${cap}/><rect x="52" y="40" width="16" height="30" rx="2" fill="#d88a96" opacity=".55"/>`,
     "type-aftersun": `<path d="M44 20h32l-3 82a4 4 0 0 1-4 4H51a4 4 0 0 1-4-4z" ${body}/><rect x="47" y="96" width="26" height="14" rx="3" fill="#a9b79a"/><rect x="52" y="40" width="16" height="30" rx="2" fill="#a9b79a" opacity=".5"/>`,
-    "type-moisturiser": `<rect x="30" y="64" width="60" height="44" rx="8" ${body}/><rect x="28" y="52" width="64" height="16" rx="5" ${cap}/><rect x="42" y="78" width="36" height="12" rx="2" fill="#d9a77f" opacity=".5"/>`,
+    "type-moisturiser": `<rect x="30" y="64" width="60" height="44" rx="8" ${body}/><rect x="28" y="52" width="64" height="16" rx="5" ${cap}/><rect x="42" y="78" width="36" height="12" rx="2" fill="#d88a96" opacity=".5"/>`,
     "type-barrier": `<rect x="30" y="64" width="60" height="44" rx="8" ${body}/><rect x="28" y="52" width="64" height="16" rx="5" ${cap}/>`,
-    "type-cleanser": `<rect x="40" y="44" width="40" height="64" rx="10" ${body}/><rect x="52" y="30" width="16" height="14" ${cap}/><path d="M60 30V20h18v6" stroke="#6a4330" stroke-width="5" fill="none" stroke-linecap="round"/><rect x="48" y="62" width="24" height="22" rx="2" fill="#d9a77f" opacity=".5"/>`,
+    "type-cleanser": `<rect x="40" y="44" width="40" height="64" rx="10" ${body}/><rect x="52" y="30" width="16" height="14" ${cap}/><path d="M60 30V20h18v6" stroke="#1e1a1b" stroke-width="5" fill="none" stroke-linecap="round"/><rect x="48" y="62" width="24" height="22" rx="2" fill="#d88a96" opacity=".5"/>`,
     "type-lip": `<rect x="50" y="46" width="20" height="62" rx="5" ${body}/><rect x="50" y="28" width="20" height="22" rx="4" ${cap}/>`,
     "type-mist": `<rect x="42" y="40" width="36" height="68" rx="12" ${body}/><rect x="50" y="26" width="20" height="16" rx="3" ${cap}/><g fill="#a3b5c4" opacity=".7"><circle cx="82" cy="24" r="2"/><circle cx="88" cy="18" r="1.6"/><circle cx="90" cy="28" r="1.6"/></g>`,
-    "type-hat": `<ellipse cx="60" cy="86" rx="48" ry="12" fill="#d8bf9f" stroke="#b8996f"/><path d="M36 84c0-22 10-38 24-38s24 16 24 38c-8 4-40 4-48 0z" fill="#e7d3b8" stroke="#b8996f"/><path d="M37 78c14 4 32 4 46 0" stroke="#6a4330" stroke-width="5"/>`,
-    "type-sunglasses": `<g fill="#3a281e"><rect x="18" y="56" width="36" height="26" rx="12"/><rect x="66" y="56" width="36" height="26" rx="12"/></g><path d="M54 64q6-6 12 0" stroke="#3a281e" stroke-width="4" fill="none"/><path d="M24 62l6-4M72 62l6-4" stroke="#fff" stroke-opacity=".3" stroke-width="3"/>`,
+    "type-hat": `<ellipse cx="60" cy="86" rx="48" ry="12" fill="#d8bf9f" stroke="#b8996f"/><path d="M36 84c0-22 10-38 24-38s24 16 24 38c-8 4-40 4-48 0z" fill="#e7d3b8" stroke="#b8996f"/><path d="M37 78c14 4 32 4 46 0" stroke="#1e1a1b" stroke-width="5"/>`,
+    "type-sunglasses": `<g fill="#1e1a1b"><rect x="18" y="56" width="36" height="26" rx="12"/><rect x="66" y="56" width="36" height="26" rx="12"/></g><path d="M54 64q6-6 12 0" stroke="#1e1a1b" stroke-width="4" fill="none"/><path d="M24 62l6-4M72 62l6-4" stroke="#fff" stroke-opacity=".3" stroke-width="3"/>`,
     "type-sleeves": `<path d="M36 28h22l4 80H32z" ${body}/><path d="M62 28h22l4 80H58z" ${body}/>`,
     "type-blotting": `<rect x="34" y="38" width="52" height="66" rx="6" ${body}/><rect x="40" y="30" width="40" height="10" rx="3" ${cap}/>`,
   };

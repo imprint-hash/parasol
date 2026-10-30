@@ -111,7 +111,7 @@ const P = {
   vibrate: '<rect x="7" y="4" width="10" height="16" rx="2"/><path d="M3 8v8M21 8v8"/>',
 };
 export const icon = (name, cls = "") =>
-  `<svg class="ic ${cls}" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${P[name] || ""}</svg>`;
+  `<svg class="ic ic-${esc(name)} ${cls}" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${P[name] || ""}</svg>`;
 
 /** The Parasol mark: a parasol canopy over a handle. */
 export const mark = (size = 40) =>

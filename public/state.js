@@ -6,7 +6,7 @@ const KEY = "parasol.v1";
 const MAX_SCANS = 10;
 
 const fresh = () => ({
-  prefs: { lowVision: null, theme: "auto", textScale: 1, speechRate: 1 },
+  prefs: { lowVision: null, theme: "light", textScale: 1, speechRate: 1 },
   scans: [],
   profile: null,
   trip: null,

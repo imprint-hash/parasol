@@ -890,7 +890,6 @@ test("secrets: .env is ignored and was never committed; git history and tracked 
 
 test(
   "secrets: a missing PARASOL_SECRET on Vercel must not fall back to a public default key",
-  { todo: "BUG-3: src/scan.js:32 and src/budget.js:56 fall back to the hard-coded 'dev-only-secret-not-for-production', so with the env var missing on Vercel anyone can forge deleteTokens from an image hash and reverse IP hashes" },
   async () => {
     process.env.VERCEL = "1";
     delete process.env.PARASOL_SECRET;

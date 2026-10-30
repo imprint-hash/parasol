@@ -6,7 +6,7 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { HttpError } from "../http.js";
 import { storeName, list, remove } from "../store.js";
-import { liveStatus, settings, rateLimit } from "../budget.js";
+import { liveStatus, settings, rateLimit, secretOk } from "../budget.js";
 import { scanRequest, deleteMyData, SCAN_BODY_LIMIT } from "../scan.js";
 import { demoScan, demoReady, fixturesPresent } from "../demo.js";
 import { createCart, shopHealth, shopDomain } from "../shopify.js";
@@ -47,7 +47,8 @@ async function cleanup(now = Date.now()) {
 export const routes = [
   ["GET", "/api/health", async () => {
     const [live, shopify] = await Promise.all([liveStatus(), shopHealth()]);
-    return { ok: true, store: storeName, youcamLive: live.live, demoReady: demoReady(), fixtures: fixturesPresent(), shopify };
+    const config = secretOk() ? "ok" : "misconfigured";
+    return { ok: config === "ok", store: storeName, config, youcamLive: live.live, demoReady: demoReady(), fixtures: fixturesPresent(), shopify };
   }],
 
   ["GET", "/api/config", async () => ({

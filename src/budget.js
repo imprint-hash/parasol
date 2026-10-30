@@ -36,7 +36,7 @@ const switchOn = (v) => (v === undefined ? true : ON.has(String(v).trim().toLowe
 
 const num = (v, d) => (v !== undefined && v !== "" && Number.isFinite(Number(v)) ? Number(v) : d);
 export const settings = () => ({
-  live: switchOn(process.env.LIVE_SCANS) && Boolean(process.env.YOUCAM_API_KEY),
+  live: switchOn(process.env.LIVE_SCANS) && Boolean(process.env.YOUCAM_API_KEY) && secretOk(),
   perDay: num(process.env.LIVE_SCANS_PER_DAY, 15),
   floor: num(process.env.UNITS_FLOOR, 150),
 });
@@ -59,8 +59,29 @@ export function clientIp(req) {
   return req.socket?.remoteAddress || "unknown";
 }
 
-const secret = () => process.env.PARASOL_SECRET || "dev-only-secret-not-for-production";
-export const ipHash = (ip) => createHmac("sha256", secret()).update(`ip|${ip}`).digest("base64url").slice(0, 22);
+/* ---------- the server secret (delete tokens, IP hashes) ---------- */
+
+export const MIN_SECRET_LENGTH = 32;
+const DEV_SECRET = "dev-only-secret-not-for-production";
+const hosted = () => Boolean(process.env.VERCEL);
+const strong = (s) => typeof s === "string" && s.length >= MIN_SECRET_LENGTH;
+
+/** False when we're hosted (Vercel) and PARASOL_SECRET is missing or shorter than 32 characters. */
+export const secretOk = () => !hosted() || strong(process.env.PARASOL_SECRET);
+
+/**
+ * The HMAC key. Hosted, a missing or short PARASOL_SECRET is a 503
+ * `misconfigured` (never a public default key). Locally and in tests the
+ * dev fallback is allowed.
+ */
+export function serverSecret() {
+  const s = process.env.PARASOL_SECRET;
+  if (strong(s)) return s;
+  if (hosted()) throw new HttpError("Parasol isn't set up correctly on the server yet. Please try the demo instead.", 503, "misconfigured");
+  return s || DEV_SECRET;
+}
+
+export const ipHash = (ip) => createHmac("sha256", serverSecret()).update(`ip|${ip}`).digest("base64url").slice(0, 22);
 
 /* ---------- cheap in-memory rate limit, for routes that cost little ---------- */
 
@@ -95,6 +116,7 @@ const liveOff = (why) => new HttpError(`Live scans are paused right now (${why})
 /** Whether live scans are possible at all right now (for /api/health and /api/config). */
 export async function liveStatus(now = Date.now()) {
   const s = settings();
+  if (!secretOk()) return { live: false, reason: "misconfigured" };
   if (!s.live) return { live: false, reason: "switched off" };
   const day = (await get("pz_budget", `day:${dayKey(now)}`).catch(() => null)) || { liveScans: 0 };
   if (day.liveScans >= s.perDay) return { live: false, reason: "daily limit reached" };
@@ -114,6 +136,7 @@ export async function liveStatus(now = Date.now()) {
  */
 export function reserveLiveScan(ip, units, now = Date.now()) {
   return serial(async () => {
+    serverSecret(); // hosted without a real secret: 503 misconfigured, before anything else
     const s = settings();
     if (!s.live) throw liveOff("switched off");
 

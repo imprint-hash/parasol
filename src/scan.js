@@ -16,7 +16,7 @@ import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypt
 import { get, put, list, remove, storeName } from "./store.js";
 import { HttpError } from "./http.js";
 import { scanFace, YoucamError, COST, isStubbed } from "./youcam.js";
-import { reserveLiveScan, rateLimit } from "./budget.js";
+import { reserveLiveScan, rateLimit, serverSecret } from "./budget.js";
 
 export const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 export const MIN_SHORT_SIDE = 480;
@@ -29,7 +29,7 @@ export const METRICS = ["oiliness", "moisture", "acne", "redness", "pore", "age_
 const SKIN_TYPES = ["oily", "dry", "combination", "normal"];
 const MASK_MARGIN_MS = 5 * 60_000;
 
-const secret = () => process.env.PARASOL_SECRET || "dev-only-secret-not-for-production";
+const secret = serverSecret;
 
 /* ---------- image checks ---------- */
 
@@ -212,6 +212,7 @@ export async function scanRequest(body, ip) {
     throw new HttpError("Please read and accept the consent note before scanning.", 400, "no_consent");
   }
   const img = decodeImage(body.image);
+  serverSecret(); // hosted without a real secret: 503 misconfigured
   rateLimit(`scan|${ip}`, SCANS_PER_IP_HOUR);
   const kind = body.kind === "rescan" ? "rescan" : "baseline";
   const hash = createHash("sha256").update(img.bytes).digest("hex");
@@ -231,6 +232,7 @@ const TOKEN_RE = /^[A-Za-z0-9_-]{43}$/;
 
 /** DELETE /api/my-data: removes the cached scores each valid token belongs to. */
 export async function deleteMyData(body) {
+  serverSecret(); // hosted without a real secret: 503 misconfigured
   const tokens = body.deleteTokens;
   if (!Array.isArray(tokens) || tokens.length === 0 || tokens.length > 20) throw new HttpError("Send deleteTokens: a list of 1 to 20 tokens.", 400, "bad_request");
   if (!tokens.every((t) => typeof t === "string" && TOKEN_RE.test(t))) throw new HttpError("One of those delete tokens isn't valid.", 403, "bad_token");

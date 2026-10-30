@@ -20,7 +20,7 @@ export function uvChart(hourly = [], { title = "UV by hour", protect } = {}) {
   const pt = protect?.to ? Number(String(protect.to).split(":")[0]) + Number(String(protect.to).split(":")[1] || 0) / 60 : null;
   const band =
     pf != null && pt != null
-      ? `<rect x="${padL + (pf - FROM) * bw}" y="0" width="${Math.max(0, (pt - pf) * bw)}" height="${H - padB}" fill="var(--primary-soft)" opacity="0.6"/>`
+      ? `<rect x="${padL + (pf - FROM) * bw}" y="0" width="${Math.max(0, (pt - pf) * bw)}" height="${H - padB}" fill="var(--sand)" opacity="0.28"/>`
       : "";
   const bars = hours
     .map((x) => {
@@ -43,7 +43,7 @@ export function uvChart(hourly = [], { title = "UV by hour", protect } = {}) {
 
   return `<figure class="mt-0" style="margin:0">
     <svg class="uvchart" viewBox="0 0 ${W} ${H}" aria-hidden="true" focusable="false">${band}${gl}${bars}${labels}</svg>
-    <figcaption class="legend">${pf != null ? '<span><span class="dot" style="background:var(--primary-soft);border:1px solid var(--primary)"></span>Protect hours</span>' : ""}<span><span class="dot bg-uv-low"></span>Low</span><span><span class="dot bg-uv-mod"></span>Moderate</span><span><span class="dot bg-uv-high"></span>High</span><span><span class="dot bg-uv-vhigh"></span>Very high</span><span><span class="dot bg-uv-ext"></span>Extreme</span></figcaption>
+    <figcaption class="legend">${pf != null ? '<span><span class="dot" style="background:var(--sand);opacity:.7"></span>Protect hours</span>' : ""}<span><span class="dot bg-uv-low"></span>Low</span><span><span class="dot bg-uv-mod"></span>Moderate</span><span><span class="dot bg-uv-high"></span>High</span><span><span class="dot bg-uv-vhigh"></span>Very high</span><span><span class="dot bg-uv-ext"></span>Extreme</span></figcaption>
   </figure>
   <details class="more"><summary>${esc(title)} as a table</summary><div class="table-wrap"><table class="data"><caption class="sr-only">${esc(title)}</caption><thead><tr><th scope="col">Time</th><th scope="col" class="num">UV</th><th scope="col">Level</th><th scope="col" class="num">Temp</th><th scope="col" class="num">Humidity</th></tr></thead><tbody>${rows}</tbody></table></div></details>`;
 }

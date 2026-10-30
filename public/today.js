@@ -1,9 +1,9 @@
 // /today: today's card in the city's time zone, routine, and the sun timer.
-import { shell, esc, icon, $, fmtLong, fmtHour, fmtClock, uvLevel, readAloud } from "./ui.js";
-import { load, update, todayIn, PERSONAS } from "./state.js";
+import { shell, esc, icon, $, $$, fmtLong, fmtHour, fmtClock, fmtWeekday, fmtDate, uvLevel, readAloud, productThumb, wireTabs } from "./ui.js";
+import { load, update, todayIn, PERSONAS, DEMO_RESCAN_CITY } from "./state.js";
 import { announce, focusHeading } from "./a11y.js";
 import * as T from "./timer.js";
-import { burnDial, minutesText } from "./parts.js";
+import { burnDial, minutesText, uvGauge, wxGlyph } from "./parts.js";
 
 const view = $("#view");
 const st = load();
@@ -23,9 +23,9 @@ function chooseDay() {
     if (d) return { d, label: "" };
   }
   if (st.demo) {
-    const lagos = days.filter((x) => x.city === "Lagos");
-    const d = lagos[2] || lagos.at(-1) || days[0];
-    return { d, label: "Demo preview: Day 3 in Lagos" };
+    const city = days.filter((x) => x.city === DEMO_RESCAN_CITY);
+    const d = city[2] || city.at(-1) || days[0];
+    return { d, label: `Demo preview: Day 3 in ${DEMO_RESCAN_CITY}` };
   }
   return { d: days[0], label: `Preview: your trip starts ${fmtLong(days[0].date)}` };
 }
@@ -40,31 +40,33 @@ const nowHour = (tz) => {
 
 function routine() {
   const k = st.kit?.res?.slots || [];
-  const pick = (slot) => k.find((s) => s.slot === slot && st.kit.chosen?.[slot]);
-  const title = (slot, fallback) => {
-    const s = pick(slot);
-    if (!s) return fallback;
-    const p = [s.pick, ...(s.alternatives || [])].find((x) => x?.variantId === st.kit.chosen[slot]) || s.pick;
-    return p.title;
+  const pid = (p) => p?.variantId || p?.handle || null;
+  // The product the user kept for a slot, or null.
+  const prod = (slot) => {
+    const s = k.find((x) => x.slot === slot && st.kit.chosen?.[slot]);
+    if (!s) return null;
+    return [s.pick, ...(s.alternatives || [])].find((x) => x && pid(x) === st.kit.chosen[slot]) || s.pick;
   };
   const wx = day?.wx || {};
   const humid = wx.rhMean >= 70;
   const dry = wx.rhMean <= 40 || wx.tMin <= 5 || day?.kind === "flight";
   const uvHigh = wx.uvMax >= 6;
   const tags = new Set((day?.advice || []).flatMap((a) => a.tags || []));
+  const ids = new Set((day?.advice || []).map((a) => a.id));
+  const item = (id, t, d, slot, ic, when, essential = false) => ({ id, t, d, p: slot ? prod(slot) : null, ic, when, essential });
   const am = [
-    { id: "am-cleanse", t: "Gentle cleanse", d: title("cleanser", "A gentle, fragrance-free cleanser. Lukewarm water.") },
-    { id: "am-moist", t: humid ? "Light gel moisturiser" : dry ? "Moisturiser, a bit richer today" : "Moisturiser", d: title("moisturiser-day", humid ? "A thin gel layer is enough in humid air." : "A thin layer before sunscreen.") },
-    { id: "am-spf", t: wx.uvMax >= 3 || tags.has("spf-50") ? "Sunscreen SPF 50" : "Sunscreen SPF 30+", d: `${title("sunscreen", "Broad-spectrum sunscreen.")} Two finger-lengths for face, ears and neck.`, essential: true },
+    item("am-cleanse", "Gentle cleanse", "Lukewarm water, a gentle fragrance-free cleanser.", "cleanser", "drop", "Wake up"),
+    item("am-moist", humid ? "Light gel moisturiser" : dry ? "Moisturiser, a bit richer today" : "Moisturiser", humid ? "A thin gel layer is enough in humid air." : "A thin layer before sunscreen.", "moisturiser-day", "drop", "After cleansing"),
+    item("am-spf", wx.uvMax >= 3 || tags.has("spf-50") ? "Sunscreen SPF 50" : "Sunscreen SPF 30+", "Two finger-lengths for face, ears and neck.", "sunscreen", "sun", day?.protect ? `Before ${fmtClock(day.protect.from)}` : "Before going out", true),
   ];
-  if (pick("lip") || tags.has("lip")) am.push({ id: "am-lip", t: "Lip balm with SPF", d: title("lip", "Reapply after eating and drinking.") });
-  if (tags.has("hat") || tags.has("sunglasses") || pick("hat")) am.push({ id: "am-hat", t: "Hat and sunglasses", d: "Wide brim, and sunglasses marked UV400." });
-  if (day?.kind === "flight") am.push({ id: "am-mist", t: "Mist and balm in your bag", d: title("mist", "Cabin air is very dry.") });
+  if (prod("lip") || tags.has("lip")) am.push(item("am-lip", "Lip balm with SPF", "Reapply after eating and drinking.", "lip", "heart", "With sunscreen"));
+  if (tags.has("hat") || tags.has("sunglasses") || prod("hat")) am.push(item("am-hat", "Hat and sunglasses", "Wide brim, and sunglasses marked UV400.", "hat", "hat", "Going out"));
+  if (day?.kind === "flight" || ids.has("dust")) am.push(item("am-mist", day?.kind === "flight" ? "Mist and balm in your bag" : "Face mist in your bag", day?.kind === "flight" ? "Cabin air is very dry." : "Dusty air: mist, don't wipe.", "mist", "drop", "In your bag"));
   const pm = [
-    { id: "pm-cleanse", t: "Cleanse well", d: wx.pm25Max >= 35 ? "Air quality was poor today: cleanse twice, gently." : "Take off sunscreen and the day's sweat." },
-    { id: "pm-moist", t: dry ? "Rich cream" : "Moisturiser", d: title(dry ? "moisturiser-rich" : "moisturiser-day", dry ? "Dry air: a richer cream overnight." : "A light layer.") },
+    item("pm-cleanse", "Cleanse well", wx.pm25Max >= 35 || wx.dustMax >= 50 ? "Dusty or polluted air today: cleanse gently, no scrubbing." : "Take off sunscreen and the day's sweat.", "cleanser", "drop", "Evening"),
+    item("pm-moist", dry ? "Rich cream" : "Moisturiser", dry ? "Dry or cold air: a richer cream overnight." : "A light layer.", dry ? "moisturiser-rich" : "moisturiser-day", "moon", "Before bed"),
   ];
-  if (uvHigh) pm.push({ id: "pm-after", t: "After-sun", d: title("aftersun", "Cool, soothing gel on skin that saw the sun.") });
+  if (uvHigh) pm.push(item("pm-after", "After-sun", "Cool, soothing gel on skin that saw the sun.", "aftersun", "sun", "After sun"));
   return { am, pm };
 }
 
@@ -82,18 +84,21 @@ function speech() {
   return parts.filter(Boolean).join(" ");
 }
 
-function list(items, date, heading, id) {
+function list(items, date, id) {
   const done = new Set(st.routine?.[date] || []);
-  const n = items.filter((x) => done.has(x.id)).length;
-  return `<section aria-labelledby="${id}">
-    <div class="row spread" style="margin-bottom:.75rem"><h2 id="${id}" class="row gap">${icon(id === "am-h" ? "sunrise" : "moon")} ${heading}</h2><span class="small" style="color:var(--primary);font-weight:700" id="${id}-n">${n} of ${items.length} done</span></div>
-    <ul class="routine">${items
-      .map(
-        (x) =>
-          `<li class="${x.essential ? "essential" : ""}"><label><input type="checkbox" data-r="${x.id}" ${done.has(x.id) ? "checked" : ""}><span class="r-box" aria-hidden="true">${icon("check")}</span><span class="r-title">${esc(x.t)}</span><span class="r-desc">${esc(x.d)}</span>${x.essential ? `<span class="r-tag badge badge-solid">Essential</span>` : ""}</label></li>`
-      )
-      .join("")}</ul>
-  </section>`;
+  return `<ul class="routine" aria-labelledby="${id}">${items
+    .map(
+      (x) =>
+        `<li><label><input type="checkbox" data-r="${x.id}" ${done.has(x.id) ? "checked" : ""}><span class="r-thumb" aria-hidden="true">${x.p?.image ? `<img src="${esc(x.p.image)}" alt="" loading="lazy">` : icon(x.ic)}</span><span class="r-title">${esc(x.t)}</span><span class="r-desc">${esc(x.p ? x.p.title : x.d)}</span><span class="r-meta"><span class="time-chip">${icon("clock")} ${esc(x.when)}</span>${x.essential ? `<span class="time-chip ess">Essential</span>` : ""}</span><span class="r-box" aria-hidden="true">${icon("check")}</span></label></li>`
+    )
+    .join("")}</ul>`;
+}
+
+function dayStrip() {
+  const days = (st.forecast?.days || []).filter((d) => d.city === day.city);
+  return `<nav class="day-chips" aria-label="Days in ${esc(day.city)}">${days
+    .map((d) => `<a class="day-chip" href="/forecast#d=${d.date}" ${d.date === day.date ? 'aria-current="date" aria-pressed="true"' : ""} style="text-decoration:none"><span class="dc-d">${d.date === day.date ? "Today" : fmtWeekday(d.date)}</span>${wxGlyph(d, 28)}<span class="dc-t">${d.wx ? Math.round(d.wx.tMax) + "°" : "–"}</span><span class="dc-c">${fmtDate(d.date)}</span></a>`)
+    .join("")}</nav>`;
 }
 
 function render() {
@@ -115,21 +120,32 @@ function render() {
   const uvNow = Number((day.hourly || []).find((x) => x.h === hourNow)?.uvi);
   const lvNow = uvLevel(uvNow);
   const r = routine();
-  const deep = day.darkMarks || ["V", "VI"].includes(st.profile?.fitz);
+  const deep = !!(day.darkMarks || ["V", "VI"].includes(st.profile?.fitz));
   // Burn time scales with 1/UV: same dose at a weaker sun takes longer.
   const burnNow =
     day.burn && uvNow >= 1
       ? { ...day.burn, atUvi: uvNow, atHour: hourNow, minutesLow: round5((day.burn.minutesLow * day.burn.atUvi) / uvNow), minutesHigh: round5((day.burn.minutesHigh * day.burn.atUvi) / uvNow) }
       : null;
 
+  const done = new Set(st.routine?.[day.date] || []);
+  const count = (items) => `${items.filter((x) => done.has(x.id)).length} of ${items.length} done`;
   view.innerHTML = `
   ${label ? `<p class="note">${icon("info")} ${esc(label)}</p>` : ""}
+  ${dayStrip()}
   <div class="cols">
     <div class="stack">
-      <div class="row spread gap"><span class="badge badge-blue">${icon("sun")} UV ${Number.isFinite(uvNow) ? Math.round(uvNow) : "?"} ${label ? `at ${fmtHour(hourNow)}` : "now"} · max ${Number.isFinite(Number(wx.uvMax)) ? Math.round(wx.uvMax) : "?"}</span>${label ? "" : `<span class="small subtle">${fmtHour(h)} local time</span>`}</div>
-      <button type="button" class="briefing" id="brief"><span class="b-ic" aria-hidden="true">${icon("speaker")}</span><span class="b-txt"><strong>Read my briefing aloud</strong><span class="small muted">Today's weather, routine and timer</span></span>${icon("play", "play")}</button>
-      <section class="card" aria-labelledby="timer-h">
-        <div class="card-head"><h2 id="timer-h" class="row gap"><span class="dot" style="background:var(--primary)" aria-hidden="true"></span> Sun timer</h2><span class="badge badge-neutral">Sun type ${esc(st.profile?.fitz || "?")}</span></div>
+      <section class="dk" aria-labelledby="wx-h">
+        <div class="card-head"><h2 id="wx-h" style="font-size:1.25rem">${label ? `Sun at ${fmtHour(hourNow)}` : "Sun right now"}</h2><span class="badge badge-glass">${esc(day.city)}</span></div>
+        ${uvGauge(uvNow, { label: `${Number.isFinite(uvNow) ? esc(lvNow.name) : "UV not known"} · max ${Number.isFinite(Number(wx.uvMax)) ? Math.round(wx.uvMax) : "?"} today` })}
+        <div class="stat-row">
+          <div class="stat"><span class="s-lab">${icon("thermo")} High</span><span class="s-val">${wx.tMax != null ? Math.round(wx.tMax) : "–"}<small>°C</small></span></div>
+          <div class="stat"><span class="s-lab">${icon("drop")} Humidity</span><span class="s-val">${wx.rhMean != null ? Math.round(wx.rhMean) : "–"}<small>%</small></span></div>
+          <div class="stat"><span class="s-lab">${icon("timer")} ${deep ? "Dark marks" : "Burn in"}</span><span class="s-val">${burnNow && !deep ? `${burnNow.minutesLow}<small>min</small>` : deep && Number(uvNow) >= 3 ? "Risk" : "–"}</span></div>
+        </div>
+        <button type="button" class="briefing" id="brief"><span class="b-ic" aria-hidden="true">${icon("speaker")}</span><span class="b-txt"><strong>Read my briefing aloud</strong><span class="small">Weather, routine and timer</span></span>${icon("play", "play")}</button>
+      </section>
+      <section class="dk" aria-labelledby="timer-h">
+        <div class="card-head"><h2 id="timer-h" style="font-size:1.25rem">Sun timer</h2><span class="badge badge-glass">Sun type ${esc(st.profile?.fitz || "?")}</span></div>
         <div id="timer"></div>
       </section>
       ${
@@ -137,8 +153,19 @@ function render() {
           ? `<div class="alert">${icon("warn")}<div><p><strong>UV ${Math.round(uvNow)} (${lvNow.name}) ${label ? "at the peak hour" : "right now"}.</strong></p><p>Reapply straight away after swimming, towel drying or heavy sweating.</p></div></div>`
           : ""
       }
-      <section class="card" aria-labelledby="bn-h">
-        <h2 id="bn-h">${icon("timer")} Burn clock, ${label ? `at ${fmtHour(hourNow)}` : "this hour"}</h2>
+    </div>
+    <div class="stack">
+      <section class="card" aria-labelledby="rt-h">
+        <div class="card-head"><h2 id="rt-h">Today's routine</h2></div>
+        <div class="tabs-bar"><div class="toggle" role="tablist" aria-label="Routine">
+          <button type="button" role="tab" id="tab-am" aria-controls="pan-am" aria-selected="${h < 15 ? "true" : "false"}" ${h < 15 ? "" : 'tabindex="-1"'}>${icon("sunrise")} Morning</button>
+          <button type="button" role="tab" id="tab-pm" aria-controls="pan-pm" aria-selected="${h < 15 ? "false" : "true"}" ${h < 15 ? 'tabindex="-1"' : ""}>${icon("moon")} Evening</button>
+        </div></div>
+        <div role="tabpanel" id="pan-am" aria-labelledby="tab-am" class="tabpanel" ${h < 15 ? "" : "hidden"}><p class="small muted" id="am-h-n">${count(r.am)}</p><span id="am-h" class="sr-only">Morning routine</span>${list(r.am, day.date, "am-h")}</div>
+        <div role="tabpanel" id="pan-pm" aria-labelledby="tab-pm" class="tabpanel" ${h < 15 ? "hidden" : ""}><p class="small muted" id="pm-h-n">${count(r.pm)}</p><span id="pm-h" class="sr-only">Evening routine</span>${list(r.pm, day.date, "pm-h")}</div>
+      </section>
+      <section class="dk" aria-labelledby="bn-h">
+        <h2 id="bn-h" style="font-size:1.25rem">Burn clock, ${label ? `at ${fmtHour(hourNow)}` : "this hour"}</h2>
         ${burnDial(burnNow, uvNow, { deep })}
         ${
           burnNow
@@ -150,11 +177,7 @@ function render() {
         ${day.protect ? `<div class="protect">${icon("sun")}<div><p class="p-lab">Protect hours</p><p class="p-val">${esc(fmtClock(day.protect.from))} – ${esc(fmtClock(day.protect.to))}</p></div></div>` : ""}
         <p class="credit">Estimate. Not medical advice.</p>
       </section>
-    </div>
-    <div class="stack">
-      ${list(r.am, day.date, "Morning routine", "am-h")}
-      ${list(r.pm, day.date, "Evening routine", "pm-h")}
-      <section class="card-tint stack-sm" aria-labelledby="bo-h"><h2 id="bo-h">${icon("face")} Skin playing up?</h2><p class="muted">Scan again and Parasol compares it with your first scan and the weather since you landed.</p><a class="btn btn-secondary" href="/rescan">Do a rescan</a></section>
+      <section class="card-tint stack-sm" aria-labelledby="bo-h"><h2 id="bo-h">Skin playing up?</h2><p class="muted">Scan again and Parasol compares it with your first scan and the weather since you landed.</p><a class="btn btn-secondary" href="/rescan">Do a rescan ${icon("arrow")}</a></section>
     </div>
   </div>`;
 
@@ -167,11 +190,12 @@ function render() {
       e.target.checked ? set.add(id) : set.delete(id);
       s.routine = { [day.date]: [...set] }; // keep only today's ticks
     });
-    const sec = e.target.closest("section");
-    const boxes = sec.querySelectorAll("input[data-r]");
+    const pan = e.target.closest('[role="tabpanel"]');
+    const boxes = pan.querySelectorAll("input[data-r]");
     const n = [...boxes].filter((b) => b.checked).length;
-    sec.querySelector("[id$='-n']").textContent = `${n} of ${boxes.length} done`;
+    pan.querySelector("[id$='-n']").textContent = `${n} of ${boxes.length} done`;
   });
+  wireTabs($('[role="tablist"]'));
   renderTimer();
 }
 const round5 = (m) => Math.max(5, Math.round(m / 5) * 5);

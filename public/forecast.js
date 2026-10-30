@@ -3,7 +3,7 @@ import { shell, esc, icon, $, fmtDate, fmtLong, fmtWeekday, fmtHour, fmtClock, u
 import { load, update, tripForApi, profileForApi } from "./state.js";
 import { forecast as getForecast } from "./api.js";
 import { announce, focusHeading } from "./a11y.js";
-import { burnDial, minutesText } from "./parts.js";
+import { burnDial, minutesText, scenePhoto, SCENE_CREDIT, uvGauge, wxGlyph, ADVICE_ICON } from "./parts.js";
 import { uvChart } from "./chart.js";
 
 const view = $("#view");
@@ -75,15 +75,15 @@ function render() {
   const first = data.days[0]?.date;
   const last = data.days.at(-1)?.date;
   view.innerHTML = `
-  <div class="trip-strip">${legs.map((l) => esc(l.name)).join(` ${icon("plane")} `)}</div>
+  <div class="trip-strip">${legs.map((l) => esc(l.name)).join(` ${icon("arrow")} `)}</div>
   <p class="muted small">${fmtDate(first)} – ${fmtDate(last)} · ${data.days.length} days · Sun type ${esc(p.fitz)}${p.albinism ? " (albinism)" : ""} · ${esc(skinName(p.skinType))}</p>
   <section aria-labelledby="days-h">
-    <div class="row spread"><h2 id="days-h" class="label" style="font-size:var(--fs-label)">${icon("calendar")} Trip days</h2><span class="small subtle">Choose a day</span></div>
-    <div class="day-chips" role="group" aria-label="Trip days">
+    <div class="row spread"><h2 id="days-h" style="font-size:1.25rem">Trip days</h2><span class="small subtle">Choose a day</span></div>
+    <div class="day-chips" role="group" aria-labelledby="days-h">
       ${data.days
         .map((d) => {
-          const lv = uvLevel(d.wx?.uvMax);
-          return `<button type="button" class="day-chip" data-day="${d.date}" aria-pressed="${d.date === sel}"><span class="uvdot bg-uv-${d.kind === "flight" ? "na" : lv.key}" aria-hidden="true"></span>${fmtWeekday(d.date)} ${fmtDate(d.date)}: ${d.kind === "flight" ? "Flight" : esc(d.city)}${d.kind === "flight" ? ` ${icon("plane")}` : ""}<span class="sr-only">, UV ${uvText(d.wx?.uvMax)}</span></button>`;
+          const t = d.wx && Number.isFinite(Number(d.wx.tMax)) ? `${Math.round(d.wx.tMax)}°` : "–";
+          return `<button type="button" class="day-chip" data-day="${d.date}" aria-pressed="${d.date === sel}"><span class="dc-d">${fmtWeekday(d.date)} ${fmtDate(d.date)}</span>${wxGlyph(d, 30)}<span class="dc-t">${t}</span><span class="dc-c">${d.kind === "flight" ? "Flight" : esc(d.city)}</span><span class="sr-only">, ${d.kind === "flight" ? `flight to ${esc(d.city)}` : ""} UV ${uvText(d.wx?.uvMax)}</span></button>`;
         })
         .join("")}
     </div>
@@ -97,13 +97,13 @@ function render() {
       <tbody>${data.days
         .map(
           (d) =>
-            `<tr><td><button type="button" class="link-btn" data-day="${d.date}" style="min-height:0;padding:0">${fmtWeekday(d.date)} ${fmtDate(d.date)}</button></td><td>${esc(d.city)}${d.kind === "flight" ? " (flight)" : d.kind === "typical" ? " (typical)" : ""}</td><td class="num"><span class="uv-${uvLevel(d.wx?.uvMax).key}" style="font-weight:700">${Number.isFinite(Number(d.wx?.uvMax)) ? Math.round(d.wx.uvMax) : "–"}</span></td><td class="num">${d.wx ? Math.round(d.wx.tMax) + "°" : "–"}</td><td class="num">${d.wx ? Math.round(d.wx.rhMean) + "%" : "–"}</td></tr>`
+            `<tr><td><button type="button" class="link-btn" data-day="${d.date}" style="min-height:0;padding:0">${fmtWeekday(d.date)} ${fmtDate(d.date)}</button></td><td>${esc(d.city)}${d.kind === "flight" ? " (flight)" : d.kind === "typical" ? " (typical)" : ""}</td><td class="num"><span class="uv-txt-${uvLevel(d.wx?.uvMax).key}" style="font-weight:700">${Number.isFinite(Number(d.wx?.uvMax)) ? Math.round(d.wx.uvMax) : "–"}</span></td><td class="num">${d.wx ? Math.round(d.wx.tMax) + "°" : "–"}</td><td class="num">${d.wx ? Math.round(d.wx.rhMean) + "%" : "–"}</td></tr>`
         )
         .join("")}</tbody>
     </table></div>
     <p class="small muted">${sourcesLine()}</p>
   </section>
-  <a class="btn btn-primary btn-block" href="/kit">${icon("kit")} Build my trip kit ${icon("arrow")}</a>`;
+  <a class="btn btn-primary btn-block" href="/kit">Build my trip kit ${icon("arrow")}</a>`;
   renderDay(false);
   // Scroll only the chip row (scrollIntoView would also nudge the page sideways).
   const chip = document.querySelector('.day-chip[aria-pressed="true"]');
@@ -130,43 +130,59 @@ function renderDay(focus = true) {
   const top = (d.advice || []).find((a) => a.text === headlineText(d));
   const rest = (d.advice || []).filter((a) => a !== top);
   const box = $("#day");
+  const photo = scenePhoto(d.city, { alt: "" });
+  const stat = (ic, lab, val, unit, note = "") => `<div class="stat"><span class="s-lab">${icon(ic)} ${lab}</span><span class="s-val">${val}${unit ? `<small>${unit}</small>` : ""}</span>${note ? `<span class="s-note">${note}</span>` : ""}</div>`;
+  const r = (v) => (v == null || !Number.isFinite(Number(v)) ? "–" : Math.round(v));
   box.innerHTML = `
   <div class="cols">
-    <article class="card" aria-labelledby="day-h">
-      <div class="card-head">
-        <div><p class="eyebrow">${icon(d.kind === "flight" ? "plane" : "pin")} ${esc(d.city)}</p><h2 id="day-h" tabindex="-1">${esc(fmtLong(d.date))}</h2><p class="kind-tag ${d.kind === "typical" ? "subtle" : "muted"}">${esc(d.label || KIND[d.kind] || "")}</p></div>
-        ${hot ? `<span class="alertpill">${icon("warn")} UV ${lv.name.toLowerCase()}</span>` : ""}
-      </div>
+    <div>
+      <article class="city-hero ${photo ? "" : "no-photo"}" aria-labelledby="day-h">
+        ${photo}
+        <div class="ch-top">
+          <div><p class="ch-sub">${icon(d.kind === "flight" ? "plane" : "pin")} ${d.kind === "flight" ? `Flight to ${esc(d.city)}` : esc(d.city)}</p><h2 id="day-h" tabindex="-1">${esc(fmtLong(d.date))}</h2></div>
+          <span class="badge badge-glass">${esc(d.label || KIND[d.kind] || "")}</span>
+        </div>
+        <div>
+          <div class="ch-nums">
+            <div><p class="big big-xl">${d.wx ? r(wx.tMax) : "–"}<span class="u">°C</span></p><p class="ch-cap">High · low ${r(wx.tMin)}°${wx.feelsMin != null && Math.round(wx.feelsMin) < Math.round(wx.tMin) ? ` · feels ${r(wx.feelsMin)}°` : ""}</p></div>
+            <div style="text-align:right"><p class="big big-l">${uvKnown ? r(wx.uvMax) : "?"}<span class="u">UV</span></p><p class="ch-cap">${uvKnown ? `${esc(lv.name)} at ${esc(fmtHour(wx.uvPeakHour))}` : "UV not known yet"}</p></div>
+          </div>
+          ${photo ? `<p class="credit" style="margin-top:.5rem">${SCENE_CREDIT}</p>` : ""}
+        </div>
+      </article>
       ${
         d.wx
-          ? `<div class="stats">
-        <div class="stat">${icon("thermo")}<span class="s-val">${Math.round(wx.tMax)}°C</span><span class="s-lab">low ${Math.round(wx.tMin)}°</span></div>
-        <div class="stat">${icon("drop")}<span class="s-val">${Math.round(wx.rhMean)}%</span><span class="s-lab">${d.kind === "flight" ? "cabin air" : "humidity"}</span></div>
-        <div class="stat ${hot ? "uv-hot" : ""}">${icon("sun")}<span class="s-val">${uvKnown ? `UV ${Math.round(wx.uvMax)}` : "UV ?"}</span><span class="s-lab">${uvKnown ? lv.name : "not known yet"}</span></div>
-      </div>`
+          ? `<section class="dk" aria-label="Weather details"><div class="stat-row four">
+        ${stat("drop", d.kind === "flight" ? "Humidity on the ground" : "Humidity", r(wx.rhMean), "%", wx.dewMean != null ? `dew point ${r(wx.dewMean)}°` : "")}
+        ${stat("wind", "Wind", r(wx.windMax), "km/h", wx.windMax >= 30 ? "strong" : "")}
+        ${wx.dustMax != null ? stat("haze", "Dust", r(wx.dustMax), "µg/m³", wx.dustMax >= 50 ? "hazy air" : "") : stat("thermo", "Feels like", r(wx.feelsMin), "°", "coldest hour")}
+        ${wx.pm25Max != null ? stat("haze", "Air (PM2.5)", r(wx.pm25Max), "µg/m³", wx.pm25Max >= 35 ? "poor" : "") : stat("sun", "UV peak", uvKnown ? fmtHour(wx.uvPeakHour) : "–", "", "")}
+      </div></section>`
           : ""
       }
-      ${headlineText(d) ? `<div class="headline-box"><span class="h-ic" aria-hidden="true">${icon(d.kind === "flight" ? "plane" : deep ? "shield" : "sun")}</span><div><p class="h-lab">Today's main thing</p><p class="h-txt">${esc(headlineText(d))}</p>${top?.why ? `<p class="small" style="margin-top:.375rem">Why: ${esc(top.why)}</p>` : ""}</div></div>` : ""}
-      ${
-        rest.length
-          ? `<h3 class="row gap" style="font-size:1.0625rem">${icon("shieldCheck")} What to do</h3>
-      <ol class="plan">${rest.map((a) => `<li><span class="p-text">${esc(a.text)}</span>${a.why ? `<span class="p-why">Why: ${esc(a.why)}</span>` : ""}</li>`).join("")}</ol>`
-          : top ? "" : `<p class="muted">Nothing special for your skin today. Usual routine.</p>`
-      }
-      ${wx.windMax != null || wx.pm25Max != null ? `<p class="small muted">${wx.windMax != null ? `Wind up to ${Math.round(wx.windMax)} km/h.` : ""} ${wx.pm25Max != null ? `Fine dust (PM2.5) up to ${Math.round(wx.pm25Max)} µg/m³.` : ""}</p>` : ""}
-      ${!uvKnown && d.kind === "typical" ? `<p class="note">${icon("info")} UV not known yet: check again within 16 days of travel.</p>` : ""}
-    </article>
+      <section class="card" aria-labelledby="todo-h">
+        ${headlineText(d) ? `<div class="headline-box"><span class="h-ic" aria-hidden="true">${icon(ADVICE_ICON[top?.id] || (d.kind === "flight" ? "plane" : deep ? "shield" : "sun"))}</span><div><p class="h-lab">The main thing</p><p class="h-txt">${esc(headlineText(d))}</p>${top?.why ? `<p class="small muted" style="margin-top:.375rem">Why: ${esc(top.why)}</p>` : ""}</div></div>` : ""}
+        <h3 id="todo-h" class="${rest.length ? "" : "sr-only"}">Also today</h3>
+        ${
+          rest.length
+            ? `<ul class="plan">${rest.map((a) => `<li data-ic><span class="p-ic" aria-hidden="true">${icon(ADVICE_ICON[a.id] || "info")}</span><span class="p-text">${esc(a.text)}</span>${a.why ? `<span class="p-why">Why: ${esc(a.why)}</span>` : ""}</li>`).join("")}</ul>`
+            : top ? "" : `<p class="muted">Nothing special for your skin today. Usual routine.</p>`
+        }
+        ${!uvKnown && d.kind === "typical" ? `<p class="note">${icon("info")} UV not known yet: check again within 16 days of travel.</p>` : ""}
+      </section>
+    </div>
     <div>
       ${d.kind === "flight" ? flightNote(d) : ""}
-      <section class="card" aria-labelledby="burn-h">
-        <div class="card-head"><h2 id="burn-h">${icon("timer")} Burn clock</h2><span class="badge badge-neutral">Sun type ${esc(p.fitz)}${p.albinism ? " · albinism" : ""}</span></div>
+      <section class="dk" aria-labelledby="burn-h">
+        <div class="card-head"><h2 id="burn-h" style="font-size:1.375rem">Burn clock</h2><span class="badge badge-glass">Sun type ${esc(p.fitz)}${p.albinism ? " · albinism" : ""}</span></div>
         ${burnDial(d.burn, wx.uvMax, { deep })}
         ${burnText(d, p, deep)}
         ${d.protect ? `<div class="protect">${icon("sun")}<div><p class="p-lab">Protect hours${["I"].includes(p.fitz) || p.albinism ? " (our conservative choice: UV 2 and up)" : " (UV 3 and up)"}</p><p class="p-val">${esc(fmtClock(d.protect.from))} – ${esc(fmtClock(d.protect.to))}: shade, hat, sunscreen</p></div></div>` : ""}
         <p class="credit">Estimate. Not medical advice. The ring shows how strong the sun is at its peak, out of UV 12.</p>
       </section>
-      <section class="card" aria-labelledby="uvh-h">
-        <h2 id="uvh-h">UV through the day</h2>
+      <section class="dk" aria-labelledby="uvh-h">
+        <div class="card-head"><h2 id="uvh-h" style="font-size:1.375rem">UV through the day</h2></div>
+        ${uvGauge(wx.uvMax, { label: uvKnown ? `peak at ${fmtHour(wx.uvPeakHour)}` : "" })}
         ${uvChart(d.hourly || [], { title: `UV by hour, ${d.city}, ${fmtDate(d.date)}`, protect: d.protect })}
       </section>
     </div>
@@ -187,7 +203,7 @@ function burnText(d, p, deep) {
 }
 
 function flightNote(d) {
-  return `<section class="card-blue stack-sm" aria-labelledby="fl-h"><div class="card-head"><h2 id="fl-h" style="color:inherit">${icon("plane")} Flight day</h2><span class="badge badge-neutral">${fmtDate(d.date)}</span></div><p>Cabin air is very dry, often under 20% humidity. Mist, a rich moisturiser and lip balm in your bag.</p><p class="small">Source: WHO, International Travel and Health (cabin environment).</p></section>`;
+  return `<section class="card-blue stack-sm" aria-labelledby="fl-h"><div class="card-head"><h2 id="fl-h" style="font-size:1.375rem">${icon("plane")} Flight day</h2><span class="badge badge-neutral">${d.wx?.flightHours ? `${esc(d.wx.flightHours)} h in the air` : fmtDate(d.date)}</span></div><p>Cabin air is very dry, often under 20% humidity. Mist, a rich moisturiser and lip balm in your bag.</p><p class="small">Source: WHO, International Travel and Health (cabin environment).</p></section>`;
 }
 
 view.addEventListener("click", (e) => {

@@ -1,9 +1,9 @@
 // /trip: cities, dates, flights, carry-on. Saves to localStorage, then /forecast.
 import { shell, esc, icon, $, $$, fmtDate, daysBetween, uvLevel, errorBox } from "./ui.js";
-import { load, update, today, addDays, demoTrip } from "./state.js";
+import { load, update, today, addDays, demoTrip, DEMO_TRIP_LABEL } from "./state.js";
 import { places } from "./api.js";
 import { announce, focusHeading } from "./a11y.js";
-import { miniMap } from "./parts.js";
+import { miniMap, scenePhoto, SCENE_CREDIT } from "./parts.js";
 
 const view = $("#view");
 const MAX_LEGS = 5;
@@ -59,10 +59,10 @@ function legCard(leg, i) {
       <p class="muted small">${fmtDate(leg.from)} – ${fmtDate(leg.to)} · ${n} day${n === 1 ? "" : "s"}</p></div>
       <span class="badge badge-neutral">Stop ${i + 1}</span>
     </div>
-    ${leg.lat != null ? miniMap(leg, i) : ""}
+    ${leg.lat != null ? (scenePhoto(leg.name) ? `<div class="leg-photo">${scenePhoto(leg.name, { alt: "" })}<span class="lp-tag">${icon("pin")} ${esc(leg.name)}</span><span class="credit">${SCENE_CREDIT}</span></div>` : miniMap(leg, i)) : ""}
     ${
       wx
-        ? `<dl class="wx-row"><div><dt>Temp</dt><dd>${Math.round(wx.t)}°C</dd></div><div><dt>Humidity</dt><dd>${Math.round(wx.rh)}%</dd></div><div><dt>UV max</dt><dd class="uv-val uv-${uv?.key || "na"}">${uv ? `${Math.round(wx.uv)} ${uv.name}` : "Not known"}</dd></div></dl>`
+        ? `<dl class="wx-row"><div><dt>Temp</dt><dd>${Math.round(wx.t)}°C</dd></div><div><dt>Humidity</dt><dd>${Math.round(wx.rh)}%</dd></div><div><dt>UV max</dt><dd class="uv-val uv-txt-${uv?.key || "na"}">${uv ? `${Math.round(wx.uv)} ${uv.name}` : "Not known"}</dd></div></dl>`
         : leg.lat != null
           ? `<p class="note">${icon("info")} Weather appears after you build the forecast.</p>`
           : ""
@@ -131,8 +131,8 @@ function render(focusSel) {
         <p class="note">${icon("shieldCheck")} When this is on, your kit only suggests liquids under 100 ml. Rules differ by airport: check yours.</p>
       </section>
       <div id="trip-err"></div>
-      <button type="button" class="btn btn-primary btn-block" id="go">${icon("sunrise")} See my day-by-day forecast ${icon("arrow")}</button>
-      ${!st.demo ? `<p class="center"><button type="button" class="link-btn" id="fill-demo">Fill in the demo trip (London → Lagos → Cape Town)</button></p>` : ""}
+      <button type="button" class="btn btn-primary btn-block" id="go">See my day-by-day forecast ${icon("arrow")}</button>
+      ${!st.demo ? `<p class="center"><button type="button" class="link-btn" id="fill-demo">Fill in the demo trip (${DEMO_TRIP_LABEL})</button></p>` : ""}
     </div>
   </div>`;
   if (focusSel) $(focusSel)?.focus();

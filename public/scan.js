@@ -1,11 +1,16 @@
 // /scan: consent → capture → progress → result. Also the manual profile
 // (?manual=1) and showing a saved result (?result=<id>, ?demo=<persona>).
-import { shell, esc, icon, errorBox, $, $$, setRibbonNext } from "./ui.js";
+import { shell, esc, icon, errorBox, $, $$, setRibbonNext, wireTabs } from "./ui.js";
 import { load, update, addScan, profileFromScan, PERSONAS } from "./state.js";
 import { liveScan, config } from "./api.js";
 import { preparePhoto } from "./camera.js";
 import { announce, focusHeading, setPref, lowVisionOn } from "./a11y.js";
-import { faceDiagram, concernBars, fitzScale, FITZ, SKIN_TYPES, METRICS, zoneWord } from "./parts.js";
+import { faceDiagram, concernBars, fitzScale, FITZ, SKIN_TYPES, METRICS, zoneWord, scoreGauge, scoreLabel } from "./parts.js";
+
+const avgScore = (sc = {}) => {
+  const v = Object.values(sc).map(Number).filter(Number.isFinite);
+  return v.length ? v.reduce((a, b) => a + b, 0) / v.length : 0;
+};
 
 const view = $("#view");
 const h1 = $("#h1");
@@ -186,52 +191,89 @@ function showResult(scan, fresh = false) {
     (scan.concerns?.length ? `Things to watch: ${scan.concerns.map((c) => METRICS[c.metric]?.name).filter(Boolean).join(", ")}. ` : "No skin concerns stood out. ") +
     "Next, save your profile and plan your trip. Not medical advice.";
 
+  // Four floating tags around the face (ref: dark AI skincare app).
+  const TAGS = [
+    ["texture", "Texture"],
+    ["moisture", "Hydration"],
+    ["pore", "Pores"],
+    ["redness", "Redness"],
+  ].filter(([k]) => Number.isFinite(Number(skin.scores?.[k])));
+  const tag = ([k, name], i) => {
+    const v = Math.round(skin.scores[k]);
+    return `<span class="mtag glass t${i + 1}"><span class="mt-k">${esc(name)}</span><span class="mt-v">${scoreLabel(v).text} · ${v}</span></span>`;
+  };
+  const overall = Number.isFinite(Number(skin.overall)) ? skin.overall : avgScore(skin.scores);
+
   view.innerHTML = `
   ${demo ? `<p class="muted">Demo: real YouCam analysis of an AI-generated face. ${demo.placeholder ? "Placeholder face from YouCam's documentation." : ""}</p>` : `<p class="muted">From YouCam's skin analysis of your photo${scan.source === "cache" ? " (saved result, no new analysis needed)" : ""}.</p>`}
   <div class="cols">
-    <div>
-      <section class="card" aria-labelledby="type-h">
-        <div class="card-head"><div class="stack-sm"><span class="badge badge-blue">Skin type</span><h2 id="type-h">${esc(type.name)}</h2></div><span class="icon-btn" style="background:var(--primary-soft);color:var(--on-primary-soft)" aria-hidden="true">${icon("face")}</span></div>
-        <p class="muted">T-zone (forehead, nose, chin): <strong>${esc(zoneWord(skin.tZone))}</strong> · Cheeks: <strong>${esc(zoneWord(skin.uZone))}</strong>. ${esc(type.line)}</p>
-        <div class="face-wrap">
-          <div class="face-legend" aria-hidden="true"><span><span class="dot" style="background:#d14221"></span>Oily</span><span><span class="dot" style="background:#0369a1"></span>Balanced</span><span><span class="dot" style="background:#9d6a00"></span>Dry</span></div>
-          ${faceDiagram(skin.tZone, skin.uZone)}
-        </div>
-      </section>
+    <section class="dk analysis" aria-labelledby="ana-h">
+      <div class="row spread gap"><h2 id="ana-h" style="font-size:1.25rem">Skin analysis</h2><span class="badge badge-glass">${icon("sparkle")} YouCam Skin AI</span></div>
+      <div class="face-stage">
+        <div class="fs-photo">${
+          faceImg
+            ? `<img src="${esc(faceImg)}" alt="${persona ? `${esc(persona.name)}, AI-generated demo face` : "Your photo"}" id="face-img"><img class="mask" id="mask-img" alt="" hidden>`
+            : `<div style="padding:12% 6%;background:var(--beige);height:100%">${faceDiagram(skin.tZone, skin.uZone)}</div>`
+        }</div>
+        <svg class="lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+          <path d="M24 16 L40 26" vector-effect="non-scaling-stroke"/><path d="M76 26 L60 50" vector-effect="non-scaling-stroke"/>
+          <path d="M24 66 L40 58" vector-effect="non-scaling-stroke"/><path d="M76 74 L58 66" vector-effect="non-scaling-stroke"/>
+        </svg>
+        ${TAGS.map(tag).join("")}
+      </div>
+      ${demo?.face?.credit ? `<p class="credit center">${esc(demo.face.credit)}</p>` : ""}
+      ${scoreGauge(overall, "Overall skin score")}
+      <div class="center stack-sm">
+        <p class="eyebrow" style="justify-content:center">Skin type</p>
+        <p style="font-family:var(--f-display);font-size:1.75rem;line-height:1.1">${esc(type.name)}</p>
+        <p class="muted">T-zone: <strong>${esc(zoneWord(skin.tZone))}</strong> · Cheeks: <strong>${esc(zoneWord(skin.uZone))}</strong>${skin.skinAge ? ` · Skin age ${esc(skin.skinAge)}` : ""}</p>
+      </div>
       ${
         faceImg && masks.length
-          ? `<section class="card" aria-labelledby="mask-h">
-        <h2 id="mask-h">What YouCam saw</h2>
-        <fieldset class="seg"><legend>Show on the photo</legend>
-          <label><input type="radio" name="mask" value="" checked><span>Photo only</span></label>
+          ? `<fieldset class="seg scroll"><legend class="small muted" style="font-weight:700">Show what YouCam saw</legend>
+          <label><input type="radio" name="mask" value="" checked><span>Photo</span></label>
           ${masks.map(([k]) => `<label><input type="radio" name="mask" value="${esc(k)}"><span>${esc(METRICS[k].name)}</span></label>`).join("")}
         </fieldset>
-        <div class="mask-view"><img src="${esc(faceImg)}" alt="${persona ? `${persona.name}, demo face` : "Your photo"}" id="face-img"><img class="mask" id="mask-img" alt="" hidden></div>
-        ${demo?.face?.credit ? `<p class="credit">${esc(demo.face.credit)}</p>` : ""}
-        ${scan.masksExpireAt ? `<p class="credit">These overlays come from YouCam and disappear after about 2 hours.</p>` : ""}
-      </section>`
+        ${scan.masksExpireAt ? `<p class="credit center">These overlays come from YouCam and disappear after about 2 hours.</p>` : ""}`
           : ""
       }
-    </div>
+    </section>
     <div>
-      <section class="card" aria-labelledby="con-h">
-        <div class="card-head"><h2 id="con-h">Skin concern levels</h2><span class="subtle small">${Object.keys(skin.scores || {}).length} measures</span></div>
-        <p class="muted small">YouCam scores from 1 to 100. Higher means healthier skin.</p>
-        ${concernBars(skin.scores)}
-      </section>
-      <section class="card" aria-labelledby="fz-h">
-        <div class="card-head"><div><h2 id="fz-h">Sun type</h2><p class="subtle small">Fitzpatrick scale, I to VI</p></div><span aria-hidden="true" style="color:var(--amber)">${icon("sun")}</span></div>
-        <fieldset class="fitz-scale" id="fitz-set"><legend class="sr-only">Your sun type</legend>${fitzScale(fitz)}</fieldset>
-        <div class="card-warm" id="fitz-desc" aria-live="polite"></div>
-        <p class="small muted">${esc(fitzNote)}</p>
-        <div class="card-tint-2">
-          <label class="switch-row"><span><strong>${icon("warn")} ${persona ? persona.name + " has" : "I have"} albinism</strong><span class="block small muted">Uses the fastest burn times (type I) and earlier protect hours.</span></span><input type="checkbox" role="switch" class="switch" id="albinism" ${albinism ? "checked" : ""}></label>
-          <div id="lv-offer"></div>
+      <section class="card" aria-label="Details">
+        <div class="tabs-bar"><div class="toggle" role="tablist" aria-label="Result details">
+          <button type="button" role="tab" id="tab-ov" aria-controls="pan-ov" aria-selected="true">Overview</button>
+          <button type="button" role="tab" id="tab-co" aria-controls="pan-co" aria-selected="false" tabindex="-1">Concerns</button>
+          <button type="button" role="tab" id="tab-su" aria-controls="pan-su" aria-selected="false" tabindex="-1">Sun type</button>
+        </div></div>
+        <div class="tabpanel" role="tabpanel" id="pan-ov" aria-labelledby="tab-ov" tabindex="0">
+          <h2 id="type-h">${esc(type.name)}</h2>
+          <p class="muted">${esc(type.line)}</p>
+          <div class="face-wrap">
+            <div class="face-legend" aria-hidden="true"><span><span class="dot" style="background:#d14221"></span>Oily</span><span><span class="dot" style="background:#0369a1"></span>Balanced</span><span><span class="dot" style="background:#9d6a00"></span>Dry</span></div>
+            ${faceDiagram(skin.tZone, skin.uZone)}
+          </div>
+          ${scan.concerns?.length ? `<p><strong>Watch:</strong> ${scan.concerns.map((c) => esc(METRICS[c.metric]?.name || c.metric)).join(", ")}.</p>` : `<p class="muted">No skin concern stood out.</p>`}
+          ${scan.tone?.hex ? `<p class="row gap"><span class="tone-sw" style="background:${esc(scan.tone.hex)}" aria-hidden="true"></span>Skin tone from YouCam: <strong>${esc(scan.tone.hex)}</strong></p>` : ""}
         </div>
-        <p class="small muted">Not right? Choose your sun type on the scale above.</p>
+        <div class="tabpanel" role="tabpanel" id="pan-co" aria-labelledby="tab-co" tabindex="0" hidden>
+          <h2 id="con-h">Skin concern levels</h2>
+          <p class="muted small">YouCam scores from 1 to 100. Higher means healthier skin.</p>
+          ${concernBars(skin.scores)}
+        </div>
+        <div class="tabpanel" role="tabpanel" id="pan-su" aria-labelledby="tab-su" tabindex="0" hidden>
+          <h2 id="fz-h">Sun type</h2>
+          <p class="subtle small">Fitzpatrick scale, I to VI</p>
+          <fieldset class="fitz-scale" id="fitz-set"><legend class="sr-only">Your sun type</legend>${fitzScale(fitz)}</fieldset>
+          <div class="card-warm" id="fitz-desc" aria-live="polite"></div>
+          <p class="small muted">${esc(fitzNote)}</p>
+          <div class="card-tint-2">
+            <label class="switch-row"><span><strong>${persona ? esc(persona.name) + " has" : "I have"} albinism</strong><span class="block small muted">Uses the fastest burn times (type I) and earlier protect hours.</span></span><input type="checkbox" role="switch" class="switch" id="albinism" ${albinism ? "checked" : ""}></label>
+            <div id="lv-offer"></div>
+          </div>
+          <p class="small muted">Not right? Choose your sun type on the scale above.</p>
+        </div>
       </section>
-      ${scan.tone?.hex ? `<section class="card row gap"><span class="tone-sw" style="background:${esc(scan.tone.hex)}" aria-hidden="true"></span><p>Skin tone from YouCam: <strong>${esc(scan.tone.hex)}</strong></p></section>` : ""}
-      <button type="button" class="btn btn-primary btn-block" id="save">${icon("plane")} Save profile and plan my trip</button>
+      <button type="button" class="btn btn-primary btn-block" id="save">Save profile and plan my trip ${icon("arrow")}</button>
       <p class="credit center">Your profile stays on this device and shapes your forecast, burn times and kit. Not medical advice.</p>
     </div>
   </div>`;
@@ -296,6 +338,9 @@ function showResult(scan, fresh = false) {
   if (albinism && !lowVisionOn())
     $("#lv-offer").innerHTML = `<p class="note" style="margin-top:.75rem">Many people with albinism have low vision. <button type="button" class="link-btn" id="lv-on">Turn on low-vision mode</button></p>`;
   if (!fresh) persist();
+  wireTabs($('[role="tablist"]'));
+  // An albinism profile opens on the sun type, where the override lives.
+  if (albinism) $("#tab-su").click();
   setRibbonNext("/trip", "Your trip");
   focusHeading();
 }

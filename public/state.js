@@ -128,24 +128,28 @@ export const PERSONAS = {
 };
 
 export const CITIES = {
-  london: { name: "London", admin1: "England", country: "United Kingdom", lat: 51.5074, lon: -0.1278, timezone: "Europe/London" },
-  lagos: { name: "Lagos", admin1: "Lagos", country: "Nigeria", lat: 6.4541, lon: 3.3947, timezone: "Africa/Lagos" },
-  capeTown: { name: "Cape Town", admin1: "Western Cape", country: "South Africa", lat: -33.9258, lon: 18.4232, timezone: "Africa/Johannesburg" },
+  cairo: { name: "Cairo", admin1: "Cairo", country: "Egypt", lat: 30.0626, lon: 31.2497, timezone: "Africa/Cairo" },
+  dubai: { name: "Dubai", admin1: "Dubai", country: "United Arab Emirates", lat: 25.0772, lon: 55.3093, timezone: "Asia/Dubai" },
+  reykjavik: { name: "Reykjavik", admin1: "Capital Region", country: "Iceland", lat: 64.1355, lon: -21.8954, timezone: "Atlantic/Reykjavik" },
 };
 
-/** London → Lagos → Cape Town, starting tomorrow, with the two flights. */
+/** The demo city that gets the "Day 3" rescan and the Today preview. */
+export const DEMO_RESCAN_CITY = "Dubai";
+export const DEMO_TRIP_LABEL = "Cairo → Dubai → Reykjavik";
+
+/** Cairo → Dubai → Reykjavik, starting tomorrow, about 3 days each, with the two flights. */
 export function demoTrip() {
   const d1 = addDays(today(), 1);
   const leg = (c, from, to) => ({ name: c.name, country: c.country, lat: c.lat, lon: c.lon, timezone: c.timezone, from, to });
   return {
     legs: [
-      leg(CITIES.london, d1, addDays(d1, 1)),
-      leg(CITIES.lagos, addDays(d1, 2), addDays(d1, 5)),
-      leg(CITIES.capeTown, addDays(d1, 6), addDays(d1, 8)),
+      leg(CITIES.cairo, d1, addDays(d1, 2)),
+      leg(CITIES.dubai, addDays(d1, 3), addDays(d1, 5)),
+      leg(CITIES.reykjavik, addDays(d1, 6), addDays(d1, 8)),
     ],
     flights: [
-      { date: addDays(d1, 2), hours: 6.5, from: "London", to: "Lagos" },
-      { date: addDays(d1, 6), hours: 6, from: "Lagos", to: "Cape Town" },
+      { date: addDays(d1, 3), hours: 3.5, from: "Cairo", to: "Dubai" },
+      { date: addDays(d1, 6), hours: 7, from: "Dubai", to: "Reykjavik" },
     ],
     carryOn: true,
   };

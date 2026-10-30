@@ -1,5 +1,5 @@
 import { shell, esc, icon, errorBox, $ } from "./ui.js";
-import { PERSONAS, update, addScan, profileFromScan, demoTrip, load } from "./state.js";
+import { PERSONAS, update, addScan, profileFromScan, demoTrip, load, DEMO_TRIP_LABEL } from "./state.js";
 import { demoScan } from "./api.js";
 import { announce } from "./a11y.js";
 
@@ -7,13 +7,12 @@ shell({
   page: "home",
   speechText: () =>
     "Parasol. Your skin, on the road. A day by day skin forecast for your trip: humidity, cabin air, cold and UV, matched to your skin. " +
-    "Try the demo with no selfie, or use your own selfie. Your photo is sent to YouCam for analysis and is not stored by Parasol. " +
+    "Try the demo with no selfie: Cairo, Dubai, then Reykjavik. Or use your own selfie. Your photo is sent to YouCam for analysis and is not stored by Parasol. " +
     "Not medical advice. Burn times are estimates.",
 });
 
-const btn = $("#btn-demo");
 const box = $("#demo");
-const TRIP = "London → Lagos → Cape Town";
+const TRIP = DEMO_TRIP_LABEL;
 
 $("#personas").innerHTML = Object.values(PERSONAS)
   .map(
@@ -32,13 +31,11 @@ box.querySelectorAll(".p-face img").forEach((img) =>
 );
 box.insertAdjacentHTML("beforeend", `<p class="credit">AI-generated demo faces (YouCam AI Image Generator). Not real people.</p>`);
 
-function openDemo(yes = true) {
-  box.hidden = !yes;
-  btn.setAttribute("aria-expanded", String(yes));
-  if (yes) box.querySelector(".persona")?.focus();
-}
-btn.addEventListener("click", () => openDemo(box.hidden));
-if (location.hash === "#demo") openDemo(true);
+$("#cta-demo").addEventListener("click", (e) => {
+  e.preventDefault();
+  box.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+  box.querySelector(".persona")?.focus({ preventScroll: true });
+});
 
 box.addEventListener("click", async (e) => {
   const b = e.target.closest("[data-persona]");

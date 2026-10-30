@@ -55,18 +55,18 @@ function routine() {
   const ids = new Set((day?.advice || []).map((a) => a.id));
   const item = (id, t, d, slot, ic, when, essential = false) => ({ id, t, d, p: slot ? prod(slot) : null, ic, when, essential });
   const am = [
-    item("am-cleanse", "Gentle cleanse", "Lukewarm water, a gentle fragrance-free cleanser.", "cleanser", "drop", "Wake up"),
-    item("am-moist", humid ? "Light gel moisturiser" : dry ? "Moisturiser, a bit richer today" : "Moisturiser", humid ? "A thin gel layer is enough in humid air." : "A thin layer before sunscreen.", "moisturiser-day", "drop", "After cleansing"),
-    item("am-spf", wx.uvMax >= 3 || tags.has("spf-50") ? "Sunscreen SPF 50" : "Sunscreen SPF 30+", "Two finger-lengths for face, ears and neck.", "sunscreen", "sun", day?.protect ? `Before ${fmtClock(day.protect.from)}` : "Before going out", true),
+    item("am-cleanse", "Gentle cleanse", "Lukewarm water, a gentle fragrance-free cleanser", "cleanser", "drop", "Wake up"),
+    item("am-moist", humid ? "Light gel moisturiser" : dry ? "Moisturiser, a bit richer today" : "Moisturiser", humid ? "A thin gel layer is enough in humid air" : "A thin layer before sunscreen", "moisturiser-day", "drop", "After cleansing"),
+    item("am-spf", wx.uvMax >= 3 || tags.has("spf-50") ? "Sunscreen SPF 50" : "Sunscreen SPF 30+", "Two finger-lengths for face, ears and neck", "sunscreen", "sun", day?.protect ? `Before ${fmtClock(day.protect.from)}` : "Before going out", true),
   ];
-  if (prod("lip") || tags.has("lip")) am.push(item("am-lip", "Lip balm with SPF", "Reapply after eating and drinking.", "lip", "heart", "With sunscreen"));
-  if (tags.has("hat") || tags.has("sunglasses") || prod("hat")) am.push(item("am-hat", "Hat and sunglasses", "Wide brim, and sunglasses marked UV400.", "hat", "hat", "Going out"));
-  if (day?.kind === "flight" || ids.has("dust")) am.push(item("am-mist", day?.kind === "flight" ? "Mist and balm in your bag" : "Face mist in your bag", day?.kind === "flight" ? "Cabin air is very dry." : "Dusty air: mist, don't wipe.", "mist", "drop", "In your bag"));
+  if (prod("lip") || tags.has("lip")) am.push(item("am-lip", "Lip balm with SPF", "Reapply after eating and drinking", "lip", "heart", "With sunscreen"));
+  if (tags.has("hat") || tags.has("sunglasses") || prod("hat")) am.push(item("am-hat", "Hat and sunglasses", "Wide brim, and sunglasses marked UV400", "hat", "hat", "Going out"));
+  if (day?.kind === "flight" || ids.has("dust")) am.push(item("am-mist", day?.kind === "flight" ? "Mist and balm in your bag" : "Face mist in your bag", day?.kind === "flight" ? "Cabin air is very dry" : "Dusty air: mist, don't wipe", "mist", "drop", "In your bag"));
   const pm = [
-    item("pm-cleanse", "Cleanse well", wx.pm25Max >= 35 || wx.dustMax >= 50 ? "Dusty or polluted air today: cleanse gently, no scrubbing." : "Take off sunscreen and the day's sweat.", "cleanser", "drop", "Evening"),
-    item("pm-moist", dry ? "Rich cream" : "Moisturiser", dry ? "Dry or cold air: a richer cream overnight." : "A light layer.", dry ? "moisturiser-rich" : "moisturiser-day", "moon", "Before bed"),
+    item("pm-cleanse", "Cleanse well", wx.pm25Max >= 35 || wx.dustMax >= 50 ? "Dusty or polluted air today: cleanse gently, no scrubbing" : "Take off sunscreen and the day's sweat", "cleanser", "drop", "Evening"),
+    item("pm-moist", dry ? "Rich cream" : "Moisturiser", dry ? "Dry or cold air: a richer cream overnight" : "A light layer", dry ? "moisturiser-rich" : "moisturiser-day", "moon", "Before bed"),
   ];
-  if (uvHigh) pm.push(item("pm-after", "After-sun", "Cool, soothing gel on skin that saw the sun.", "aftersun", "sun", "After sun"));
+  if (uvHigh) pm.push(item("pm-after", "After-sun", "Cool, soothing gel on skin that saw the sun", "aftersun", "sun", "After sun"));
   return { am, pm };
 }
 
@@ -111,10 +111,10 @@ function render() {
   label = c.label;
   const wx = day.wx || {};
   const h = nowHour(day.timezone);
-  const part = h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+  // The title names the context (weekday and city, in the city's own calendar), not a greeting.
   const name = st.demo ? PERSONAS[st.demo]?.name : "";
-  $("#h1").textContent = `${part}${name ? `, ${name}` : ""}`;
-  $("#where").innerHTML = `${icon("pin")} ${esc(day.city)} · ${esc(fmtLong(day.date))}`;
+  $("#h1").textContent = `${fmtDate(day.date, { weekday: "long" })} in ${day.city}`;
+  $("#where").innerHTML = `${icon("pin")} ${esc(fmtDate(day.date, { day: "numeric", month: "long" }))}${name ? ` · ${esc(name)}'s routine` : ""}`;
   // In a preview we show the peak hour; on a real day, the current hour.
   const hourNow = label ? Math.round(wx.uvPeakHour ?? 13) : h;
   const uvNow = Number((day.hourly || []).find((x) => x.h === hourNow)?.uvi);

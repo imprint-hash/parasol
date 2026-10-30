@@ -151,7 +151,7 @@ export function shell({ page, speechText } = {}) {
   const header = document.createElement("header");
   header.className = "topbar";
   header.innerHTML = `
-    <a class="brand" href="/" aria-label="Parasol home">${mark(40)}<span class="brand-txt"><span class="brand-name">Parasol</span><span class="brand-sub">Your skin, on the road.</span></span></a>
+    <a class="brand" href="/" aria-label="Parasol home">${mark(40)}<span class="brand-txt"><span class="brand-name">Parasol</span><span class="brand-sub">Your skin, on the road</span></span></a>
     <nav class="topnav" aria-label="Main">${navLinks(page)}</nav>
     <div class="tb-actions" role="group" aria-label="Reading and display">
       <button type="button" class="icon-btn aa" id="btn-aa" aria-expanded="false" aria-controls="display-panel"><span aria-hidden="true">Aa</span><span class="sr-only">Display and low-vision settings</span></button>
@@ -216,12 +216,12 @@ function ribbon(page) {
   r.className = "ribbon";
   r.setAttribute("aria-label", "Demo guide");
   if (page === "data") {
-    r.innerHTML = `<span class="rb-step"><span class="rb-count">Demo finished</span></span><a class="rb-next" href="/#demo">Try the other traveller ${icon("arrow")}</a>`;
+    r.innerHTML = `<span class="rb-step">Demo · finished</span><a class="rb-next" href="/#demo">Try the other traveller ${icon("arrow")}</a>`;
   } else if (i < 0) {
-    r.innerHTML = `<span class="rb-step">Demo with ${esc(cap(demo))}</span><a class="rb-next" href="/scan?demo=${esc(demo)}">Back to the demo ${icon("arrow")}</a>`;
+    r.innerHTML = `<span class="rb-step">Demo · with ${esc(cap(demo))}</span><a class="rb-next" href="/scan?demo=${esc(demo)}">Back to the demo ${icon("arrow")}</a>`;
   } else {
     const s = DEMO_STEPS[i];
-    r.innerHTML = `<span class="rb-step"><span class="rb-count">Demo ${i + 1} of ${DEMO_STEPS.length}</span> <span class="rb-label">${esc(s.label)}</span></span><a class="rb-next" href="${s.next}">Next: ${esc(s.nextLabel)} ${icon("arrow")}</a>`;
+    r.innerHTML = `<span class="rb-step">Demo · step ${i + 1} of ${DEMO_STEPS.length}<span class="rb-label">· ${esc(s.label)}</span></span><a class="rb-next" href="${s.next}">Next: ${esc(s.nextLabel)} ${icon("arrow")}</a>`;
   }
   document.querySelector("main").before(r);
 }
@@ -382,7 +382,7 @@ export const money = (amount, currency = "USD") => {
   const n = Number(amount);
   if (!Number.isFinite(n)) return "";
   try {
-    return new Intl.NumberFormat(currency === "USD" ? "en-US" : "en-GB", { style: "currency", currency, maximumFractionDigits: n % 1 ? 2 : 0 }).format(n);
+    return new Intl.NumberFormat(currency === "USD" ? "en-US" : "en-GB", { style: "currency", currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
   } catch {
     return `${n} ${currency}`;
   }

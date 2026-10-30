@@ -25,10 +25,10 @@ const CONSENT =
   "Your photo is sent to YouCam (Perfect Corp.) for skin analysis and is not stored by Parasol. We keep only the scores, linked to a fingerprint of the photo so a repeat scan costs nothing. You can delete them any time in My data. Not medical advice.";
 
 const TIPS = [
-  ["sun", "Even daylight", "Face a window. Avoid strong light from behind you."],
-  ["glasses", "No glasses or hat", "Keep your forehead and cheeks clear."],
-  ["smile", "Face forward, relaxed", "Look straight at the camera, at eye level."],
-  ["face", "Hair off your forehead", "Tie it back if you can."],
+  ["sun", "Even daylight", "Face a window. Avoid strong light from behind you"],
+  ["glasses", "No glasses or hat", "Keep your forehead and cheeks clear"],
+  ["smile", "Face forward, relaxed", "Look straight at the camera, at eye level"],
+  ["face", "Hair off your forehead", "Tie it back if you can"],
 ];
 
 function title(text, step) {
@@ -43,7 +43,7 @@ async function showCapture() {
   title("Let's read your skin", "Step 1 of 2: Quick skin read");
   const saved = load().scans[0];
   speech =
-    "Let's read your skin. First, the consent: " + CONSENT + " Tips for a good photo: " + TIPS.map((t) => `${t[1]}. ${t[2]}`).join(" ") + " Then take a photo or upload one, and press Analyse.";
+    "Let's read your skin. First, the consent: " + CONSENT + " Tips for a good photo: " + TIPS.map((t) => `${t[1]}. ${t[2]}.`).join(" ") + " Then take a photo or upload one, and press Analyse.";
   view.innerHTML = `
   <div class="cols">
     <div>
@@ -230,7 +230,7 @@ function showResult(scan, fresh = false) {
       </div>
       ${
         faceImg && masks.length
-          ? `<p class="small muted" style="font-weight:700" id="mask-lab">Show what YouCam saw</p><fieldset class="seg scroll" aria-labelledby="mask-lab" style="margin-top:.375rem"><legend class="sr-only">Show what YouCam saw</legend>
+          ? `<p class="small muted" style="font-weight:500" id="mask-lab">Show what YouCam saw</p><fieldset class="seg scroll" aria-labelledby="mask-lab" style="margin-top:.5rem"><legend class="sr-only">Show what YouCam saw</legend>
           <label><input type="radio" name="mask" value="" checked><span>Photo</span></label>
           ${masks.map(([k]) => `<label><input type="radio" name="mask" value="${esc(k)}"><span>${esc(METRICS[k].name)}</span></label>`).join("")}
         </fieldset>

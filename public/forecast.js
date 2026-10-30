@@ -97,7 +97,7 @@ function render() {
       <tbody>${data.days
         .map(
           (d) =>
-            `<tr><td><button type="button" class="link-btn" data-day="${d.date}" style="min-height:0;padding:0">${fmtWeekday(d.date)} ${fmtDate(d.date)}</button></td><td>${esc(d.city)}${d.kind === "flight" ? " (flight)" : d.kind === "typical" ? " (typical)" : ""}</td><td class="num"><span class="uv-txt-${uvLevel(d.wx?.uvMax).key}" style="font-weight:700">${Number.isFinite(Number(d.wx?.uvMax)) ? Math.round(d.wx.uvMax) : "–"}</span></td><td class="num">${d.wx ? Math.round(d.wx.tMax) + "°" : "–"}</td><td class="num">${d.wx ? Math.round(d.wx.rhMean) + "%" : "–"}</td></tr>`
+            `<tr><td><button type="button" class="link-btn" data-day="${d.date}" style="min-height:0;padding:0">${fmtWeekday(d.date)} ${fmtDate(d.date)}</button></td><td>${esc(d.city)}${d.kind === "flight" ? " (flight)" : d.kind === "typical" ? " (typical)" : ""}</td><td class="num"><span class="uv-txt-${uvLevel(d.wx?.uvMax).key}" style="font-weight:600">${Number.isFinite(Number(d.wx?.uvMax)) ? Math.round(d.wx.uvMax) : "–"}</span></td><td class="num">${d.wx ? Math.round(d.wx.tMax) + "°" : "–"}</td><td class="num">${d.wx ? Math.round(d.wx.rhMean) + "%" : "–"}</td></tr>`
         )
         .join("")}</tbody>
     </table></div>
@@ -161,7 +161,7 @@ function renderDay(focus = true) {
           : ""
       }
       <section class="card" aria-labelledby="todo-h">
-        ${headlineText(d) ? `<div class="headline-box"><span class="h-ic" aria-hidden="true">${icon(ADVICE_ICON[top?.id] || (d.kind === "flight" ? "plane" : deep ? "shield" : "sun"))}</span><div><p class="h-lab">The main thing</p><p class="h-txt">${esc(headlineText(d))}</p>${top?.why ? `<p class="small muted" style="margin-top:.375rem">Why: ${esc(top.why)}</p>` : ""}</div></div>` : ""}
+        ${headlineText(d) ? `<div class="headline-box"><span class="h-ic" aria-hidden="true">${icon(ADVICE_ICON[top?.id] || (d.kind === "flight" ? "plane" : deep ? "shield" : "sun"))}</span><div><p class="h-lab">The main thing</p><p class="h-txt">${esc(headlineText(d))}</p>${top?.why ? `<p class="small muted" style="margin-top:.5rem">Why: ${esc(top.why)}</p>` : ""}</div></div>` : ""}
         <h3 id="todo-h" class="${rest.length ? "" : "sr-only"}">Also today</h3>
         ${
           rest.length

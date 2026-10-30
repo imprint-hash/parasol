@@ -55,7 +55,11 @@ Products without a photo (drawn stand-in shown): La Roche-Posay Anthelios Ultra-
 
 ## Google Fonts
 
-[Literata](https://fonts.google.com/specimen/Literata) and [Atkinson Hyperlegible Next](https://fonts.google.com/specimen/Atkinson+Hyperlegible+Next), served by Google Fonts, licensed under the [SIL Open Font License 1.1](https://openfontlicense.org/).
+[Fraunces](https://fonts.google.com/specimen/Fraunces) and [Atkinson Hyperlegible Next](https://fonts.google.com/specimen/Atkinson+Hyperlegible+Next), served by Google Fonts, licensed under the [SIL Open Font License 1.1](https://openfontlicense.org/).
+
+## Design
+
+Design polish guided by [unslop](https://heydamir.design/unslop) by Damir Sokolovsky ([@heydamir](https://x.com/heydamir)), CC BY 4.0. No unslop files are included in Parasol; its rules were used as a review checklist.
 
 ## Brands
 

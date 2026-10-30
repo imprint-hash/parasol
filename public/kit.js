@@ -111,7 +111,7 @@ function card(s, i) {
           ? `<details class="more"><summary>${alts.length} other option${alts.length > 1 ? "s" : ""}</summary><div><ul class="alts">${alts
               .map(
                 (a) =>
-                  `<li>${productThumb(a)}<div><strong class="block small">${esc(a.title)}</strong><span class="small muted">${money(a.price, a.currency)}</span></div><button type="button" class="btn btn-soft" style="min-height:44px;padding:.375rem .875rem" data-swap="${esc(s.slot)}" data-variant="${esc(pid(a))}" ${a.available === false ? "disabled" : ""}>Choose<span class="sr-only"> ${esc(a.title)}</span></button></li>`
+                  `<li>${productThumb(a)}<div><strong class="block small">${esc(a.title)}</strong><span class="small muted">${money(a.price, a.currency)}</span></div><button type="button" class="btn btn-soft" style="min-height:44px;padding:.5rem 1rem" data-swap="${esc(s.slot)}" data-variant="${esc(pid(a))}" ${a.available === false ? "disabled" : ""}>Choose<span class="sr-only"> ${esc(a.title)}</span></button></li>`
               )
               .join("")}</ul></div></details>`
           : ""

@@ -1,1 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#1e1a1b"/><g transform="translate(9.6 9.6) scale(.7)"><path d="M10 32C10 19.8 19.8 11 32 11s22 8.8 22 21c-3.2-2.6-6.6-2.6-9.6 0-3.2-2.6-6.8-2.6-10 0h-.8c-3.2-2.6-6.8-2.6-10 0-3-2.6-6.4-2.6-9.6 0z" fill="#d88a96"/><path d="M32 32v15a5 5 0 0 1-10 0" fill="none" stroke="#fff5f6" stroke-width="4" stroke-linecap="round"/><path d="M32 11V7" stroke="#fff5f6" stroke-width="4" stroke-linecap="round"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" fill="#FBEDEE"/><g transform="translate(131 128) scale(1.25)">
+  <defs>
+    <linearGradient id="rim" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#F2B8C1"/><stop offset="1" stop-color="#C96A7B"/></linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <radialGradient id="sun"><stop offset="0" stop-color="#FFE08A"/><stop offset="1" stop-color="#F5B13D"/></radialGradient>
+  </defs>
+  <g><circle cx="158" cy="34" r="13" fill="url(#sun)"/>
+    <g stroke="#F5B13D" stroke-width="4" stroke-linecap="round"><path d="M158 12v6M158 50v6M136 34h6M174 34h6M143 19l4 4M169 45l4 4M143 49l4-4M169 23l4-4"/></g></g>
+  <path d="M100 32 V20" stroke="#1E1A1B" stroke-width="8" stroke-linecap="round"/>
+  <path d="M20 108 C20 60 56 32 100 32 C144 32 180 60 180 108 Z" fill="url(#rim)"/>
+  <!-- colourful dripping layer: six skin tones + rose/peach -->
+  <g>
+  <path d="M30 104 C32 70 60 46 100 46 C140 46 168 70 170 104
+    C170 118 160 120 157 108 C155 100 148 102 148 112 C148 130 137 132 135 114
+    C133 104 125 104 123 114 C121 124 112 124 110 112 C108 102 101 102 99 112
+    C97 134 84 136 84 116 C84 104 76 104 74 114 C72 126 61 126 61 112
+    C59 102 51 102 49 112 C47 124 36 124 34 112 Z" fill="#7A4A2E"/>
+  </g>
+  <path d="M30 100 C32 70 60 46 100 46 C140 46 168 70 170 100" fill="none" stroke="#F6DCCB" stroke-width="10"/>
+  <path d="M36 98 C40 74 64 56 100 56 C136 56 160 74 164 98" fill="none" stroke="#D49B74" stroke-width="10"/>
+  <path d="M44 98 C50 80 70 66 100 66 C130 66 150 80 156 98" fill="none" stroke="#A86B45" stroke-width="10"/>
+  <path d="M26 92 C32 58 64 36 100 36 C136 36 168 58 174 92" fill="none" stroke="url(#gloss)" stroke-width="9" stroke-linecap="round"/>
+  <ellipse cx="70" cy="54" rx="16" ry="6" fill="#fff" opacity=".5" transform="rotate(-24 70 54)"/>
+  <!-- falling drops in colour -->
+  <path d="M58 128 c0-6 6-12 6-12 s6 6 6 12 a6 6 0 0 1 -12 0z" fill="#EBC2A3"/>
+  <path d="M86 140 c0-7 7-14 7-14 s7 7 7 14 a7 7 0 0 1 -14 0z" fill="#E27D8F"/>
+  <path d="M128 134 c0-6 6-12 6-12 s6 6 6 12 a6 6 0 0 1 -12 0z" fill="#A86B45"/>
+  <path d="M150 124 c0-5 5-10 5-10 s5 5 5 10 a5 5 0 0 1 -10 0z" fill="#F5B13D"/>
+  <path d="M100 112 V176 a15 15 0 0 1 -30 0" fill="none" stroke="#1E1A1B" stroke-width="10" stroke-linecap="round"/></g></svg>

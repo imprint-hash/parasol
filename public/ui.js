@@ -45,11 +45,11 @@ export const daysBetween = (a, b) => Math.round((asDate(b) - asDate(a)) / 864000
 export function uvLevel(uvi) {
   const u = Number(uvi);
   if (!Number.isFinite(u)) return { key: "na", name: "Not known", short: "?" };
-  if (u < 3) return { key: "low", name: "Low", short: "Low" };
-  if (u < 6) return { key: "mod", name: "Moderate", short: "Moderate" };
-  if (u < 8) return { key: "high", name: "High", short: "High" };
-  if (u < 11) return { key: "vhigh", name: "Very high", short: "Very high" };
-  return { key: "ext", name: "Extreme", short: "Extreme" };
+  if (u < 3) return { key: "low", name: "Low sun", short: "Low" };
+  if (u < 6) return { key: "mod", name: "Moderate sun", short: "Moderate" };
+  if (u < 8) return { key: "high", name: "Strong sun", short: "Strong" };
+  if (u < 11) return { key: "vhigh", name: "Very strong sun", short: "Very strong" };
+  return { key: "ext", name: "Extreme sun", short: "Extreme" };
 }
 export const uvText = (uvi) => (Number.isFinite(Number(uvi)) ? `${Math.round(uvi)} ${uvLevel(uvi).name}` : "Not known yet");
 
@@ -113,9 +113,9 @@ const P = {
 export const icon = (name, cls = "") =>
   `<svg class="ic ic-${esc(name)} ${cls}" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${P[name] || ""}</svg>`;
 
-/** The Parasol mark: a parasol canopy over a handle. */
+/** The Parasol mark: the animated dripping parasol (decorative; the wordmark carries the name). */
 export const mark = (size = 40) =>
-  `<svg class="mark" viewBox="0 0 64 64" width="${size}" height="${size}" aria-hidden="true" focusable="false"><rect width="64" height="64" rx="32" fill="var(--mark-bg)"/><path d="M10 32C10 19.8 19.8 11 32 11s22 8.8 22 21c-3.2-2.6-6.6-2.6-9.6 0-3.2-2.6-6.8-2.6-10 0h-.8c-3.2-2.6-6.8-2.6-10 0-3-2.6-6.4-2.6-9.6 0z" fill="var(--mark-fg)"/><path d="M32 32v15a5 5 0 0 1-10 0" fill="none" stroke="var(--mark-ink)" stroke-width="4" stroke-linecap="round"/><path d="M32 11V7" stroke="var(--mark-ink)" stroke-width="4" stroke-linecap="round"/></svg>`;
+  `<img class="mark" src="/logo.svg" alt="" width="${size}" height="${size}" style="background:#FBEDEE;padding:3px;box-sizing:border-box;object-fit:contain">`;
 
 /* ---------- shell ---------- */
 
@@ -131,8 +131,8 @@ const DEMO_STEPS = [
   { page: "scan", label: "Your skin result", next: "/trip", nextLabel: "Your trip" },
   { page: "trip", label: "Your trip", next: "/forecast", nextLabel: "Your skin forecast" },
   { page: "forecast", label: "Skin forecast", next: "/kit", nextLabel: "Build my trip kit" },
-  { page: "kit", label: "Trip kit and checkout", next: "/rescan?demo=1", nextLabel: "Day 3 in Dubai: rescan" },
-  { page: "rescan", label: "Day 3 rescan", next: "/today", nextLabel: "Today and the sun timer" },
+  { page: "kit", label: "Trip kit and checkout", next: "/rescan?demo=1", nextLabel: "Day 3 in Dubai: my skin changed" },
+  { page: "rescan", label: "Day 3: my skin changed", next: "/today", nextLabel: "Today and the sun timer" },
   { page: "today", label: "Today", next: "/data", nextLabel: "My data (end of demo)" },
 ];
 

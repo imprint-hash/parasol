@@ -12,7 +12,7 @@
  * never tell anyone (deep skin included) that they don't need sunscreen.
  */
 
-import { burnRange } from "./burn.js";
+import { burnRange, protectThreshold } from "./burn.js";
 
 export const HUMID_RH = 70; // % daytime mean, at or above
 export const HUMID_TMAX = 26; // °C daytime max, at or above
@@ -107,7 +107,8 @@ export const RULES = [
   },
   {
     id: "uv-very-fair",
-    when: (p, wx) => veryFair(p) && uvKnown(wx) && wx.uvMax >= UV_MODERATE,
+    // Fires from the person's own protect threshold: UV 2 for type I and albinism, UV 3 for type II.
+    when: (p, wx) => veryFair(p) && uvKnown(wx) && wx.uvMax >= Math.min(UV_MODERATE, protectThreshold(p.fitz, p.albinism)),
     text: (p, wx, ctx = {}) => {
       const b = burnRange(p.fitz, wx.uvMax, { albinism: p.albinism });
       const at = Number.isInteger(wx.uvPeakHour) ? ` at ${hourLabel(wx.uvPeakHour)}` : "";

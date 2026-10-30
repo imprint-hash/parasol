@@ -96,11 +96,14 @@ test("uv-high: UV ≥ 6; hat always, sunglasses from UV 8", () => {
   assert.match(at8.text, /SPF 50, reapply every 2 hours/);
 });
 
-test("uv-very-fair: type I–II or albinism with UV ≥ 3; burn minutes and protect hours in the text", () => {
+test("uv-very-fair: from the person's protect threshold (UV 2 for type I and albinism, UV 3 for type II); burn minutes and protect hours in the text", () => {
   assert.ok(fires("uv-very-fair", { fitz: "I" }, { uvMax: 3 }));
   assert.ok(fires("uv-very-fair", { fitz: "II" }, { uvMax: 3 }));
   assert.ok(fires("uv-very-fair", { fitz: "IV", albinism: true }, { uvMax: 3 }));
-  assert.ok(!fires("uv-very-fair", { fitz: "I" }, { uvMax: 2.9 }));
+  assert.ok(fires("uv-very-fair", { fitz: "I" }, { uvMax: 2 }));
+  assert.ok(fires("uv-very-fair", { fitz: "IV", albinism: true }, { uvMax: 2 }));
+  assert.ok(!fires("uv-very-fair", { fitz: "I" }, { uvMax: 1.9 }));
+  assert.ok(!fires("uv-very-fair", { fitz: "II" }, { uvMax: 2.9 }));
   assert.ok(!fires("uv-very-fair", { fitz: "III" }, { uvMax: 9 }));
   const r = evaluate({ ...P, fitz: "I" }, { ...WX, uvMax: 8, uvPeakHour: 13 }, { protect: { from: "10:00", to: "16:00" } });
   assert.equal(r.advice[0].id, "uv-very-fair");

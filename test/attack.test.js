@@ -1179,7 +1179,6 @@ test("rules: /api/forecast end to end: Ada (VI) leads with dark marks and hides 
 
 test(
   "rules: someone with albinism is never told 'a gentle day, your usual routine is enough' while protect hours are on",
-  { todo: "BUG-5: at UV 2–2.9 albinism/type I get protect hours (from UV 2) but no UV advice fires (uv-very-fair and uv-moderate start at 3), so the headline is CALM_HEADLINE 'Your usual routine is enough' (src/rules.js:95,109,156)" },
   () => {
     const wx = { uvMax: 2.6, uvPeakHour: 13, rhMean: 55, tMin: 14, tMax: 22, windMax: 10, pm25Max: null };
     const hourly = [{ h: 11, uvi: 2.1 }, { h: 13, uvi: 2.6 }, { h: 15, uvi: 2.0 }];

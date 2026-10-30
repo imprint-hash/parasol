@@ -61,7 +61,7 @@ const ERROR_MAP = [
   [/face_too_small|face_out_of_bound|face_position|face_parsing|insufficient_landmarks/, "face_position", 422],
   [/lighting/, "lighting", 422],
   [/below_min_image_size/, "too_small", 422],
-  [/exceed_max_(image|file)size|resolution_unsupported/, "too_large", 422],
+  [/exceed_max_(image_size|filesize)|resolution_unsupported/, "too_large", 422],
   [/nsfw|decode_image|unsupport_ratio/, "bad_image", 422],
 ];
 

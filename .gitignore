@@ -5,3 +5,5 @@ node_modules/
 *.local.json
 data/store.json
 data/store.json.tmp
+docs/
+PLAN.md

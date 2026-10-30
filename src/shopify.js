@@ -67,14 +67,14 @@ async function gql(query, variables) {
 
 /* ---------- catalog ---------- */
 
+// Products are found by the "parasol" tag (the CSV import tags every product
+// but doesn't create a collection); the tag filter below is the second guard.
 const CATALOG_QUERY = `query Parasol {
-  collection(handle: "parasol") {
-    products(first: 100) {
-      nodes {
-        handle title vendor tags onlineStoreUrl
-        featuredImage { url altText }
-        variants(first: 1) { nodes { id availableForSale price { amount currencyCode } } }
-      }
+  products(first: 100, query: "tag:parasol") {
+    nodes {
+      handle title vendor tags onlineStoreUrl
+      featuredImage { url altText }
+      variants(first: 1) { nodes { id availableForSale price { amount currencyCode } } }
     }
   }
 }`;
@@ -83,7 +83,7 @@ const hasParasolTag = (tags) => (tags || []).some((t) => String(t).trim().toLowe
 const cleanTags = (tags) => [...new Set((tags || []).map((t) => String(t).trim().toLowerCase()).filter(Boolean))];
 
 export function productsFromStorefront(data) {
-  const nodes = data?.collection?.products?.nodes || [];
+  const nodes = data?.products?.nodes || data?.collection?.products?.nodes || [];
   return nodes
     .filter((p) => hasParasolTag(p.tags))
     .map((p) => {

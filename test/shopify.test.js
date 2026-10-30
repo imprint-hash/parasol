@@ -20,8 +20,8 @@ const server = createServer(async (req, res) => {
   const send = (s, b) => res.writeHead(s, { "content-type": "application/json" }).end(JSON.stringify(b));
   if (state.down) return send(503, { errors: [{ message: "down" }] });
   if (query.includes("cartCreate")) return send(200, { data: { cartCreate: { cart: state.userErrors.length ? null : { checkoutUrl: state.checkoutUrl }, userErrors: state.userErrors } } });
-  if (query.includes("collection(") && state.empty) return send(200, { data: { collection: null } });
-  if (query.includes("collection(")) return send(200, { data: { collection: { products: { nodes: PRODUCTS } } } });
+  if (query.includes("tag:parasol") && state.empty) return send(200, { data: { products: { nodes: [] } } });
+  if (query.includes("tag:parasol")) return send(200, { data: { products: { nodes: PRODUCTS } } });
   if (query.includes("shop")) return send(200, { data: { shop: { name: "test" } } });
   return send(400, { errors: [{ message: "?" }] });
 });
@@ -45,7 +45,7 @@ beforeEach(() => {
 
 const cartCalls = () => calls.filter((c) => c.query.includes("cartCreate")).length;
 
-test("catalog keeps only parasol-tagged products from the parasol collection", async () => {
+test("catalog keeps only parasol-tagged products", async () => {
   const c = await shop.catalog();
   assert.equal(c.live, true);
   assert.equal(c.source, "shopify");

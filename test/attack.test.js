@@ -1051,7 +1051,6 @@ test("privacy: expired masks are never returned from the cache", async () => {
 
 test(
   "privacy copy: the home page must not say results stay on this device (scores are cached on our server)",
-  { todo: "BUG-4: public/index.html:69 'Your trip and results stay on this device' and public/data.js:13 'keeps your scans … in this browser only' contradict the server cache of scores keyed by the photo hash (kept up to 30 days)" },
   () => {
     const home = readFileSync(join(ROOT, "public/index.html"), "utf8");
     const data = readFileSync(join(ROOT, "public/data.js"), "utf8");

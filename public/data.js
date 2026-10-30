@@ -1,4 +1,4 @@
-// /data: what this browser keeps, and "Delete everything".
+// /data: what this browser keeps, the skin scores our server keeps for up to 30 days, and "Delete everything".
 import { shell, esc, icon, $, fmtDate, errorBox } from "./ui.js";
 import { load, clearAll, PERSONAS } from "./state.js";
 import { deleteMyData } from "./api.js";
@@ -10,7 +10,7 @@ shell({
   page: "data",
   speechText: () => {
     const s = load();
-    return `My data. Parasol keeps your scans, trip and settings in this browser only. You have ${s.scans.length} scan${s.scans.length === 1 ? "" : "s"} saved${s.trip ? " and one trip" : ""}. Your photos are never kept: they are sent to YouCam for analysis and not stored by Parasol. Use Delete everything to remove it all.`;
+    return `My data. Your trip stays on this device. We keep only your skin scores (never your photo) for up to 30 days, and you can delete them here. You have ${s.scans.length} scan${s.scans.length === 1 ? "" : "s"} saved${s.trip ? " and one trip" : ""}. Your photos are never kept: they are sent to YouCam for analysis and not stored by Parasol. Use Delete everything to remove it all.`;
   },
 });
 
@@ -51,7 +51,7 @@ function render() {
       <section class="card-tint stack-sm" aria-labelledby="priv-h">
         <h2 id="priv-h">${icon("lock")} Privacy, plainly</h2>
         <p>Your photo is sent to YouCam (Perfect Corp.) for skin analysis and is not stored by Parasol.</p>
-        <p>Our server keeps only the scores, linked to a fingerprint of the photo, so a repeat scan costs nothing. It does not keep your trip, your profile or any account.</p>
+        <p>Your trip stays on this device. We keep only your skin scores (never your photo) for up to 30 days, linked to a fingerprint of the photo so a repeat scan costs nothing. You can delete them here. We keep no trip, profile or account.</p>
         <p>Weather comes from Open-Meteo, using only the city locations you choose.</p>
       </section>
       <section class="card stack-sm" aria-labelledby="del-h">

@@ -1,5 +1,6 @@
-// Everything Parasol remembers lives here, in this browser only
-// (localStorage key "parasol.v1"). The server keeps no profile, trip or scans.
+// What this browser remembers lives here (localStorage key "parasol.v1").
+// The server keeps no profile or trip; it caches only skin scores (never the
+// photo) keyed by the photo's hash, for up to 30 days, deletable via My data.
 
 const KEY = "parasol.v1";
 const MAX_SCANS = 10;

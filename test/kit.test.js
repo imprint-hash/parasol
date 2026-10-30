@@ -4,9 +4,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { matchKit, scoreProduct, passes, W, KIT_DISCLAIMER } from "../src/kit.js";
 import { SLOTS } from "../src/tags.js";
-import { productsFromCsv } from "../src/shopify.js";
+import { productsFromCsvText } from "../src/catalog-csv.js";
 
-const CATALOG = productsFromCsv(readFileSync(new URL("../products/parasol-products.csv", import.meta.url), "utf8"));
+const CATALOG = productsFromCsvText(readFileSync(new URL("../products/parasol-products.csv", import.meta.url), "utf8"));
 const P = { skinType: "normal", concerns: [], fitz: "III", albinism: false };
 const prod = (handle, tags, price = 10, extra = {}) => ({ variantId: `gid://x/${handle}`, handle, title: handle, vendor: "V", price, currency: "USD", image: null, imageAlt: handle, tags, available: true, url: null, ...extra });
 const slot = (name) => SLOTS.find((s) => s.slot === name);
@@ -128,4 +128,14 @@ test("carry-on on: every liquid pick in a real kit is under 100 ml", () => {
 test("empty or bad catalog gives empty picks, not a crash", () => {
   const k = matchKit(["hat"], null, P, true);
   assert.ok(k.slots.every((s) => s.pick === null));
+});
+
+test("CSV parser reads the classic and the new Shopify templates", () => {
+  const classic = "Handle,Title,Tags,Variant Price,Image Src,Status\na,A,\"type-hat, parasol\",9.50,,active\nb,B,type-hat,1.00,,active\n";
+  const modern = "Title,URL handle,Tags,Price,Product image URL,Status\nA,a,\"type-hat, parasol\",9.50,,Active\n";
+  for (const text of [classic, modern]) {
+    const ps = productsFromCsvText(text);
+    assert.equal(ps.length, 1, "only parasol-tagged rows");
+    assert.deepEqual([ps[0].handle, ps[0].price, ps[0].available, ps[0].variantId], ["a", 9.5, true, null]);
+  }
 });

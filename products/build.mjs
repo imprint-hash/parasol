@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Builds products/parasol-products.csv (Shopify's new product CSV template,
- * plus a final "Collection" column) and products/SOURCES.md from the list
+ * Builds products/parasol-products.csv (Shopify's classic product CSV
+ * template, as exported by the dev store, plus a final "Collection" column) and products/SOURCES.md from the list
  * below. This file is the single source of every product claim: change a
  * claim here, re-run `node products/build.mjs`, and both outputs follow.
  *
@@ -15,13 +15,22 @@
 
 import { writeFileSync } from "node:fs";
 
+// Shopify's CLASSIC product template, column for column as in the dev store's
+// own export (products_export_1.csv, 30 Oct 2026), minus the two snowboard
+// metafield columns, plus "Collection": the one extra column Shopify's
+// importer accepts (help.shopify.com/en/manual/products/import-export/using-csv);
+// it creates the collection "Parasol" (handle parasol) if it doesn't exist.
 const HEADER = [
-  "Title", "URL handle", "Description", "Vendor", "Product category", "Type", "Tags",
-  "Published on online store", "Status", "SKU", "Barcodes", "Option1 name", "Option1 value",
-  "Price", "Compare-at price", "Charge tax", "Inventory tracker", "Inventory quantity",
-  "Continue selling when out of stock", "Weight value (grams)", "Weight unit for display",
-  "Requires shipping", "Fulfillment service", "Product image URL", "Image position",
-  "Image alt text", "Gift card", "SEO title", "SEO description", "Collection",
+  "Handle", "Title", "Body (HTML)", "Vendor", "Product Category", "Type", "Tags", "Published",
+  "Option1 Name", "Option1 Value", "Option1 Linked To", "Option2 Name", "Option2 Value", "Option2 Linked To",
+  "Option3 Name", "Option3 Value", "Option3 Linked To", "Variant SKU", "Variant Grams",
+  "Variant Inventory Tracker", "Variant Inventory Policy", "Variant Fulfillment Service", "Variant Price",
+  "Variant Compare At Price", "Variant Requires Shipping", "Variant Taxable", "Unit Price Total Measure",
+  "Unit Price Total Measure Unit", "Unit Price Base Measure", "Unit Price Base Measure Unit", "Variant Barcodes",
+  "Image Src", "Image Position", "Image Alt Text", "Gift Card", "SEO Title", "SEO Description",
+  "Variant Image", "Variant Weight Unit", "Variant Tax Code", "Cost per item", "Included / Canada",
+  "Price / Canada", "Compare At Price / Canada", "Status", "Variant Packed Length", "Variant Packed Width",
+  "Variant Packed Height", "Variant Packed Dimension Unit", "Collection",
 ];
 
 const NOT_AFFILIATED = "Demo shop. Not affiliated with this brand.";
@@ -266,15 +275,18 @@ export const products = P.map((p, i) => ({ ...p, tags: [...new Set([...p.tags, "
 
 function row(p) {
   const description = `<p>${p.desc.map(html).join(" ")}</p><p>${NOT_AFFILIATED}</p>`;
+  // Value spellings copied from the store's export (true/false, deny, manual, active).
+  // Inventory is NOT tracked (tracker left blank): the classic template has no
+  // quantity column, and a tracked product with 0 stock and policy "deny" would
+  // be unavailable for sale, so the kit and cart would skip it.
   const cells = {
-    Title: p.title, "URL handle": p.handle, Description: description, Vendor: p.vendor, "Product category": "", Type: p.type,
-    Tags: p.tags.join(", "), "Published on online store": "TRUE", Status: "Active", SKU: p.sku, Barcodes: "",
-    "Option1 name": "Title", "Option1 value": "Default Title", Price: p.price.toFixed(2), "Compare-at price": "",
-    "Charge tax": "TRUE", "Inventory tracker": "shopify", "Inventory quantity": "100",
-    "Continue selling when out of stock": "DENY", "Weight value (grams)": "", "Weight unit for display": "",
-    "Requires shipping": "TRUE", "Fulfillment service": "manual", "Product image URL": p.image || "",
-    "Image position": p.image ? "1" : "", "Image alt text": p.image ? `${p.title}, photo from Open Beauty Facts` : "",
-    "Gift card": "FALSE", "SEO title": "", "SEO description": "", Collection: "Parasol",
+    Handle: p.handle, Title: p.title, "Body (HTML)": description, Vendor: p.vendor, "Product Category": "", Type: p.type,
+    Tags: p.tags.join(", "), Published: "true", "Option1 Name": "Title", "Option1 Value": "Default Title",
+    "Variant SKU": p.sku, "Variant Grams": "0.0", "Variant Inventory Tracker": "", "Variant Inventory Policy": "deny",
+    "Variant Fulfillment Service": "manual", "Variant Price": p.price.toFixed(2), "Variant Requires Shipping": "true",
+    "Variant Taxable": "true", "Image Src": p.image || "", "Image Position": p.image ? "1" : "",
+    "Image Alt Text": p.image ? `${p.title}, photo from Open Beauty Facts` : "", "Gift Card": "false",
+    "Variant Weight Unit": "g", Status: "active", Collection: "Parasol",
   };
   return HEADER.map((h) => csvCell(cells[h])).join(",");
 }

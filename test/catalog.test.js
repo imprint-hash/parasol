@@ -7,7 +7,8 @@ import "./helpers/env.js";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { parseCsv, productsFromCsv } from "../src/shopify.js";
+import { parseCsv } from "../src/shopify.js";
+import { productsFromCsvText } from "../src/catalog-csv.js";
 import { PRODUCT_TAGS, TYPE_TAGS, LIQUID_TYPES } from "../src/tags.js";
 
 const TEXT = readFileSync(new URL("../products/parasol-products.csv", import.meta.url), "utf8");
@@ -15,9 +16,9 @@ const SOURCES = readFileSync(new URL("../products/SOURCES.md", import.meta.url),
 const [HEAD, ...ROWS] = parseCsv(TEXT);
 const col = (name) => HEAD.indexOf(name);
 const cell = (r, name) => r[col(name)];
-const PRODUCTS = productsFromCsv(TEXT);
+const PRODUCTS = productsFromCsvText(TEXT);
 
-const EXPECTED_HEADER = "Title,URL handle,Description,Vendor,Product category,Type,Tags,Published on online store,Status,SKU,Barcodes,Option1 name,Option1 value,Price,Compare-at price,Charge tax,Inventory tracker,Inventory quantity,Continue selling when out of stock,Weight value (grams),Weight unit for display,Requires shipping,Fulfillment service,Product image URL,Image position,Image alt text,Gift card,SEO title,SEO description,Collection";
+const EXPECTED_HEADER = "Handle,Title,Body (HTML),Vendor,Product Category,Type,Tags,Published,Option1 Name,Option1 Value,Option1 Linked To,Option2 Name,Option2 Value,Option2 Linked To,Option3 Name,Option3 Value,Option3 Linked To,Variant SKU,Variant Grams,Variant Inventory Tracker,Variant Inventory Policy,Variant Fulfillment Service,Variant Price,Variant Compare At Price,Variant Requires Shipping,Variant Taxable,Unit Price Total Measure,Unit Price Total Measure Unit,Unit Price Base Measure,Unit Price Base Measure Unit,Variant Barcodes,Image Src,Image Position,Image Alt Text,Gift Card,SEO Title,SEO Description,Variant Image,Variant Weight Unit,Variant Tax Code,Cost per item,Included / Canada,Price / Canada,Compare At Price / Canada,Status,Variant Packed Length,Variant Packed Width,Variant Packed Height,Variant Packed Dimension Unit,Collection";
 
 export function checkProducts(products) {
   for (const p of products) {
@@ -51,57 +52,59 @@ export function checkProducts(products) {
   }
 }
 
-test("header matches the Shopify template exactly, plus Collection", () => {
+test("header matches the store's classic export exactly (minus snowboard metafields), plus Collection", () => {
   assert.equal(HEAD.join(","), EXPECTED_HEADER);
 });
 
 test("30–36 products, unique handles and SKUs, every row the same width", () => {
   assert.ok(ROWS.length >= 30 && ROWS.length <= 36, `${ROWS.length} rows`);
-  assert.equal(new Set(ROWS.map((r) => cell(r, "URL handle"))).size, ROWS.length);
-  assert.equal(new Set(ROWS.map((r) => cell(r, "SKU"))).size, ROWS.length);
-  for (const r of ROWS) assert.equal(r.length, HEAD.length, cell(r, "URL handle"));
+  assert.equal(new Set(ROWS.map((r) => cell(r, "Handle"))).size, ROWS.length);
+  assert.equal(new Set(ROWS.map((r) => cell(r, "Variant SKU"))).size, ROWS.length);
+  for (const r of ROWS) assert.equal(r.length, HEAD.length, cell(r, "Handle"));
   assert.equal(PRODUCTS.length, ROWS.length);
 });
 
-test("fixed columns follow the row rules", () => {
+test("fixed columns use the export's own spellings", () => {
   for (const r of ROWS) {
-    const h = cell(r, "URL handle");
+    const h = cell(r, "Handle");
     assert.match(h, /^[a-z0-9]+(-[a-z0-9]+)*$/, h);
-    assert.equal(cell(r, "Option1 name"), "Title", h);
-    assert.equal(cell(r, "Option1 value"), "Default Title", h);
-    assert.equal(cell(r, "Published on online store"), "TRUE", h);
-    assert.equal(cell(r, "Status"), "Active", h);
-    assert.equal(cell(r, "Inventory tracker"), "shopify", h);
-    assert.equal(cell(r, "Inventory quantity"), "100", h);
-    assert.equal(cell(r, "Requires shipping"), "TRUE", h);
-    assert.equal(cell(r, "Fulfillment service"), "manual", h);
-    assert.equal(cell(r, "Gift card"), "FALSE", h);
+    assert.equal(cell(r, "Option1 Name"), "Title", h);
+    assert.equal(cell(r, "Option1 Value"), "Default Title", h);
+    assert.equal(cell(r, "Published"), "true", h);
+    assert.equal(cell(r, "Status"), "active", h);
+    // Not tracked: no quantity column in the classic template, and tracked + 0 + deny = unbuyable.
+    assert.equal(cell(r, "Variant Inventory Tracker"), "", h);
+    assert.equal(cell(r, "Variant Inventory Policy"), "deny", h);
+    assert.equal(cell(r, "Variant Requires Shipping"), "true", h);
+    assert.equal(cell(r, "Variant Taxable"), "true", h);
+    assert.equal(cell(r, "Variant Fulfillment Service"), "manual", h);
+    assert.equal(cell(r, "Gift Card"), "false", h);
     assert.equal(cell(r, "Collection"), "Parasol", h);
-    assert.match(cell(r, "Price"), /^\d+\.\d{2}$/, h);
+    assert.match(cell(r, "Variant Price"), /^\d+\.\d{2}$/, h);
   }
 });
 
 test("descriptions end with the not-affiliated line and contain no scripts", () => {
   for (const r of ROWS) {
-    const d = cell(r, "Description");
-    assert.ok(d.endsWith("<p>Demo shop. Not affiliated with this brand.</p>"), cell(r, "URL handle"));
+    const d = cell(r, "Body (HTML)");
+    assert.ok(d.endsWith("<p>Demo shop. Not affiliated with this brand.</p>"), cell(r, "Handle"));
     assert.doesNotMatch(d, /<script|javascript:|on\w+=/i);
   }
 });
 
 test("images only from Open Beauty Facts, with an OBF code in SOURCES.md", () => {
   for (const r of ROWS) {
-    const img = cell(r, "Product image URL");
+    const img = cell(r, "Image Src");
     if (!img) continue;
-    assert.match(img, /^https:\/\/images\.openbeautyfacts\.org\//, cell(r, "URL handle"));
-    const line = SOURCES.split("\n").find((l) => l.startsWith(`| ${cell(r, "URL handle")} |`));
-    assert.match(line, /\| \d{8,14} \|$/, `${cell(r, "URL handle")}: OBF code recorded`);
+    assert.match(img, /^https:\/\/images\.openbeautyfacts\.org\//, cell(r, "Handle"));
+    const line = SOURCES.split("\n").find((l) => l.startsWith(`| ${cell(r, "Handle")} |`));
+    assert.match(line, /\| \d{8,14} \|$/, `${cell(r, "Handle")}: OBF code recorded`);
   }
 });
 
 test("every product has a SOURCES.md line with a URL and a date", () => {
   for (const r of ROWS) {
-    const h = cell(r, "URL handle");
+    const h = cell(r, "Handle");
     const line = SOURCES.split("\n").find((l) => l.startsWith(`| ${h} |`));
     assert.ok(line, `${h} in SOURCES.md`);
     assert.match(line, /\| https:\/\/[^ ]+ \| \d{4}-\d{2}-\d{2} \|/, h);

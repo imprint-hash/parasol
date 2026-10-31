@@ -48,7 +48,7 @@ Run it locally instead: `npm test` passes offline with zero keys, and `npm start
 | Surface | URL |
 |---|---|
 | Web app (mobile-first, add to home screen) | https://parasol-topaz.vercel.app |
-| Demo video | _link added before submission_ |
+| Demo video | https://youtu.be/A7jmSNcIqsE |
 | Pitch deck (PDF) | [docs/deck/Parasol-pitch-deck.pdf](docs/deck/Parasol-pitch-deck.pdf) |
 | Demo shop (Shopify, test payments) | parasol-demo.myshopify.com |
 | Code | https://github.com/imprint-hash/parasol |

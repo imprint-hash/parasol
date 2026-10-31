@@ -1,199 +1,199 @@
 1
-00:00:00,800 --> 00:00:08,980
+00:00:00,800 --> 00:00:08,550
 The United Nations says that in some African countries, most people with albinism die of skin cancer between thirty and forty.
 
 2
-00:00:08,980 --> 00:00:10,470
-I'm Osagie, from Lagos.
+00:00:08,550 --> 00:00:11,690
+And every new city does something new to your skin:
 
 3
-00:00:10,470 --> 00:00:14,690
-I travel alone, and every new city does something new to my skin.
+00:00:11,690 --> 00:00:13,960
+the sun, the heat, the dry plane air.
 
 4
-00:00:15,140 --> 00:00:16,470
+00:00:14,410 --> 00:00:15,740
 So I built Parasol:
 
 5
-00:00:16,470 --> 00:00:21,370
+00:00:15,740 --> 00:00:20,640
 a day-by-day skin forecast for every skin, from albinism to deep skin.
 
 6
-00:00:21,820 --> 00:00:23,300
+00:00:21,090 --> 00:00:22,570
 One selfie, any trip.
 
 7
-00:00:23,300 --> 00:00:26,880
+00:00:22,570 --> 00:00:26,150
 Scan your own face, or try the demo with no selfie.
 
 8
-00:00:26,880 --> 00:00:30,610
+00:00:26,150 --> 00:00:29,880
 The demo faces are AI-generated, and the app says so.
 
 9
-00:00:31,060 --> 00:00:31,870
+00:00:30,330 --> 00:00:31,140
 This is Sam.
 
 10
-00:00:31,870 --> 00:00:34,290
+00:00:31,140 --> 00:00:33,560
 She has albinism and very fair skin.
 
 11
-00:00:34,290 --> 00:00:38,260
+00:00:33,560 --> 00:00:37,530
 YouCam reads her skin type, zone by zone, and her sun type.
 
 12
-00:00:38,260 --> 00:00:40,280
+00:00:37,530 --> 00:00:39,550
 On her face it read type five.
 
 13
-00:00:40,280 --> 00:00:47,020
+00:00:39,550 --> 00:00:46,290
 Parasol shows that honestly, then uses type one, the most careful setting, because she has albinism.
 
 14
-00:00:47,470 --> 00:00:48,250
+00:00:46,740 --> 00:00:47,520
 Now the trip:
 
 15
-00:00:48,250 --> 00:00:52,500
+00:00:47,520 --> 00:00:51,770
 Cairo, then Dubai, then Reykjavik, with the real weather for every day.
 
 16
-00:00:52,950 --> 00:00:55,650
+00:00:52,220 --> 00:00:54,920
 Each day gets a forecast for Sam's skin:
 
 17
-00:00:55,650 --> 00:00:58,080
+00:00:54,920 --> 00:00:57,350
 heat, humidity, cold, dry cabin air.
 
 18
-00:00:58,080 --> 00:00:59,220
+00:00:57,350 --> 00:00:58,490
 And a burn clock:
 
 19
-00:00:59,220 --> 00:01:02,730
+00:00:58,490 --> 00:01:02,000
 about how many minutes before she may start to burn.
 
 20
-00:01:02,730 --> 00:01:05,490
+00:01:02,000 --> 00:01:04,760
 Always an estimate, never medical advice.
 
 21
-00:01:05,940 --> 00:01:06,890
+00:01:05,210 --> 00:01:06,160
 Then her kit.
 
 22
-00:01:06,890 --> 00:01:12,190
+00:01:06,160 --> 00:01:11,460
 Thirty-two real products, from brands like Elta MD, CeraVe and Supergoop.
 
 23
-00:01:12,190 --> 00:01:14,590
+00:01:11,460 --> 00:01:13,860
 Every pick says why it's for her:
 
 24
-00:01:14,590 --> 00:01:17,570
+00:01:13,860 --> 00:01:16,840
 SPF fifty, fragrance-free, carry-on size.
 
 25
-00:01:17,570 --> 00:01:19,820
+00:01:16,840 --> 00:01:19,090
 Then the sun protection extras:
 
 26
-00:01:19,820 --> 00:01:23,240
+00:01:19,090 --> 00:01:22,510
 a hat, sleeves, and UV four hundred sunglasses.
 
 27
-00:01:23,690 --> 00:01:29,040
+00:01:22,960 --> 00:01:28,310
 Checkout runs on a real Shopify store, with a test payment, so no real money moves.
 
 28
-00:01:29,490 --> 00:01:31,270
+00:01:28,760 --> 00:01:30,540
 Now Ada, day three in Dubai.
 
 29
-00:01:31,270 --> 00:01:34,690
+00:01:30,540 --> 00:01:33,960
 Her skin feels different, so she rescans in the hotel.
 
 30
-00:01:34,690 --> 00:01:37,930
+00:01:33,960 --> 00:01:37,200
 Her acne score is twelve points worse than at home.
 
 31
-00:01:37,930 --> 00:01:41,860
+00:01:37,200 --> 00:01:41,130
 The likely cause comes from the real weather since she landed:
 
 32
-00:01:41,860 --> 00:01:42,560
+00:01:41,130 --> 00:01:41,830
 muggy heat.
 
 33
-00:01:42,560 --> 00:01:45,980
+00:01:41,830 --> 00:01:45,250
 Then what to do tonight, and when to see a pharmacist.
 
 34
-00:01:46,430 --> 00:01:50,250
+00:01:45,700 --> 00:01:49,520
 Every morning, Today gives the routine for today's weather.
 
 35
-00:01:50,250 --> 00:01:54,600
+00:01:49,520 --> 00:01:53,870
 Tap I'm going out, and a sun timer counts down to the next reapply.
 
 36
-00:01:54,600 --> 00:01:56,350
+00:01:53,870 --> 00:01:55,620
 Read aloud speaks the page.
 
 37
-00:01:56,350 --> 00:02:05,160
+00:01:55,620 --> 00:02:04,430
 Low-vision mode makes the text big, with strong contrast or a gentle dark theme, because many people with albinism also have low vision.
 
 38
-00:02:05,610 --> 00:02:07,080
+00:02:04,880 --> 00:02:06,350
 Ada has very deep skin.
 
 39
-00:02:07,080 --> 00:02:09,770
+00:02:06,350 --> 00:02:09,040
 Parasol never tells her to skip sunscreen.
 
 40
-00:02:09,770 --> 00:02:17,070
+00:02:09,040 --> 00:02:16,340
 Her advice is about dark marks the sun can leave for months, and her kit puts sunscreens with no white cast first.
 
 41
-00:02:17,520 --> 00:02:19,490
+00:02:16,790 --> 00:02:18,760
 Parasol is free for travellers.
 
 42
-00:02:19,490 --> 00:02:26,750
+00:02:18,760 --> 00:02:26,020
 It earns a commission on each trip kit, and from hotels, airlines and pharmacies that offer it to their customers.
 
 43
-00:02:26,750 --> 00:02:28,720
+00:02:26,020 --> 00:02:27,990
 Albinism charities get it free.
 
 44
-00:02:29,170 --> 00:02:31,250
+00:02:28,440 --> 00:02:30,520
 Under it all is the YouCam API:
 
 45
-00:02:31,250 --> 00:02:40,330
+00:02:30,520 --> 00:02:39,600
 AI Skin Analysis, the Fitzpatrick Scale Analyzer, Skin Simulation for Ada's day three photo, and AI Image Generator for the demo faces.
 
 46
-00:02:40,330 --> 00:02:44,170
+00:02:39,600 --> 00:02:43,440
 YouCam already works with more than eight hundred brands.
 
 47
-00:02:44,170 --> 00:02:48,140
+00:02:43,440 --> 00:02:47,410
 Parasol helps them sell sun care to both ends of the scale.
 
 48
-00:02:48,590 --> 00:02:49,180
+00:02:47,860 --> 00:02:48,450
 Parasol.
 
 49
-00:02:49,180 --> 00:02:50,880
+00:02:48,450 --> 00:02:50,150
 Your skin, on the road.
 
 50
-00:02:50,880 --> 00:02:54,410
+00:02:50,150 --> 00:02:53,680
 Try it at parasol-topaz.vercel.app.

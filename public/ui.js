@@ -343,7 +343,9 @@ export const loading = (text = "Loading…") => `<div class="loading" role="stat
  */
 export function productPhoto(p) {
   const local = p?.handle && LOCAL_PHOTOS.has(p.handle) ? `/products/${p.handle}.webp` : null;
-  const src = local || p?.image || null;
+  // Only openly licensed photos (local Open Beauty Facts copies) are shown; a shop image
+  // without one is never used, so no brand photography can reach the page.
+  const src = local;
   if (!src) return null;
   return { src, fallback: local && p?.image && p.image !== local ? p.image : null };
 }

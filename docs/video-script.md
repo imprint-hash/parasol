@@ -2,7 +2,7 @@
 
 Voice: Kokoro TTS `af_heart` (female). 1920x1080, length 2:56.5.
 Opens on the albinism story (UN stat card), then Sam's walkthrough; Ada (deep skin) is the second example.
-Footer on footage scenes: "Demo faces and campaign images are AI-generated. Not medical advice." AI faces are labelled "AI-generated demo face".
+Footer on footage scenes: "Demo faces and scenes are AI-generated. Not medical advice." AI faces are labelled "AI-generated demo face".
 Subtitles: `docs/parasol-demo.srt`.
 
 ## 1. Hook / problem (UN stat card) (0:00.8)

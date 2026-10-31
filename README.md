@@ -179,4 +179,4 @@ Built in four days for the November 2026 round. Demo personas use AI-generated f
 
 ## License
 
-MIT, see [LICENSE](LICENSE). Weather: Open-Meteo (CC BY 4.0). Product image: Open Beauty Facts (CC BY-SA). Fonts: Fraunces and Atkinson Hyperlegible Next (SIL OFL 1.1). Skin AI: YouCam API by Perfect Corp. Details in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+MIT, see [LICENSE](LICENSE). Weather: Open-Meteo (CC BY 4.0). Product photos: Open Beauty Facts (CC BY-SA) where available; other items are drawn illustrations. Demo shop, not affiliated with the brands named. Fonts: Fraunces and Atkinson Hyperlegible Next (SIL OFL 1.1). Skin AI: YouCam API by Perfect Corp. Details in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).

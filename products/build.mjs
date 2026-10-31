@@ -9,9 +9,8 @@
  * - Every claim in `desc` was read on the source page on `checked`. A product
  *   with a claim we could not verify was dropped (see DROPPED).
  * - Photos come from products/photos.json. Only openly licensed ones (Open
- *   Beauty Facts, CC BY-SA) go into the CSV "Image Src"; brand photos are kept
- *   as local copies in public/products/ for demo identification only, never
- *   re-uploaded to the shop. Credits are written into THIRD_PARTY_NOTICES.md.
+ *   Beauty Facts, CC BY-SA) are used, in the CSV "Image Src" and as local
+ *   copies in public/products/; no brand photography. Credits are written into THIRD_PARTY_NOTICES.md.
  * - Tags only from src/tags.js; exactly one type-* tag; `parasol` added here.
  * - Prices are the USD price on the source page on the date checked.
  */
@@ -308,7 +307,7 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
     "",
     "How the page was read: **brand-json** the brand's own product data/page fetched directly; **page** the brand or retailer page fetched directly (prices from its JSON-LD offer where shown); **page-ai** the brand page read through a fetch-and-summarise tool; **search** the retailer page as captured by a web search index (used for prices only when the page blocks direct reading).",
     "",
-    "Images: listed in `products/photos.json` and credited in THIRD_PARTY_NOTICES.md. Open Beauty Facts photos (CC BY-SA 3.0, https://world.openbeautyfacts.org) are used as the CSV \"Image Src\". Brand photos are only kept as local copies in `public/products/` for demo identification and are never put in the CSV. Products with no photo show a drawn stand-in.",
+    "Images: listed in `products/photos.json` and credited in THIRD_PARTY_NOTICES.md. Open Beauty Facts photos (CC BY-SA 3.0, https://world.openbeautyfacts.org) are used as the CSV \"Image Src\". No brand photography is used anywhere. Products with no openly licensed photo show a drawn stand-in.",
     "",
     "| handle | source URL | date checked | read as | claims verified | OBF code |",
     "|---|---|---|---|---|---|",

@@ -157,10 +157,6 @@ async function render() {
   const essential = skin.filter(([s]) => isEssential(s.slot, st.profile));
   const optional = skin.filter(([s]) => !isEssential(s.slot, st.profile));
   view.innerHTML = `
-  <figure class="kit-banner">
-    <img src="/scenes/campaign-products-800.webp" srcset="/scenes/campaign-products-800.webp 800w, /scenes/campaign-products.webp 1664w" sizes="(min-width: 1200px) 76rem, 100vw" alt="EltaMD UV Clear SPF 46, CeraVe Moisturizing Cream and Supergoop! PLAY Lip Shield SPF 30 on pink stone over rippling water." width="1664" height="928">
-    <figcaption class="credit">AI-generated image (YouCam AI Image Generator) featuring real products. Not affiliated with these brands.</figcaption>
-  </figure>
   <div class="row spread gap">
     <h2 id="find-h" style="font-size:1.5rem">Find products for your trip</h2>
     ${st.trip?.carryOn !== false ? `<span class="badge badge-neutral">${icon("luggage")} Carry-on: liquids under 100 ml</span>` : ""}
@@ -178,7 +174,7 @@ async function render() {
       ? `<section class="stack-sm" id="extras" aria-labelledby="extras-h" ${extrasHidden() ? "hidden" : ""}><h2 id="extras-h" style="font-size:1.375rem">Sun protection extras</h2><p class="muted small">For very fair skin and albinism: cover up with a hat, sunglasses and sleeves too.</p><div class="kit-grid" id="cards-extras">${wear.map(([s, i]) => card(s, i)).join("")}</div></section>`
       : ""
   }
-  <p class="credit">Product images © their brands or credited photographers. Demo shop, not affiliated with these brands.</p>
+  <p class="credit">Product photos from Open Beauty Facts (CC BY-SA) where available; other items shown as illustrations. Demo shop, not affiliated with these brands.</p>
   ${
     extra.length
       ? `<section class="card" aria-labelledby="extra-h"><h2 id="extra-h">Added after your skin changed</h2><ul class="alts">${extra

@@ -37,6 +37,7 @@ Run it locally instead: `npm test` passes offline with zero keys, and `npm start
 | To verify... | Go here |
 |---|---|
 | **Try it, zero setup** | [parasol-topaz.vercel.app](https://parasol-topaz.vercel.app): tap **Try the demo**, no selfie, no account |
+| **The pitch deck** | [`docs/deck/Parasol-pitch-deck.pdf`](docs/deck/Parasol-pitch-deck.pdf) (10 slides; source [`docs/deck/index.html`](docs/deck/index.html)) |
 | **The demo video** | [Demo video](#live-surfaces) (real app, live API, real Shopify checkout) |
 | **Claims are wired, not aspirational** | [`docs/FACTS.md`](docs/FACTS.md): every claim on this page, with the file that does it |
 | **It reproduces on your machine** | [Quickstart](#quickstart): Node 22, zero dependencies, `npm test` passes with zero keys |
@@ -48,6 +49,7 @@ Run it locally instead: `npm test` passes offline with zero keys, and `npm start
 |---|---|
 | Web app (mobile-first, add to home screen) | https://parasol-topaz.vercel.app |
 | Demo video | _link added before submission_ |
+| Pitch deck (PDF) | [docs/deck/Parasol-pitch-deck.pdf](docs/deck/Parasol-pitch-deck.pdf) |
 | Demo shop (Shopify, test payments) | parasol-demo.myshopify.com |
 | Code | https://github.com/imprint-hash/parasol |
 

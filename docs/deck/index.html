@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parasol pitch deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;600&family=Fraunces:opsz,wght@9..144,300..600&display=swap">
+<style>
+  :root { --white:#FFFFFF; --blush:#FBEDEE; --rose:#D88A96; --wine:#9A4352; --ink:#1E1A1B; --muted:#5c5153; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #e9dfe0; color: var(--ink); font-family: "Atkinson Hyperlegible Next", system-ui, sans-serif; }
+  .slide { width: 1920px; height: 1080px; margin: 0 auto 40px; position: relative; overflow: hidden; background: var(--white); padding: 96px 120px 140px; display: flex; flex-direction: column; }
+  body.one .slide { display: none; margin: 0; }
+  body.one .slide.on { display: flex; }
+  body.one { background: var(--white); }
+  h1, h2, h3 { font-family: "Fraunces", Georgia, serif; font-weight: 400; margin: 0; letter-spacing: -0.015em; }
+  h2 { font-size: 76px; line-height: 1.05; max-width: 1400px; }
+  h3 { font-size: 40px; font-weight: 500; }
+  p { margin: 0; }
+  .kicker { font-size: 26px; letter-spacing: .14em; text-transform: uppercase; color: var(--wine); font-weight: 600; margin-bottom: 28px; }
+  .lead { font-size: 36px; line-height: 1.4; color: var(--muted); margin-top: 28px; max-width: 1350px; }
+  .foot { position: absolute; left: 120px; right: 120px; bottom: 44px; display: flex; justify-content: space-between; align-items: center; font-size: 22px; color: var(--muted); }
+  .foot img { height: 40px; }
+  .foot .brand { display: flex; gap: 12px; align-items: center; font-family: Fraunces, serif; font-size: 26px; color: var(--ink); }
+  .blush { background: var(--blush); }
+  .dark { background: var(--ink); color: var(--white); }
+  .dark .lead, .dark .foot { color: #d9cdcf; } .dark .foot .brand { color: var(--white); } .dark .kicker { color: var(--rose); }
+  .grid { display: grid; gap: 40px; margin-top: 56px; }
+  .card { background: var(--white); border-radius: 32px; padding: 44px; box-shadow: 0 2px 0 rgba(154,67,82,.08); }
+  .blush .card { background: var(--white); }
+  .card.pink { background: var(--blush); }
+  .card p { font-size: 27px; line-height: 1.45; color: var(--muted); margin-top: 16px; }
+  .big { font-family: Fraunces, serif; font-size: 120px; line-height: 1; color: var(--wine); }
+  .src { font-size: 19px; line-height: 1.4; color: var(--muted); margin-top: auto; padding-top: 24px; padding-bottom: 40px; }
+  .phone { border-radius: 36px; overflow: hidden; border: 10px solid var(--ink); background: var(--ink); box-shadow: 0 30px 60px rgba(30,26,27,.18); }
+  .phone img { display: block; width: 100%; }
+  .cap { font-size: 24px; color: var(--muted); text-align: center; margin-top: 18px; }
+  ul.clean { list-style: none; padding: 0; margin: 0; }
+  ul.clean li { font-size: 30px; line-height: 1.4; padding: 18px 0 18px 48px; position: relative; border-bottom: 1px solid #f0dcdf; }
+  ul.clean li::before { content: ""; position: absolute; left: 0; top: 30px; width: 20px; height: 20px; border-radius: 50%; background: var(--rose); }
+  ul.clean li b { color: var(--ink); }
+  .pill { display: inline-block; padding: 8px 20px; border-radius: 999px; background: var(--blush); color: var(--wine); font-size: 22px; font-weight: 600; }
+  .dark .pill { background: #3a3033; color: #f5c9d0; }
+  .flow { display: flex; align-items: stretch; gap: 18px; margin-top: 36px; }
+  .flow .step { flex: 1; background: var(--blush); border-radius: 24px; padding: 26px; }
+  .flow .step b { font-family: Fraunces, serif; font-weight: 500; font-size: 30px; display: block; }
+  .flow .step span { font-size: 22px; color: var(--muted); line-height: 1.4; display: block; margin-top: 8px; }
+  .flow .step code { font-size: 18px; color: var(--wine); word-break: break-all; }
+  .arrow { align-self: center; color: var(--rose); font-size: 40px; }
+  code { font-family: ui-monospace, Consolas, monospace; }
+</style>
+</head>
+<body>
+
+<!-- 1 Title -->
+<section class="slide blush" id="s1">
+  <div style="display:flex;align-items:center;gap:80px;flex:1">
+    <img src="img/logo.svg" alt="Parasol logo" style="width:420px">
+    <div>
+      <p class="kicker">YouCam API Skin AI Hackathon · Skin AI track</p>
+      <h1 style="font-size:150px;line-height:1">Parasol</h1>
+      <p style="font-family:Fraunces,serif;font-size:64px;margin-top:16px;color:var(--wine)">Your skin, on the road.</p>
+      <p class="lead">One selfie and your trip in. A day-by-day skin forecast and a carry-on kit out, for every skin, from albinism to deep skin.</p>
+    </div>
+  </div>
+  <div class="foot"><span>parasol-topaz.vercel.app</span><span>Osagie Cynthia · Lagos</span></div>
+</section>
+
+<!-- 2 Problem -->
+<section class="slide" id="s2">
+  <p class="kicker">The problem</p>
+  <h2>Sun advice is written for the middle of the scale. Both ends lose.</h2>
+  <div class="grid" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="card pink"><div class="big" style="font-size:96px">1 in 5,000</div><p>people in Sub-Saharan Africa have albinism. In some countries most of them die from skin cancer between <b>30 and 40</b>. Many also have low vision. <span style="font-size:20px">(United Nations)</span></p></div>
+    <div class="card pink"><div class="big" style="font-size:96px">Young</div><p>Skin cancer is "a leading cause of death" in people with albinism, who "develop skin cancer young, often in early adulthood." <span style="font-size:20px">(WHO cancer agency, IARC)</span></p></div>
+    <div class="card pink"><div class="big">25% <span style="font-size:56px;color:var(--muted)">vs 7%</span></div><p>of skin-of-colour shoppers name white cast as a barrier to sunscreen, vs White respondents. They want to buy; the products don't fit. <span style="font-size:20px">(Wang et al., 2024)</span></p></div>
+  </div>
+  <p class="src">Sources: United Nations, International Albinism Awareness Day (un.org/en/observances/albinism-day) · IARC, Persons with albinism (albinism.iarc.who.int) · Wang et al., J Drugs Dermatol 2024;23(6):456-462.</p>
+  <div class="foot"><span class="brand"><img src="img/logo.svg" alt="">Parasol</span><span>2</span></div>
+</section>
+
+<!-- 3 Solution -->
+<section class="slide blush" id="s3">
+  <p class="kicker">The solution</p>
+  <h2>One selfie + your trip → a skin forecast for every day.</h2>
+  <p class="lead">Built around the brief's three moments, on a trip.</p>
+  <div class="grid" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="card"><span class="pill">Before a purchase</span><h3 style="margin-top:24px">Before you fly</h3><p>YouCam reads skin type by zone, 8 concerns and sun type I–VI. Real hourly weather per city becomes a daily forecast, a burn clock, and a kit of real products with checkout.</p></div>
+    <div class="card"><span class="pill">After a breakout</span><h3 style="margin-top:24px">Day 3 in a new city</h3><p>Rescan in the hotel. Parasol shows only real changes, names the likely cause from the weather since you landed, and gives a "tonight" list and a safety line.</p></div>
+    <div class="card"><span class="pill">At the mirror</span><h3 style="margin-top:24px">Every morning</h3><p>Today's routine for today's weather, read aloud, and a sun timer that counts down to your next reapply.</p></div>
+  </div>
+  <div class="foot"><span class="brand"><img src="img/logo.svg" alt="">Parasol</span><span>3</span></div>
+</section>
+
+<!-- 4 Product -->
+<section class="slide" id="s4">
+  <p class="kicker">The product</p>
+  <h2 style="font-size:64px">Live app, mobile-first. Try the demo with no selfie.</h2>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:40px;margin:36px auto 0;width:1560px;align-items:start">
+    <div><div class="phone"><img src="img/pz6-home-m.png" alt="Home screen"></div><p class="cap">Start</p></div>
+    <div><div class="phone"><img src="img/pz6-forecast-m.png" alt="Forecast screen"></div><p class="cap">Forecast + burn clock</p></div>
+    <div><div class="phone"><img src="img/pz6-kit-m.png" alt="Kit screen"></div><p class="cap">Kit, with why</p></div>
+    <div><div class="phone"><img src="img/pz6-today-m.png" alt="Today screen"></div><p class="cap">Today + sun timer</p></div>
+    <div><div class="phone" style="aspect-ratio:390/844"><img src="img/simcard.png" alt="Skin simulation before and after" style="height:100%;object-fit:cover;object-position:top"></div><p class="cap">Skin Simulation</p></div>
+  </div>
+  <div class="foot"><span class="brand"><img src="img/logo.svg" alt="">Parasol</span><span>4</span></div>
+</section>
+
+<!-- 5 YouCam -->
+<section class="slide" id="s5">
+  <p class="kicker">How YouCam powers it</p>
+  <h2 style="font-size:64px">Five YouCam tools, one photo upload.</h2>
+  <div class="flow">
+    <div class="step"><b>Upload once</b><span><code>POST /file/skin-analysis</code> → one <code>file_id</code></span></div>
+    <div class="arrow">→</div>
+    <div class="step"><b>Skin Analysis</b><span>9 actions; skin type per zone (T-zone, cheeks), 8 concerns with masks</span></div>
+    <div class="step"><b>Fitzpatrick</b><span>Face check, then sun type I–VI. Drives the burn clock.</span></div>
+    <div class="arrow">→</div>
+    <div class="step"><b>Skin Simulation</b><span>"How your skin may look after a few humid days", from your forecast. Before/after.</span></div>
+    <div class="step"><b>AI Image Generator</b><span>Text-to-image: demo faces. Image-to-image: campaign pictures. All labelled.</span></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1.25fr 1fr;gap:48px;margin-top:36px">
+    <div class="card pink" style="display:flex;gap:36px;align-items:center">
+      <img src="img/sam.jpg" alt="Sam, AI-generated demo face" style="width:190px;height:240px;object-fit:cover;border-radius:24px">
+      <div><span class="pill">The honest moment</span><h3 style="margin-top:20px">YouCam read type V. Parasol uses type I.</h3><p>On Sam's AI-generated face (albinism) the analyzer returned type V. Parasol shows the real reading, then protects with type I when you say you have albinism. One tap to change it.</p></div>
+    </div>
+    <div class="card pink" style="display:flex;gap:20px;align-items:center">
+      <img src="img/ada.jpg" alt="Ada before" style="width:150px;height:200px;object-fit:cover;border-radius:20px">
+      <img src="img/ada-day3.jpg" alt="Ada simulated Day 3" style="width:150px;height:200px;object-fit:cover;border-radius:20px">
+      <p style="font-size:24px;margin:0">Ada, before and simulated "Day 3 in Dubai". Then analysed for real. Units guarded: caps, unit floor, cache by photo hash.</p>
+    </div>
+  </div>
+  <div class="foot"><span class="brand"><img src="img/logo.svg" alt="">Parasol</span><span>5</span></div>
+</section>
+
+<!-- 6 Inclusion -->
+<section class="slide dark" id="s6">
+  <p class="kicker">Inclusion and accessibility</p>
+  <h2>Built for both ends of the sun scale.</h2>
+  <div class="grid" style="grid-template-columns:1fr 1fr 1fr">
+    <div><span class="pill">Albinism, very fair</span><p class="lead" style="font-size:38px">Burn clock and protect hours from UV 2. Albinism always uses the most protective sun type. Hat, sleeves, UV400 glasses in the kit.</p></div>
+    <div><span class="pill">Deep skin</span><p class="lead" style="font-size:38px">Never told to skip sunscreen, at any UV (a test checks it). Dark-mark advice, and no-white-cast sunscreens first.</p></div>
+    <div><span class="pill">Low vision</span><p class="lead" style="font-size:38px">Big text, AAA contrast, gentle dark for light-sensitive eyes, read aloud on every page, screen-reader landmarks, 48 px targets.</p></div>
+  </div>
+  <div class="foot"><span class="brand"><img src="img/logo.svg" alt="">Parasol</span><span>6</span></div>
+</section>
+
+<!-- 7 Business -->
+<section class="slide blush" id="s7">
+  <p class="kicker">Business model</p>
+  <h2>Free for travellers. Paid by the people who sell to them.</h2>
+  <div class="grid" style="grid-template-columns:1fr 1fr;grid-template-rows:auto auto">
+    <div class="card"><h3>Kit commission</h3><p>When a traveller buys their trip kit, Parasol earns a commission (affiliate or shop revenue share, typically 5–15%). Works from day one.</p></div>
+    <div class="card"><h3>Travel partners</h3><p>Hotels, airlines and travel apps send guests a pre-trip skin forecast and share the kit revenue.</p></div>
+    <div class="card"><h3>Retailer widget</h3><p>Pharmacies, duty-free and beauty retailers add a "Where are you travelling?" kit builder, for a monthly fee.</p></div>
+    <div class="card"><h3>Free for albinism charities</h3><p>Funded by the models above. <b style="color:var(--wine)">For Perfect Corp:</b> YouCam already powers 800+ beauty brands; Parasol takes YouCam into travel and travel retail, new places for those brands to reach buyers.</p></div>
+  </div>
+  <div class="foot"><span class="brand"><img src="img/logo.svg" alt="">Parasol</span><span>7</span></div>
+</section>
+
+<!-- 8 Traction -->
+<section class="slide" id="s8">
+  <p class="kicker">Where it stands, honestly</p>
+  <h2>Working and live. Not yet tested with users.</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:80px;margin-top:56px">
+    <ul class="clean">
+      <li><b>Live app</b> on Vercel, with a zero-setup demo</li>
+      <li><b>Real YouCam calls</b>: Skin Analysis, Fitzpatrick, Skin Simulation</li>
+      <li><b>Real weather</b> from Open-Meteo, every day of the trip</li>
+      <li><b>Real Shopify checkout</b> (dev store, test payments)</li>
+      <li><b>218 offline tests</b>, including 68 attack tests</li>
+    </ul>
+    <div class="card pink" style="align-self:start"><span class="pill">Next step</span><h3 style="margin-top:20px">Test with real people</h3><p>Parasol hasn't been tested with people with albinism or low vision yet. That's the first thing to do: with albinism groups in Nigeria, on low-end phones.</p></div>
+  </div>
+  <div class="foot"><span class="brand"><img src="img/logo.svg" alt="">Parasol</span><span>8</span></div>
+</section>
+
+<!-- 9 Roadmap -->
+<section class="slide blush" id="s9">
+  <p class="kicker">Roadmap</p>
+  <h2>What's next.</h2>
+  <div class="grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="card"><span class="pill">Now</span><h3 style="margin-top:20px">User testing</h3><p>With albinism groups in Nigeria and across Africa. Make it fast on low-end phones.</p></div>
+    <div class="card"><span class="pill">Next</span><h3 style="margin-top:20px">Brand catalogs</h3><p>Retailers plug in their own products: "your trip kit" next to a YouCam scan.</p></div>
+    <div class="card"><span class="pill">Then</span><h3 style="margin-top:20px">On the road</h3><p>A rescan reminder on day 2 or 3, and offline mode for flights.</p></div>
+    <div class="card"><span class="pill">Later</span><h3 style="margin-top:20px">More languages</h3><p>Yoruba, Hausa, Igbo and Nigerian Pidgin for read-aloud.</p></div>
+  </div>
+  <div class="foot"><span class="brand"><img src="img/logo.svg" alt="">Parasol</span><span>9</span></div>
+</section>
+
+<!-- 10 Team -->
+<section class="slide dark" id="s10">
+  <div style="display:flex;align-items:center;gap:80px;flex:1">
+    <img src="img/logo.svg" alt="Parasol logo" style="width:320px">
+    <div>
+      <p class="kicker">Team</p>
+      <h2 style="font-size:96px">Osagie Cynthia</h2>
+      <p class="lead" style="font-size:40px">Solo builder, Lagos.</p>
+      <div style="margin-top:56px;font-size:34px;line-height:1.8">
+        <p><span class="pill">App</span>&nbsp; parasol-topaz.vercel.app</p>
+        <p><span class="pill">Code</span>&nbsp; github.com/imprint-hash/parasol</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Not medical advice. Burn times are estimates. Demo shop: not affiliated with these brands.</span><span>10</span></div>
+</section>
+
+<script>
+  // #N shows only slide N at 1920×1080 (for screenshots); no hash shows them all.
+  function show() {
+    const n = parseInt(location.hash.slice(1), 10);
+    document.body.classList.toggle("one", n > 0);
+    document.querySelectorAll(".slide").forEach((s, i) => s.classList.toggle("on", i + 1 === n));
+  }
+  addEventListener("hashchange", show); show();
+</script>
+</body>
+</html>

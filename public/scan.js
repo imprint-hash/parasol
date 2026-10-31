@@ -5,7 +5,7 @@ import { load, update, addScan, profileFromScan, PERSONAS } from "./state.js";
 import { liveScan, config } from "./api.js";
 import { preparePhoto } from "./camera.js";
 import { announce, focusHeading, setPref, lowVisionOn } from "./a11y.js";
-import { faceDiagram, concernBars, fitzScale, FITZ, SKIN_TYPES, METRICS, zoneWord, scoreGauge, scoreLabel } from "./parts.js";
+import { faceDiagram, concernBars, fitzScale, FITZ, SKIN_TYPES, METRICS, zoneWord, scoreGauge, scoreLabel, albinismNote } from "./parts.js";
 
 const avgScore = (sc = {}) => {
   const v = Object.values(sc).map(Number).filter(Number.isFinite);
@@ -206,6 +206,8 @@ function showResult(scan, fresh = false) {
 
   view.innerHTML = `
   ${demo ? `<p class="muted">Demo: real YouCam analysis of an AI-generated face. ${demo.placeholder ? "Placeholder face from YouCam's documentation." : ""}</p>` : `<p class="muted">From YouCam's skin analysis of your photo${scan.source === "cache" ? " (saved result, no new analysis needed)" : ""}.</p>`}
+  ${albinismNote(prof)}
+  ${albinism && scan.fitz?.scale && scan.fitz.scale !== "I" ? `<p class="fitz-note-strong">${esc(fitzNote)}</p>` : ""}
   <section class="card summary3" aria-labelledby="sum-h">
     <h2 id="sum-h" class="sr-only">Your result in short</h2>
     <ul class="plan">
@@ -269,7 +271,7 @@ function showResult(scan, fresh = false) {
           <p class="subtle small">From I (burns very easily) to VI (rarely burns)</p>
           <fieldset class="fitz-scale" id="fitz-set"><legend class="sr-only">How fast you burn</legend>${fitzScale(fitz)}</fieldset>
           <div class="card-warm" id="fitz-desc" aria-live="polite"></div>
-          <p class="small muted">${esc(fitzNote)}</p>
+          <p class="${albinism ? "fitz-note-strong" : "small muted"}">${esc(fitzNote)}</p>
           <div class="card-tint-2">
             <label class="switch-row"><span><strong>${persona ? esc(persona.name) + " has" : "I have"} albinism</strong><span class="block small muted">Uses the most careful burn times.</span></span><input type="checkbox" role="switch" class="switch" id="albinism" ${albinism ? "checked" : ""}></label>
             <div id="lv-offer"></div>

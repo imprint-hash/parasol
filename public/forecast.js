@@ -4,7 +4,7 @@ import { load, update, tripForApi, profileForApi } from "./state.js";
 import { forecast as getForecast, simulateDemo, simulateLive } from "./api.js";
 import { preparePhoto } from "./camera.js";
 import { announce, focusHeading } from "./a11y.js";
-import { FITZ, burnDial, minutesText, scenePhoto, SCENE_CREDIT, uvGauge, wxGlyph, ADVICE_ICON } from "./parts.js";
+import { FITZ, burnDial, minutesText, scenePhoto, SCENE_CREDIT, uvGauge, wxGlyph, ADVICE_ICON, albinismNote } from "./parts.js";
 import { uvChart } from "./chart.js";
 
 const view = $("#view");
@@ -79,6 +79,7 @@ function render() {
   view.innerHTML = `
   <div class="trip-strip">${legs.map((l) => esc(l.name)).join(` ${icon("arrow")} `)}</div>
   <p class="muted small">${fmtDate(first)} – ${fmtDate(last)} · ${data.days.length} days · ${esc(FITZ[p.albinism ? "I" : p.fitz]?.cap || "")}${p.albinism ? " (albinism)" : ""} · ${esc(skinName(p.skinType))}</p>
+  ${albinismNote(p)}
   <section aria-labelledby="days-h">
     <div class="row spread"><h2 id="days-h" style="font-size:1.25rem">Trip days</h2><span class="small subtle">Choose a day</span></div>
     <div class="day-chips" role="group" aria-labelledby="days-h">

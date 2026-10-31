@@ -250,3 +250,6 @@ export function productArt(p) {
   };
   return `<svg class="pa" viewBox="0 0 120 120" aria-hidden="true" focusable="false">${defs}${shadow}${shapes[t] || shapes["type-sunscreen"]}</svg>`;
 }
+
+/** Short safety note shown on every screen when albinism is on. */
+export const albinismNote = (p) => (p?.albinism ? `<p class="note albinism-note">${icon("sun")} Strong sun can burn you in minutes. Parasol always uses the most protective setting.</p>` : "");

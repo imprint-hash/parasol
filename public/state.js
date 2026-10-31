@@ -111,19 +111,19 @@ export function todayIn(timezone) {
 /* ---------- the demo ---------- */
 
 export const PERSONAS = {
-  ada: {
-    id: "ada",
-    name: "Ada",
-    line: "Very deep skin. Strong sun can leave dark marks.",
-    fitz: "V",
-    albinism: false,
-  },
   sam: {
     id: "sam",
     name: "Sam",
     line: "Very fair skin with albinism. Burns fast.",
     fitz: "I",
     albinism: true,
+  },
+  ada: {
+    id: "ada",
+    name: "Ada",
+    line: "Very deep skin. Strong sun can leave dark marks.",
+    fitz: "V",
+    albinism: false,
   },
 };
 

@@ -3,7 +3,7 @@ import { shell, esc, icon, $, $$, fmtLong, fmtHour, fmtClock, fmtWeekday, fmtDat
 import { load, update, todayIn, PERSONAS, DEMO_RESCAN_CITY } from "./state.js";
 import { announce, focusHeading } from "./a11y.js";
 import * as T from "./timer.js";
-import { FITZ, burnDial, minutesText, uvGauge, wxGlyph } from "./parts.js";
+import { FITZ, burnDial, minutesText, uvGauge, wxGlyph, albinismNote } from "./parts.js";
 
 const view = $("#view");
 const st = load();
@@ -131,6 +131,7 @@ function render() {
   const count = (items) => `${items.filter((x) => done.has(x.id)).length} of ${items.length} done`;
   view.innerHTML = `
   ${label ? `<p class="note">${icon("info")} ${esc(label)}</p>` : ""}
+  ${albinismNote(st.profile)}
   ${dayStrip()}
   <div class="cols">
     <div class="stack">

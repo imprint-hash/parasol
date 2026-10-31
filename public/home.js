@@ -6,7 +6,7 @@ import { announce } from "./a11y.js";
 shell({
   page: "home",
   speechText: () =>
-    "Parasol. A daily skin plan for your trip, for every skin tone. Three steps: take a selfie, add your trip, get your skin plan. Press Start to begin, or try the demo with no selfie. " +
+    "Parasol. Sun safety for people with albinism, and every skin on the road. In parts of Sub-Saharan Africa, up to 1 in 5,000 people have albinism, and many die of skin cancer before 40. Three steps: take a selfie, add your trip, get your skin plan. Press Start to begin, or try the demo with no selfie. " +
     "Your photo is sent to YouCam for analysis and is not stored by Parasol. " +
     "Not medical advice. Burn times are estimates.",
 });
@@ -18,7 +18,7 @@ $("#personas").innerHTML = Object.values(PERSONAS)
   .map(
     (p) => `<button type="button" class="persona" data-persona="${p.id}">
       <span class="p-face swatch-${p.id}"><img src="/demo/${p.id}/face.jpg" alt="" width="64" height="64"></span>
-      <span class="p-txt"><span class="p-name">${esc(p.name)}</span><span class="p-line">${esc(p.line)}</span><span class="p-trip">${TRIP}</span></span>
+      <span class="p-txt"><span class="p-name">${esc(p.name)}${p.id === "sam" ? ` <span class="badge badge-solid p-start">Start here</span>` : ""}</span><span class="p-line">${esc(p.line)}</span><span class="p-trip">${TRIP}</span></span>
       ${icon("arrow")}
     </button>`
   )
@@ -26,7 +26,7 @@ $("#personas").innerHTML = Object.values(PERSONAS)
 // If a face thumbnail is missing, show the initial instead.
 box.querySelectorAll(".p-face img").forEach((img) =>
   img.addEventListener("error", () => {
-    img.replaceWith(document.createTextNode(img.closest(".persona").querySelector(".p-name").textContent[0]));
+    img.replaceWith(document.createTextNode(img.closest(".persona").querySelector(".p-name").textContent.trim()[0]));
   })
 );
 box.insertAdjacentHTML("beforeend", `<p class="credit">AI-generated demo faces (YouCam AI Image Generator). Not real people.</p>`);

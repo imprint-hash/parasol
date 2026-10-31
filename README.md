@@ -1,6 +1,6 @@
 # PARASOL
 
-**Your skin, on the road. One selfie, any trip: a day-by-day skin forecast for every skin, from albinism to deep skin.**
+**Sun safety for people with albinism, and every skin on the road. One selfie, any trip: a day-by-day skin forecast that always uses the most protective setting for albinism, and works for every skin down to the deepest.**
 
 [![CI](https://github.com/imprint-hash/parasol/actions/workflows/ci.yml/badge.svg)](https://github.com/imprint-hash/parasol/actions/workflows/ci.yml)
 [![Live demo](https://img.shields.io/badge/live%20demo-online-3fb950.svg)](#live-surfaces)
@@ -17,7 +17,7 @@ Built on the Perfect Corp YouCam **AI Skin Analysis** and **Fitzpatrick Scale An
 
 1. Open **https://parasol-topaz.vercel.app** on a phone or laptop.
 2. Tap **Try the demo**, then pick a traveller:
-   - **Sam**: very fair skin with albinism (burns fast)
+   - **Sam** (start here): very fair skin with albinism. Strong sun can burn Sam in minutes, so Parasol always uses the most protective setting. YouCam reads Sam's photo as type V; with albinism Parasol uses type I.
    - **Ada**: very deep skin (dark marks, no white cast)
 
    Both use real YouCam results on AI-generated faces, so no selfie is needed and no units are spent.
@@ -93,6 +93,8 @@ The Bearer key lives only in server env. Units are only spent when a task succee
 **One honest finding:** on the AI-generated face of a woman with albinism, the Fitzpatrick analyzer returned **type V**. Parasol keeps the real reading and shows it, then uses **type I** (the most protective) when the person says they have albinism: "YouCam read type V; with albinism Parasol uses type I." The "I have albinism" switch and "Not right? Choose your sun type" are always one tap away.
 
 ## The problem
+
+People with albinism have little or no melanin, so strong sun can burn them in minutes. According to the [UN](https://www.un.org/en/observances/albinism-day), as many as 1 in 5,000 people in Sub-Saharan Africa have albinism, and in some countries a majority of persons with albinism die from skin cancer between 30 and 40 years of age. Travel makes it harder: a new city means a new sun, and most sun advice is not written for them.
 
 Your routine works at home, then you land somewhere new and your skin turns oily, tight, broken out or burnt. Weather apps show a UV number and a humidity percentage, but nobody tells you what they mean for *your* skin, today, in this city.
 

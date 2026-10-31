@@ -1,7 +1,8 @@
 // /forecast: one card per day of the trip, with burn clock and hourly UV.
 import { shell, esc, icon, $, fmtDate, fmtLong, fmtWeekday, fmtHour, fmtClock, uvLevel, uvText, errorBox, loading } from "./ui.js";
 import { load, update, tripForApi, profileForApi } from "./state.js";
-import { forecast as getForecast } from "./api.js";
+import { forecast as getForecast, simulateDemo, simulateLive } from "./api.js";
+import { preparePhoto } from "./camera.js";
 import { announce, focusHeading } from "./a11y.js";
 import { FITZ, burnDial, minutesText, scenePhoto, SCENE_CREDIT, uvGauge, wxGlyph, ADVICE_ICON } from "./parts.js";
 import { uvChart } from "./chart.js";
@@ -104,8 +105,10 @@ function render() {
     </table></div>
     <p class="small muted">${sourcesLine()}</p>
   </section>
+  <section class="card stack-sm" id="sim-card" aria-labelledby="sim-h"></section>
   <a class="btn btn-primary btn-block" href="/kit">Build my trip kit ${icon("arrow")}</a>`;
   renderDay(false);
+  renderSim();
   // Scroll only the chip row (scrollIntoView would also nudge the page sideways).
   const chip = document.querySelector('.day-chip[aria-pressed="true"]');
   if (chip) chip.parentElement.scrollLeft = chip.offsetLeft - chip.parentElement.clientWidth / 2 + chip.clientWidth / 2;
@@ -203,6 +206,81 @@ function burnText(d, p, deep) {
 
 function flightNote(d) {
   return `<section class="card-blue stack-sm" aria-labelledby="fl-h"><div class="card-head"><h2 id="fl-h" style="font-size:1.375rem">${icon("plane")} Flight day</h2><span class="badge badge-neutral">${d.wx?.flightHours ? `${esc(d.wx.flightHours)} h in the air` : fmtDate(d.date)}</span></div><p>Cabin air is very dry, often under 20% humidity. Mist, a rich moisturiser and lip balm in your bag.</p><p class="small">Source: WHO, International Travel and Health (cabin environment).</p></section>`;
+}
+
+/* ---------- See how your skin may react (YouCam Skin Simulation) ---------- */
+
+const SIM_LABEL = "Simulated with YouCam Skin Simulation. A preview, not a prediction.";
+function tripPeaks() {
+  const ground = data.days.filter((d) => d.kind !== "flight" && d.wx);
+  const max = (k) => Math.max(...ground.map((d) => Number(d.wx[k])).filter(Number.isFinite));
+  return { humidity: Math.min(100, Math.max(0, max("rhMean"))), tempMax: max("tMax") };
+}
+function baSlider(before, after, why) {
+  return `<p>${esc(why)}</p>
+  <div class="sim-ba" style="--pos:50%">
+    <img src="${esc(before)}" alt="Your photo before">
+    <img class="sim-after" src="${esc(after)}" alt="Simulated: after a few humid days">
+    <span class="ba-tag glass sim-l">Before</span><span class="ba-tag glass sim-r">After</span>
+  </div>
+  <label class="small" for="sim-range">Slide to compare before and after</label>
+  <input type="range" id="sim-range" min="0" max="100" value="50">
+  <p class="credit">${SIM_LABEL}</p>`;
+}
+function wireSlider(box) {
+  const r = box.querySelector("#sim-range");
+  r?.addEventListener("input", () => box.querySelector(".sim-ba").style.setProperty("--pos", `${r.value}%`));
+}
+async function renderSim() {
+  const box = $("#sim-card");
+  if (!box) return;
+  const head = `<h2 id="sim-h" style="font-size:1.25rem">See how your skin may react</h2>`;
+  const st = load();
+  if (st.demo) {
+    try {
+      const r = await simulateDemo(st.demo);
+      box.innerHTML = head + baSlider(r.before, r.after, r.why);
+      wireSlider(box);
+    } catch {
+      box.remove(); // this demo traveller has no simulated photo
+    }
+    return;
+  }
+  const peaks = tripPeaks();
+  if (!Number.isFinite(peaks.humidity) || !Number.isFinite(peaks.tempMax)) return box.remove();
+  box.innerHTML = `${head}<p class="muted">Humid, hot days often make skin shinier. Choose your selfie again and YouCam Skin Simulation shows how it may look after a few days like your trip's most humid one. Parasol doesn't keep your photo, so we need it again.</p>
+  <input type="file" id="sim-file" accept="image/jpeg,image/png" class="sr-only"><label for="sim-file" class="btn btn-secondary btn-block">${icon("face")} Choose my selfie</label>
+  <label class="check-row"><input type="checkbox" id="sim-consent"><span><strong>I agree.</strong> Send my photo to YouCam for a skin simulation. It isn't stored by Parasol.</span></label>
+  <button type="button" class="btn btn-primary btn-block" id="sim-go" disabled>Show my preview</button>
+  <div id="sim-out" aria-live="polite"></div>
+  <p class="credit">${SIM_LABEL}</p>`;
+  let photo = null;
+  const go = $("#sim-go");
+  const ready = () => (go.disabled = !(photo && $("#sim-consent").checked));
+  $("#sim-file").addEventListener("change", async (e) => {
+    try {
+      photo = await preparePhoto(e.target.files[0]);
+      $("#sim-out").innerHTML = `<p class="small">Photo ready.</p>`;
+    } catch (err) {
+      photo = null;
+      $("#sim-out").innerHTML = errorBox(err);
+    }
+    ready();
+  });
+  $("#sim-consent").addEventListener("change", ready);
+  go.addEventListener("click", async () => {
+    go.disabled = true;
+    $("#sim-out").innerHTML = loading("YouCam is simulating your skin…");
+    try {
+      const r = await simulateLive(photo.dataUrl, peaks);
+      box.innerHTML = head + baSlider(photo.previewUrl, r.after, r.why);
+      wireSlider(box);
+      announce("Your skin preview is ready.");
+    } catch (err) {
+      $("#sim-out").innerHTML = errorBox(err);
+      ready();
+    }
+  });
 }
 
 view.addEventListener("click", (e) => {

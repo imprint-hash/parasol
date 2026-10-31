@@ -854,3 +854,12 @@ table.data .link-btn { white-space: nowrap; min-height: 0; padding: 0; }
 .steps3 li { display: grid; justify-items: center; text-align: center; gap: 0.5rem; padding: 1rem 0.5rem; border-radius: 1rem; background: var(--card); color: var(--ink); font-weight: 500; line-height: 1.25; }
 .steps3 .s-ic { display: grid; place-items: center; width: 3rem; height: 3rem; border-radius: 50%; background: var(--beige-2); color: var(--accent); }
 @media (max-width: 30rem) { .fitz-row { grid-template-columns: repeat(3, 1fr); row-gap: 0.875rem; } }
+
+/* Skin Simulation before/after */
+.sim-ba { position: relative; aspect-ratio: 3 / 4; max-width: 22rem; margin-inline: auto; border-radius: var(--r); overflow: hidden; background: var(--dk-2); }
+.sim-ba img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.sim-ba .sim-after { clip-path: inset(0 0 0 var(--pos)); }
+.sim-ba::after { content: ""; position: absolute; top: 0; bottom: 0; left: var(--pos); width: 2px; background: #fff; box-shadow: 0 0 0 1px rgba(30, 26, 27, 0.4); }
+.sim-ba .ba-tag { position: absolute; top: 0.5rem; padding: 0.125rem 0.5rem; border-radius: var(--r-xs); font-size: 0.8125rem; color: #fff; background: rgba(30, 26, 27, 0.8); z-index: 1; }
+.sim-ba .sim-l { left: 0.5rem; } .sim-ba .sim-r { right: 0.5rem; }
+#sim-range { width: 100%; max-width: 22rem; display: block; margin-inline: auto; min-height: 48px; }

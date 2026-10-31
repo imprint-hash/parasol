@@ -46,6 +46,8 @@ export function config() {
 
 export const demoScan = (persona, kind = "baseline") => api("/api/demo/scan", { method: "POST", body: { persona, kind } });
 export const liveScan = (image) => api("/api/scan", { method: "POST", body: { image, consent: true, consentVersion: 1 }, timeout: 130000 });
+export const simulateDemo = (persona) => api("/api/simulate", { method: "POST", body: { persona } });
+export const simulateLive = (image, { humidity, tempMax }) => api("/api/simulate", { method: "POST", body: { image, consent: true, consentVersion: 1, humidity, tempMax }, timeout: 130000 });
 export const forecast = (profile, trip) => api("/api/forecast", { method: "POST", body: { profile, trip }, timeout: 60000 });
 export const kit = (profile, needs, carryOn) => api("/api/kit", { method: "POST", body: { profile, needs, carryOn } });
 export const cart = (lines) => api("/api/cart", { method: "POST", body: { lines } });

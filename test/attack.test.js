@@ -1321,3 +1321,72 @@ test("secrets: no log line written during these tests contains a secret", () => 
   for (const line of logs) assert.equal(leaks(line), 0, "secret in a log line");
   assert.deepEqual([...new Set(blocked)], [], "something tried to reach a real host");
 });
+
+/* =====================================================================
+ * Skin Simulation (/api/simulate)
+ * ===================================================================== */
+
+const simulateCall = (image, extra = {}) => app.call("POST", "/api/simulate", { image, consent: true, consentVersion: 1, humidity: 80, tempMax: 33, ...extra });
+const simRuns = () => stub.started["skin-simulation"] || 0;
+
+test("simulate: no consent (missing, string, wrong version) is 400 no_consent with zero YouCam calls, even with a bad image", async () => {
+  for (const b of [{}, { consent: "true", consentVersion: 1 }, { consent: true }, { consent: true, consentVersion: "1" }]) {
+    const r = await app.call("POST", "/api/simulate", { image: "data:text/html;base64,PGh0bWw+", humidity: 80, tempMax: 30, ...b });
+    assert.equal(r.status, 400);
+    assert.equal(r.body.code, "no_consent");
+  }
+  assert.equal(stub.calls.length, 0);
+  assert.equal((await list("pz_budget")).length, 0);
+});
+
+test("simulate: a live run costs 4 units, is cached by image + intensity, and its params come from the forecast only", async () => {
+  const img = dataUrl(fakeJpeg());
+  const r = await simulateCall(img, { params: { redness: 1 }, oiliness: 0.01 });
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  assert.equal(r.body.source, "live");
+  assert.deepEqual(r.body.params, { oiliness: 1 });
+  assert.match(r.body.label, /preview, not a prediction/);
+  assert.equal((await simulateCall(img)).body.source, "cache");
+  assert.equal(simRuns(), 1);
+  assert.equal((await simulateCall(img, { humidity: 40, tempMax: 20 })).body.params.oiliness, 0.3);
+  assert.equal(simRuns(), 2);
+  const day = await get("pz_budget", `day:${TODAY}`);
+  assert.equal(day.units, 8);
+  assert.equal((await simulateCall(img, { humidity: "80" })).body.code, "bad_request");
+});
+
+test("simulate: counts toward the per-IP hourly limit shared with scans (3), the unit floor and the kill switch", async () => {
+  assert.equal((await scan(dataUrl(fakeJpeg()))).status, 200);
+  assert.equal((await simulateCall(dataUrl(fakeJpeg()))).status, 200);
+  assert.equal((await simulateCall(dataUrl(fakeJpeg()))).status, 200);
+  const r = await simulateCall(dataUrl(fakeJpeg()));
+  assert.equal(r.status, 429);
+  assert.equal(r.body.code, "rate_limited");
+  forgetHits();
+  await reset();
+  youcam.forgetCredit();
+  stub.state.units = 153; // 153 − 4 < 150
+  assert.equal((await simulateCall(dataUrl(fakeJpeg()))).body.code, "live_off");
+  process.env.LIVE_SCANS = "off";
+  assert.equal((await simulateCall(dataUrl(fakeJpeg()))).body.code, "live_off");
+  assert.equal(simRuns(), 2);
+});
+
+test("simulate: demo personas return the saved image with zero YouCam calls; unknown persona is 400; photos over 2560 px are refused", async () => {
+  const r = await app.call("POST", "/api/simulate", { persona: "ada" });
+  assert.equal(r.status, 200);
+  assert.equal(r.body.source, "demo");
+  assert.equal(r.body.units, 0);
+  assert.match(r.body.after, /^\/demo\/ada\//);
+  assert.equal((await app.call("POST", "/api/simulate", { persona: "__proto__" })).body.code, "bad_persona");
+  assert.equal((await simulateCall(dataUrl(fakeJpeg(1000, 3000)))).body.code, "too_large");
+  assert.equal(stub.calls.length, 0);
+});
+
+test("simulate: a My data delete token removes the cached simulation too", async () => {
+  const img = fakeJpeg();
+  const s = await scan(dataUrl(img));
+  assert.equal((await simulateCall(dataUrl(img))).status, 200);
+  const r = await app.call("DELETE", "/api/my-data", { deleteTokens: [s.body.scan.deleteToken] });
+  assert.equal(r.body.deleted, 2);
+});

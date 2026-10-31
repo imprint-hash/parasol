@@ -40,7 +40,7 @@ Run it locally instead: `npm test` passes offline with zero keys, and `npm start
 | **The demo video** | [Demo video](#live-surfaces) (real app, live API, real Shopify checkout) |
 | **Claims are wired, not aspirational** | [`docs/FACTS.md`](docs/FACTS.md): every claim on this page, with the file that does it |
 | **It reproduces on your machine** | [Quickstart](#quickstart): Node 22, zero dependencies, `npm test` passes with zero keys |
-| **Safety is engineered** | [Guardrails](#guardrails) + `test/attack.test.js` (63 attack tests) and `test/rules.test.js` |
+| **Safety is engineered** | [Guardrails](#guardrails) + `test/attack.test.js` (68 attack tests) and `test/rules.test.js` |
 
 ## Live surfaces
 
@@ -83,6 +83,8 @@ Two more YouCam tools built the demo:
 
 - **AI Image Generator V2** (`POST /s2s/v2.0/task/text-to-image/youcam`): the demo faces for Sam and Ada are AI-generated, not real people.
 - **AI Skin Simulation** (`POST /s2s/v2.0/task/skin-simulation`): Ada's "Day 3 in Dubai" photo is simulated from her baseline face, then analysed for real, and the app says so.
+
+**Live Skin Simulation in the app** (`POST /api/simulate`, `src/simulate.js`): on the forecast page, **See how your skin may react** runs YouCam Skin Simulation on your own selfie (uploaded with `POST /s2s/v2.0/file/skin-simulation`) and shows a before/after slider, labelled "Simulated with YouCam Skin Simulation. A preview, not a prediction." The setting comes from your forecast, chosen on the server: the trip's most humid, hottest day sets `oiliness` to 0.3, 0.6 or 1.0 ("how your skin may look after a few humid days"). Oiliness is the only setting that adds a change rather than smoothing one away, so it's the only one used. It needs consent again (Parasol never keeps the photo, so it's sent again), costs 4 units, and goes through the same per-IP limit, daily cap and unit floor as a scan; results are cached by photo hash + setting while YouCam's image link lives (~2 h), and **My data → Delete everything** removes them. Demo travellers get Ada's saved simulated photo at zero cost.
 
 The Bearer key lives only in server env. Units are only spent when a task succeeds, so the server always polls to the end. Every scan result is cached by the photo's SHA-256, so the same photo never costs twice, and the demo replays real captured results from `data/demo/` at zero cost. Response shapes are pinned by the stub in `test/helpers/youcam-stub.js`.
 

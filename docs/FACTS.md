@@ -25,3 +25,6 @@ Every claim in the README, and the code that makes it true. Grep any row.
 | Demo replays real captured YouCam results at zero units | `src/demo.js`, `data/demo/*.json`, `bin/capture-demo.mjs` | `test/attack.test.js` (demo makes 0 YouCam calls) |
 | Demo faces are AI-generated with YouCam AI Image Generator | `public/demo/`, `data/demo/*.json` (`demo.label`) | visible on screen |
 | Low-vision mode, gentle dark, read-aloud | `public/a11y.js`, `public/app.css` | manual (screenshots) |
+| Live Skin Simulation of the user's own selfie, setting chosen from the forecast | `src/simulate.js` (`simSettings`, `simulateRequest`), `public/forecast.js` (`renderSim`) | `test/attack.test.js` ("simulate: …") |
+| Simulation needs consent, costs 4 units, shares the per-IP / daily / floor guards, cached by hash + setting | `src/simulate.js`, `src/budget.js` | `test/attack.test.js` ("simulate: …") |
+| Demo simulation replays Ada's saved image at zero units | `src/simulate.js` (`demoSim`), `data/demo/ada.json` | `test/attack.test.js` ("simulate: demo personas…") |

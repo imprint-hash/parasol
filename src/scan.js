@@ -155,7 +155,7 @@ export function normalise(output, fitz, tone, now = Date.now()) {
 /* ---------- ScanView ---------- */
 
 export const deleteTokenFor = (imageHash) => createHmac("sha256", secret()).update(`delete|${imageHash}`).digest("base64url");
-const delKeyOf = (token) => createHash("sha256").update(`del|${token}`).digest("hex");
+export const delKeyOf = (token) => createHash("sha256").update(`del|${token}`).digest("hex");
 
 /** A record (cache or fixture) → the ScanView the API returns. */
 export function toView(rec, { source, kind = "baseline", imageHash = null, now = Date.now(), extra = {} }) {

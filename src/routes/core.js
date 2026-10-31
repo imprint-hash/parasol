@@ -1,5 +1,5 @@
 /**
- * Platform routes: health, config, scan, demo scan, my data, cart, cron.
+ * Platform routes: health, config, scan, simulate, demo scan, my data, cart, cron.
  * Same format as the router: [method, path, handler(ctx), options?].
  */
 
@@ -8,6 +8,7 @@ import { HttpError } from "../http.js";
 import { storeName, list, remove } from "../store.js";
 import { liveStatus, settings, rateLimit, secretOk } from "../budget.js";
 import { scanRequest, deleteMyData, SCAN_BODY_LIMIT } from "../scan.js";
+import { simulateRequest } from "../simulate.js";
 import { demoScan, demoReady, fixturesPresent } from "../demo.js";
 import { createCart, shopHealth, shopDomain } from "../shopify.js";
 
@@ -63,6 +64,8 @@ export const routes = [
   })],
 
   ["POST", "/api/scan", async ({ body, ip }) => ({ scan: await scanRequest(body, ip) }), { maxBody: SCAN_BODY_LIMIT }],
+
+  ["POST", "/api/simulate", async ({ body, ip }) => simulateRequest(body, ip), { maxBody: SCAN_BODY_LIMIT }],
 
   ["POST", "/api/demo/scan", async ({ body, ip }) => {
     rateLimit(`demo|${ip}`, 300);

@@ -13,11 +13,30 @@ Built for the **[YouCam API Skin AI & eCommerce VTO Hackathon](https://youcam-ap
 
 Built on the Perfect Corp YouCam **AI Skin Analysis** and **Fitzpatrick Scale Analyzer** APIs. Parasol speaks weather and skincare, never medicine: burn times are labelled estimates, and every rule that touches the sun is unit-tested so deep skin is never told it can skip sunscreen.
 
+## How to test (2 minutes, no account, no install)
+
+1. Open **https://parasol-topaz.vercel.app** on a phone or laptop.
+2. Tap **Try the demo**, then pick a traveller:
+   - **Sam**: very fair skin with albinism (burns fast)
+   - **Ada**: very deep skin (dark marks, no white cast)
+
+   Both use real YouCam results on AI-generated faces, so no selfie is needed and no units are spent.
+3. Follow the **Next** link at the top of each page. The trip **Cairo → Dubai → Reykjavik** is filled in for you, with real weather:
+   - **Forecast**: one plain sentence per day, the burn clock, and **Show details** for the numbers.
+   - **Kit**: real brand products matched to that skin and trip. Tap the heart to add or drop items.
+   - **Checkout**: opens the Shopify demo store. **Store password: `ahltea`**. Pay with Shopify's test card: **card number `1`**, any future date, any CVV, any name and address. No real money moves.
+   - **My skin changed**: tap **Demo: Day 3 in Dubai** to see what changed, the likely cause and what to do tonight.
+   - **Today**: tap **I'm going out** to start the sun timer, and the speaker icon to hear it read aloud.
+4. **Low vision**: tap **Aa** (top right) for bigger text, high contrast or gentle dark.
+5. **Optional live scan:** **Start → Take a selfie** runs the real YouCam Skin Analysis and Fitzpatrick APIs. It's limited to 3 per person per hour to protect the unit budget. If live scans are paused, the demo still works.
+
+Run it locally instead: `npm test` passes offline with zero keys, and `npm start` serves the demo at http://localhost:3090 (see [Quickstart](#quickstart)).
+
 ## Quick access
 
 | To verify... | Go here |
 |---|---|
-| **Try it, zero setup** | The live app (link below): tap **Try the demo**, no selfie, no account |
+| **Try it, zero setup** | [parasol-topaz.vercel.app](https://parasol-topaz.vercel.app): tap **Try the demo**, no selfie, no account |
 | **The demo video** | [Demo video](#live-surfaces) (real app, live API, real Shopify checkout) |
 | **Claims are wired, not aspirational** | [`docs/FACTS.md`](docs/FACTS.md): every claim on this page, with the file that does it |
 | **It reproduces on your machine** | [Quickstart](#quickstart): Node 22, zero dependencies, `npm test` passes with zero keys |
@@ -27,7 +46,7 @@ Built on the Perfect Corp YouCam **AI Skin Analysis** and **Fitzpatrick Scale An
 
 | Surface | URL |
 |---|---|
-| Web app (mobile-first, add to home screen) | _link added after deploy_ |
+| Web app (mobile-first, add to home screen) | https://parasol-topaz.vercel.app |
 | Demo video | _link added before submission_ |
 | Demo shop (Shopify, test payments) | parasol-demo.myshopify.com |
 | Code | https://github.com/imprint-hash/parasol |
@@ -41,6 +60,17 @@ The Skin AI brief says people wonder about their skin "right before a purchase, 
 1. **Right before a purchase: before you fly** (`/scan` → `/trip` → `/forecast` → `/kit`). One selfie gives your skin type (T-zone and cheeks read separately), your concerns and your sun type. Add your cities and dates. Parasol pulls the real hourly weather for each day and writes a forecast for *your* skin: humidity, cold, dry cabin air, UV, and a **burn clock** ("you may start to burn in about 10 to 25 minutes at 1 pm"). Then it builds a carry-on kit of real products, each with the reason it was picked, and checks out on Shopify.
 2. **Right after a bad breakout: day 3 in a new city** (`/rescan`). Rescan in the hotel. Parasol compares you with your pre-trip scan, shows only changes bigger than normal day-to-day noise, names the likely cause from the actual weather since you landed ("84% humidity and 31 °C on both days"), and gives a "tonight" checklist plus a safety line.
 3. **In front of the mirror: every morning** (`/today`). Today's routine for today's weather in the city's own time zone, a read-aloud briefing, and a **sun timer**: tap "I'm going out" and it counts down to your next reapply (2 hours, or 40/80 minutes after water or sweat).
+
+## Business model
+
+**Parasol is free for travellers.** Money comes from the people who sell to them:
+
+- **Kit commission:** when a traveller buys their trip kit, Parasol earns a commission (affiliate or a shop revenue share, typically 5–15%). This works from day one.
+- **Travel partners:** hotels, airlines and travel apps send guests a pre-trip skin forecast link and share the kit revenue. A Dubai hotel's guest gets SPF that suits their skin before they land.
+- **Retailer widget:** pharmacies, duty-free shops and beauty retailers add Parasol to their own store as a "Where are you travelling?" kit builder, for a monthly fee.
+- **Free for albinism charities and clinics**, funded by the models above.
+
+Why it matters to Perfect Corp: YouCam already powers 800+ beauty brands. Parasol takes YouCam skin analysis into travel and travel retail, which are new places for those brands to reach buyers.
 
 ## YouCam API integration (the call flow)
 

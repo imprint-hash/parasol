@@ -41,6 +41,7 @@ Run it locally instead: `npm test` passes offline with zero keys, and `npm start
 | **The demo video** | [Demo video](#live-surfaces) (real app, live API, real Shopify checkout) |
 | **Claims are wired, not aspirational** | [`docs/FACTS.md`](docs/FACTS.md): every claim on this page, with the file that does it |
 | **It reproduces on your machine** | [Quickstart](#quickstart): Node 22, zero dependencies, `npm test` passes with zero keys |
+| **YouCam evidence** | [`/youcam`](https://parasol-topaz.vercel.app/youcam) and [`docs/youcam-truth-table.md`](docs/youcam-truth-table.md) |
 | **Safety is engineered** | [Guardrails](#guardrails) + `test/attack.test.js` (68 attack tests) and `test/rules.test.js` |
 
 ## Live surfaces

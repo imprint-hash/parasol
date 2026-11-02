@@ -182,7 +182,7 @@ export function shell({ page, speechText } = {}) {
 
   const foot = document.createElement("footer");
   foot.className = "foot";
-  foot.innerHTML = `<p>Not medical advice. Burn times are estimates.</p><p>Demo shop. Not affiliated with these brands.</p><p class="foot-links"><a href="/data">My data and privacy</a> · Weather by <a href="https://open-meteo.com/" rel="noopener">Open-Meteo</a> · Skin analysis by YouCam (Perfect Corp.)</p>`;
+  foot.innerHTML = `<p>Not medical advice. Burn times are estimates.</p><p>Demo shop. Not affiliated with these brands.</p><p class="foot-links"><a href="/data">My data and privacy</a> · <a href="/youcam">How we used YouCam</a> · Weather by <a href="https://open-meteo.com/" rel="noopener">Open-Meteo</a> · Skin analysis by YouCam (Perfect Corp.)</p>`;
   main.after(foot);
 
   if (page && page !== "home") {

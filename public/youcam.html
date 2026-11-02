@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>How we used YouCam · Parasol</title>
+  <meta name="description" content="Every YouCam call Parasol makes, what it costs, and what we found.">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon-180.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;600&family=Fraunces:opsz,wght@9..144,300..600&display=swap">
+  <link rel="stylesheet" href="/app.css">
+  <style>
+    .yc-table { width: 100%; border-collapse: collapse; font-size: var(--fs-small); }
+    .yc-table th, .yc-table td { text-align: left; vertical-align: top; padding: 0.6rem 0.5rem; border-bottom: 1px solid var(--line); }
+    .yc-wrap { overflow-x: auto; }
+    .yc-gal { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: 1rem; }
+    .yc-gal figure { margin: 0; }
+    .yc-gal img { width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: var(--r-lg, 12px); background: #000; }
+    .yc-gal figcaption { font-size: var(--fs-small); color: var(--ink-2); margin-top: 0.3rem; }
+    .yc-mask { position: relative; } .yc-mask img + img { position: absolute; inset: 0; background: none; }
+  </style>
+  <script src="/boot.js"></script>
+  <script type="module" src="/youcam.js"></script>
+</head>
+<body>
+<main>
+  <div class="page-head"><h1>How we used YouCam</h1><p class="lede">Every YouCam call Parasol makes, what each one costs, and what we learned. Units are measured on our real balance.</p></div>
+  <div class="stack">
+    <section class="card stack-sm" aria-labelledby="t-h">
+      <h2 id="t-h">The calls</h2>
+      <div class="yc-wrap"><table class="yc-table">
+        <thead><tr><th>YouCam tool</th><th>What Parasol uses it for</th><th>Units</th><th>Live?</th><th>What we found</th></tr></thead>
+        <tbody>
+          <tr><td>Skin Analysis (9 actions)</td><td>Reads your skin to pick your travel kit</td><td>14</td><td>Live</td><td>Skin type comes back for the whole face, T-zone and U-zone. Masks show where each concern is.</td></tr>
+          <tr><td>Fitzpatrick face check</td><td>Stops the scan if there is no face or more than one</td><td>0 (free)</td><td>Live</td><td>We check first, so a bad photo costs nothing.</td></tr>
+          <tr><td>Fitzpatrick Scale Analyzer</td><td>Skin type I–VI for your burn time</td><td>10</td><td>Live</td><td>It read type V on the AI face of a woman with albinism. We keep YouCam's reading and, with the albinism switch on, use type I.</td></tr>
+          <tr><td>Skin Simulation</td><td>"Humid trip" preview of Day 3</td><td>4</td><td>Demo (Ada)</td><td>Only oiliness adds change; other sliders smooth skin. So oiliness drives the preview. The rescan then saw acne drop 89 → 77.</td></tr>
+          <tr><td>Skin Tone</td><td>Skin colour (built in)</td><td>20</td><td>Kept off</td><td>Too costly for what it adds.</td></tr>
+          <tr><td>AI Image Generator V2</td><td>Made the demo faces (text-to-image and image-to-image)</td><td>1 each</td><td>Build only</td><td>No real person's face in the demo.</td></tr>
+        </tbody>
+      </table></div>
+      <p>One photo upload feeds skin analysis and Fitzpatrick at the same time. YouCam charges only when a task succeeds, so our server waits for each task to finish. Results are saved by the photo's fingerprint (SHA-256), so the same photo never costs twice, and we keep scores only, never the photo.</p>
+    </section>
+    <section class="card stack-sm" aria-labelledby="g-h">
+      <h2 id="g-h">Real YouCam outputs</h2>
+      <div class="yc-gal" id="gal"></div>
+    </section>
+    <p>Full table with endpoints: <a href="https://github.com/imprint-hash/parasol/blob/main/docs/youcam-truth-table.md" rel="noopener">docs/youcam-truth-table.md</a></p>
+  </div>
+</main>
+</body>
+</html>
